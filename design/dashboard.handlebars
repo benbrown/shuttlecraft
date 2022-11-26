@@ -1,9 +1,5 @@
 <h1>Dashbort</h1>
 
-<div class="states">
-    Followers: {{followers}}
-    Following: {{following}}
-</div>
 
 <div class="stream">
 <div class="composer">
@@ -21,6 +17,9 @@
             <div>
                 <div><strong>{{actor.preferredUsername}}</strong></div>
                 @{{actor.name}}
+                {{#if note.inReplyTo}}
+                <div><a href="{{note.inReplyTo}}" target="_blank">in reply to...</a></div>
+                {{/if}}
             </div>
         </div>
         <div class="content">
@@ -30,7 +29,12 @@
             {{{note.content}}}
             {{#each note.attachment}}
                 <div class="attachment">
-                    <a href="{{url}}" target="_blank"><img src="{{url}}" alt="{{name}}" /></a>
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
+                    {{/isVideo}}
                 </div>
             {{/each}}
             <div class="tools">
@@ -42,4 +46,14 @@
     {{/with}}
 </div>
 {{/each}}
+</div>
+<div class="states">
+    Followers: {{followers}}
+    Following: {{following}}
+
+    <form onsubmit="return app.follow()">
+        <input type="text" placeholder="user@instance.town" id="follow"></textarea>
+        <button type="submit">follow</button>
+    </form>
+
 </div>

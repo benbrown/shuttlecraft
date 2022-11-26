@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { getAccount} from './lib/account.js';
 import express from 'express';
-import {engine} from 'express-handlebars';
+import {create} from 'express-handlebars';
 
 
 import bodyParser from 'body-parser';
@@ -16,7 +16,13 @@ const config = JSON.parse(fs.readFileSync('./config.json'));
 const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = config;
 const PATH_TO_TEMPLATES = './design';
 const app = express();
-
+const hbs = create({
+    helpers: {
+        isVideo: (str,options) => { if (str.includes('video')) return options.fn(this);
+    },
+        isImage: (str,options)=> { if (str.includes('image'))   return options.fn(this);    }
+    }
+});
 
 let sslOptions;
 
@@ -37,7 +43,7 @@ try {
 app.set('domain', DOMAIN);
 app.set('port', process.env.PORT || PORT || 3000);
 app.set('port-https', process.env.PORT_HTTPS || 8443);
-app.engine('handlebars', engine());
+app.engine('handlebars', hbs.engine);
 app.set('views', PATH_TO_TEMPLATES)
 app.set('view engine', 'handlebars');
 app.use(bodyParser.json({type: 'application/activity+json'})); // support json encoded bodies
@@ -69,7 +75,7 @@ function asyncAuthorizer(username, password, cb) {
 // Load/create account file
 const myaccount = getAccount(USER, DOMAIN);
 
-sendFollowMessage('https://hachyderm.io/users/benbrown');
+// sendFollowMessage('https://hachyderm.io/users/benbrown');
 
 console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
 
@@ -92,14 +98,6 @@ app.get('/', (req, res) => res.send('ONO SENDAI - CYBERSPACE X'));
 
 app.use('/private', cors({ credentials: true, origin: true }), basicUserAuth, admin);
 app.use('/', express.static('public/'));
-
-
-// // admin page
-// app.options('/api', cors());
-// app.use('/api', cors(), routes.api);
-// app.use('/api/admin', cors({ credentials: true, origin: true }), basicUserAuth, routes.admin);
-// app.use('/u', cors(), routes.user);
-// app.use('/api/inbox', cors(), routes.inbox);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

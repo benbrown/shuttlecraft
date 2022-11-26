@@ -21,6 +21,9 @@ router.post('/', function (req, res) {
 
     if (incomingRequest) {
         // FIRST, validate the actor
+        if (incomingRequest.type==='Delete') {
+            return res.status(200).send();
+        }
         if (validateSignature(req.body.actor, req)) {
             switch (incomingRequest.type) {
                 case 'Follow':

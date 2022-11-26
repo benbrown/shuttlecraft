@@ -23,5 +23,26 @@ const app = {
             }
         }
         return false;
-    }
+    },
+    follow: () => {
+        const follow = document.getElementById('follow');
+
+        const Http = new XMLHttpRequest();
+        const proxyUrl ='/private/follow';
+        Http.open("POST", proxyUrl);
+        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        Http.send(JSON.stringify({
+            handle: follow.value,
+        }));
+
+        Http.onreadystatechange = () => {
+            if (Http.readyState == 4 && Http.status == 200) {
+                console.log('followed!');
+                post.value = '';
+            } else {
+                console.error('HTTP PROXY CHANGE', Http);
+            }
+        }
+        return false;
+    }    
 }
