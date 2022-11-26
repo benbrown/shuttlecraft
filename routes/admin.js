@@ -10,14 +10,12 @@ router.get('/', async (req, res) => {
     const notes = await getActivityStream();
     const followers = await getFollowers();
     const following = await getFollowing();
-    // res.json(notes);
     res.render('dashboard', {layout: 'private', activitystream: notes, followers: followers.length, following: following.length});
 });
 router.get('/raw', async (req, res) => {
 
     const notes = await getActivityStream();
     res.json(notes);
-    // res.render('dashboard', {layout: 'private', notes: notes});
 });
 
 router.post('/post', async (req, res) => {
