@@ -1,10 +1,9 @@
-import { getActivityStream } from '../lib/notes.js';
+import { getActivityStream, getNoteGuid } from '../lib/notes.js';
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
-import { getFollowers, getFollowing, createNote } from '../lib/account.js';
+import { getFollowers, getFollowing, createNote, getNotifications, getNote } from '../lib/account.js';
 import { sendFollowMessage, fetchUser } from '../lib/users.js';
-import e from 'express';
 const logger = debug('admin');
 
 router.get('/', async (req, res) => {
@@ -12,12 +11,29 @@ router.get('/', async (req, res) => {
     const notes = await getActivityStream();
     const followers = await getFollowers();
     const following = await getFollowing();
-    res.render('dashboard', {layout: 'private', activitystream: notes, followers: followers.length, following: following.length});
-});
-router.get('/raw', async (req, res) => {
 
-    const notes = await getActivityStream();
-    res.json(notes);
+    const offset = req.query.offset || 0;
+
+    res.render('dashboard', {layout: 'private', activitystream: notes.splice(offset,offset+10), followers: followers.length, following: following.length});
+});
+
+router.get('/notifications', async (req, res) => {
+    const following = await getFollowing();
+    const notifications = await Promise.all(getNotifications().map(async (notification) => {
+        const {actor} = await fetchUser(notification.notification.actor);
+        let note;
+        // TODO: check if user is in following list
+        if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
+            note = await getNote(getNoteGuid(notification.notification.object));
+        }
+        return {
+            actor,
+            note,
+            ...notification,
+        }
+    }));
+    
+    res.render('notifications', {layout: 'private', notifications: notifications.reverse()});
 });
 
 router.post('/post', async (req, res) => {

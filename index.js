@@ -18,9 +18,9 @@ const PATH_TO_TEMPLATES = './design';
 const app = express();
 const hbs = create({
     helpers: {
-        isVideo: (str,options) => { if (str.includes('video')) return options.fn(this);
-    },
-        isImage: (str,options)=> { if (str.includes('image'))   return options.fn(this);    }
+        isVideo: (str,options) => { if (str.includes('video')) return options.fn(this); },
+        isImage: (str,options)=> { if (str.includes('image'))   return options.fn(this); },
+        isEq: (a,b,options)=> { console.log('isEq', a, b); if (a===b)   return options.fn(this); },
     }
 });
 

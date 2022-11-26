@@ -17,9 +17,6 @@
             <div>
                 <div><strong>{{actor.preferredUsername}}</strong></div>
                 @{{actor.name}}
-                {{#if note.inReplyTo}}
-                <div><a href="{{note.inReplyTo}}" target="_blank">in reply to...</a></div>
-                {{/if}}
             </div>
         </div>
         <div class="content">
@@ -27,6 +24,11 @@
             content warning: {{note.summary}}
             {{/if}}
             {{{note.content}}}
+
+            {{#if note.inReplyTo}}
+            <div><a href="{{note.inReplyTo}}" target="_blank">Show Thread</a></div>
+            {{/if}}
+
             {{#each note.attachment}}
                 <div class="attachment">
                     {{#isImage mediaType}}

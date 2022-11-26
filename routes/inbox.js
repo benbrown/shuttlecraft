@@ -2,7 +2,7 @@ import express from 'express';
 export const router = express.Router();
 import { sendAcceptMessage, validateSignature } from '../lib/users.js';
 import { addFollower, removeFollower, follow } from '../lib/account.js';
-import { createNote } from '../lib/notes.js';
+import { createNote, recordLike, recordUndoLike, recordBoost, noteExists} from '../lib/notes.js';
 import debug from 'debug';
 const logger = debug('inbox');
 
@@ -28,8 +28,8 @@ router.post('/', function (req, res) {
             switch (incomingRequest.type) {
                 case 'Follow':
                     logger('Incoming follow request');
-                    addFollower(incomingRequest.actor);
-
+                    addFollower(incomingRequest);
+                    
                     // TODO: should wait to confirm follow acceptance?
                     sendAcceptMessage(incomingRequest);
                     break;
@@ -38,6 +38,10 @@ router.post('/', function (req, res) {
                         case 'Follow':
                             logger('Incoming unfollow request');
                             removeFollower(incomingRequest.actor);
+                            break;
+                        case 'Like':
+                            logger('Incoming undo like request');
+                            recordUndoLike(incomingRequest.object);
                             break;
                         default:
                             console.log('Unknown undo type');
@@ -54,8 +58,16 @@ router.post('/', function (req, res) {
                     }
                     break;
                 case 'Like':
+                    recordLike(incomingRequest);
                     break;
                 case 'Announce':
+                    // determine if this is a boost on MY post
+                    // or someone boosting a post into my feed. DIFFERENT!
+                    if (noteExists(incomingRequest.object)) {
+                        recordBoost(incomingRequest);
+                    } else {
+                        console.log('BOOST INTO FEED!');
+                    }
                     break;
                 case 'Create':
                     console.log('incoming create');
