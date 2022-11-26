@@ -1,0 +1,45 @@
+<h1>Dashbort</h1>
+
+<div class="states">
+    Followers: {{followers}}
+    Following: {{following}}
+</div>
+
+<div class="stream">
+<div class="composer">
+    <form onsubmit="return app.post()">
+        <textarea id="post"></textarea>
+        <input type="text" id="cw" placeholder="content warning" />
+        <button type="submit">Post</button>
+    </form>
+</div>
+{{#each activitystream}}
+<div class="activity">
+    {{#with this}}
+        <div class="header">
+            <img src="{{actor.icon.url}}" class="avatar">
+            <div>
+                <div><strong>{{actor.preferredUsername}}</strong></div>
+                @{{actor.name}}
+            </div>
+        </div>
+        <div class="content">
+            {{#if note.summary}}
+            content warning: {{note.summary}}
+            {{/if}}
+            {{{note.content}}}
+            {{#each note.attachment}}
+                <div class="attachment">
+                    <a href="{{url}}" target="_blank"><img src="{{url}}" alt="{{name}}" /></a>
+                </div>
+            {{/each}}
+            <div class="tools">
+                <button>↩️</button>
+                <button>🔁</button>
+                <button>☆</button>
+            </div>
+        </div>
+    {{/with}}
+</div>
+{{/each}}
+</div>
