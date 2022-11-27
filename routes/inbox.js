@@ -7,6 +7,7 @@ import debug from 'debug';
 const logger = debug('inbox');
 
 router.post('/', function (req, res) {
+
     let domain = req.app.get('domain');
     const actor = new URL(req.body.actor);
     let targetDomain = actor.hostname;
