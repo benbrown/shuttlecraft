@@ -1,0 +1,34 @@
+body {
+    background: #F0F0f0;
+    color: #333;
+    font-size: 18px;
+}
+
+a { color: #8c8dff; }
+
+.stream {
+    max-width: 40rem;
+    margin: 0px auto;
+}
+
+
+.activity {
+    border-top: 1px solid #393f4f;
+    background: #FFF;
+    padding: 1rem;
+}
+
+.activity .header {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.activity .header .avatar {
+    height: 50px;
+    width: 50px;
+}
+
+.activity .attachment img {
+    max-width: 100%;
+}

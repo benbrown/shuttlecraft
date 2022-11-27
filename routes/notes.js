@@ -13,9 +13,15 @@ router.get('/:guid',  async (req, res) => {
     const note = await getNote(guid);
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);
-    }
-    else {
-      res.json(note);
+    } else {
+      if (req.headers.accepts?.contains('application/ld+json; profile="https://www.w3.org/ns/activitystreams"')) {
+        res.json(note);
+      } else {
+        res.redirect(note.url);
+      }
     }
   }
 });
+
+
+

@@ -1,0 +1,33 @@
+<a href="#" onclick="history.back(); return false;">Back</a>
+<div class="stream">
+{{#each activitystream}}
+<div class="activity">
+    {{#with this}}
+        <div class="header">
+            <img src="{{actor.icon.url}}" class="avatar">
+            <div>
+                <div><strong>{{actor.preferredUsername}}</strong></div>
+                @{{actor.name}}
+            </div>
+        </div>
+        <div class="content">
+            {{#if note.summary}}
+            content warning: {{note.summary}}
+            {{/if}}
+            {{{note.content}}}
+
+            {{#each note.attachment}}
+                <div class="attachment">
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
+                    {{/isVideo}}
+                </div>
+            {{/each}}
+        </div>
+    {{/with}}
+</div>
+{{/each}}
+</div>

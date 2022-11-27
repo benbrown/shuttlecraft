@@ -9,7 +9,7 @@ import cors from 'cors';
 import http from 'http';
 import basicAuth from 'express-basic-auth';
 
-import {account, webfinger, inbox, admin, notes} from './routes/index.js';
+import {account, webfinger, inbox, admin, notes, publicFacing} from './routes/index.js';
 import {sendFollowMessage} from './lib/users.js';
 
 const config = JSON.parse(fs.readFileSync('./config.json'));
@@ -97,6 +97,7 @@ app.use('/api/inbox', cors(), inbox);
 app.get('/', (req, res) => res.send('ONO SENDAI - CYBERSPACE X'));
 
 app.use('/private', cors({ credentials: true, origin: true }), basicUserAuth, admin);
+app.use('/', cors(), publicFacing);
 app.use('/', express.static('public/'));
 
 http.createServer(app).listen(app.get('port'), function(){

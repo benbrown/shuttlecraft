@@ -3,3 +3,5 @@ export {router as webfinger} from './webfinger.js';
 export { router as inbox} from './inbox.js';
 export { router as admin} from './admin.js';
 export { router as notes} from './notes.js';
+
+export { router as publicFacing} from './public.js';

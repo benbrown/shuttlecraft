@@ -9,7 +9,12 @@
                 {{{...note.content}}}
             </div>
         {{/isEq}}
-
+        {{#isEq notification.type "Reply"}}
+            <div>💬 <a href="{{../actor.id}}">{{../actor.name}}</a> replied <a href="{{../original.id}}">your post</a></div>
+            <div class="preview">
+                {{{...note.content}}}
+            </div>
+        {{/isEq}}
         {{#isEq notification.type "Like"}}
             <div>⭐️ <a href="{{../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a></div>
             <div class="preview">

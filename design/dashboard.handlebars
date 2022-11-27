@@ -26,7 +26,7 @@
             {{{note.content}}}
 
             {{#if note.inReplyTo}}
-            <div><a href="{{note.inReplyTo}}" target="_blank">Show Thread</a></div>
+            <div><a href="{{note.inReplyTo}}">Show Thread</a></div>
             {{/if}}
 
             {{#each note.attachment}}
@@ -42,12 +42,18 @@
             <div class="tools">
                 <button>↩️</button>
                 <button>🔁</button>
-                <button>☆</button>
+                <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
+                    <span class="active">⭐️</span>
+                    <span class="inactive">☆</span>
+                </button>
+                <a href="{{note.url}}">#</a>
             </div>
         </div>
     {{/with}}
 </div>
 {{/each}}
+
+<a href="/private?offset={{next}}">More</a>
 </div>
 <div class="states">
     Followers: {{followers}}
