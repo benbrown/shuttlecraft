@@ -1,0 +1,15 @@
+<div class="byline">
+    <a href="{{actor.url}}"><img src="{{actor.icon.url}}" class="avatar"></a>
+    <div>
+        <a href="{{actor.url}}" class="author">{{actor.name}}</a>
+        <span class="handle">@{{actor.preferredUsername}}</span>
+    </div>
+    <div>
+        {{#if actor.isFollowing}}{{else}}
+        <button class="follow" onclick='return app.toggleFollow(this, "{{actor.id}}")'>
+            <span class="active">😎</span>
+            <span class="inactive">🫥</span>
+        </button>
+        {{/if}}
+    </div>
+</div>

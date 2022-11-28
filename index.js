@@ -8,8 +8,9 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http';
 import basicAuth from 'express-basic-auth';
+import moment from 'moment';
 
-import {account, webfinger, inbox, admin, notes, publicFacing} from './routes/index.js';
+import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
 import {sendFollowMessage} from './lib/users.js';
 
 const config = JSON.parse(fs.readFileSync('./config.json'));
@@ -18,9 +19,10 @@ const PATH_TO_TEMPLATES = './design';
 const app = express();
 const hbs = create({
     helpers: {
-        isVideo: (str,options) => { if (str.includes('video')) return options.fn(this); },
-        isImage: (str,options)=> { if (str.includes('image'))   return options.fn(this); },
-        isEq: (a,b,options)=> { console.log('isEq', a, b); if (a===b)   return options.fn(this); },
+        isVideo: (str,options) => { if (str && str.includes('video')) return options.fn(this); },
+        isImage: (str,options)=> { if (str && str.includes('image'))   return options.fn(this); },
+        isEq: (a,b,options)=> { if (a===b)   return options.fn(this); },
+        timesince: (date) => { return moment(date).fromNow(); }
     }
 });
 
@@ -93,8 +95,7 @@ app.use('/m', cors(), notes);
 
 // handle incoming requests
 app.use('/api/inbox', cors(), inbox);
-
-app.get('/', (req, res) => res.send('ONO SENDAI - CYBERSPACE X'));
+app.use('/api/outbox', cors(), outbox);
 
 app.use('/private', cors({ credentials: true, origin: true }), basicUserAuth, admin);
 app.use('/', cors(), publicFacing);

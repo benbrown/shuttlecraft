@@ -1,19 +1,32 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="{{rootUrl}}/css/main.css" />
+    <title>ono sendai</title>
     <link rel="stylesheet" href="{{rootUrl}}/css/secret.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ono sendai" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="white" />
+    <meta name="theme-color" content="#ffffff" />
   </head>
   <body>
-    <div id="main">
-      <h1>Secret Control Panel</h1>
+    <div id="wrapper">
       <nav class="toolbar">
-        <a href="{{rootUrl}}/private">Home</a>
-        <a href="{{rootUrl}}/private/notifications">Notifications</a>
+        <ul>
+          <li><a href="{{rootUrl}}/private">🏠 <span class="label">Home</span></a></li>
+          <li><a href="{{rootUrl}}/private/notifications">🔔 <span class="label">Notifications</span></a></li>
+          <li><a href="#">💬 <span class="label">Messages</span></a></li>
+        </ul>
       </nav>
-      {{{body}}}
+      <div id="main">
+        <header id="header">
+          ono sendai - private release v0.0.1
+        </header>
+        <div id="content">
+          {{{body}}}
+        </div>
+      </div>
     </div>
     <script src="/app.js"></script>
   </body>

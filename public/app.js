@@ -44,7 +44,7 @@ const app = {
 
         Http.onreadystatechange = () => {
             if (Http.readyState == 4 && Http.status == 200) {
-                console.log('bookmarked!');
+                console.log('posted!');
                 post.value = '';
                 cw.value = '';
             } else {
@@ -53,21 +53,53 @@ const app = {
         }
         return false;
     },
-    follow: () => {
-        const follow = document.getElementById('follow');
-
+    toggleFollow: (el, userId) => {
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/follow';
         Http.open("POST", proxyUrl);
         Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         Http.send(JSON.stringify({
-            handle: follow.value,
+            handle: userId,
         }));
 
         Http.onreadystatechange = () => {
             if (Http.readyState == 4 && Http.status == 200) {
                 console.log('followed!');
-                post.value = '';
+                const resRaw = Http.responseText;
+                const res = JSON.parse(resRaw);
+
+                if (res.isFollowed) {
+                    console.log('followed!');
+                    el.classList.add("active");
+                } else {
+                    console.log('unfollowed');
+                    el.classList.remove("active");
+                }
+
+                follow.value = '';
+            } else {
+                console.error('HTTP PROXY CHANGE', Http);
+            }
+        }
+        return false;
+    },    
+    lookup: () => {
+        const follow = document.getElementById('lookup');
+        const lookup_results = document.getElementById('lookup_results');
+
+        console.log('Lookup user', follow.value);
+
+        const Http = new XMLHttpRequest();
+        const proxyUrl ='/private/lookup?handle=' + encodeURIComponent(follow.value);
+        console.log(proxyUrl);
+
+        Http.open("GET", proxyUrl);
+        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        Http.send();
+
+        Http.onreadystatechange = () => {
+            if (Http.readyState == 4 && Http.status == 200) {
+                lookup_results.innerHTML = Http.responseText;
             } else {
                 console.error('HTTP PROXY CHANGE', Http);
             }

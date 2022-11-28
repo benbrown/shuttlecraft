@@ -17,8 +17,10 @@
     "glob": "^8.0.3",
     "markdown-it": "^13.0.1",
     "md5": "^2.3.0",
+    "moment": "^2.29.4",
     "node-fetch": "^3.3.0",
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "rss-generator": "^0.0.3"
   },
   "keywords": [
     "fediverse"

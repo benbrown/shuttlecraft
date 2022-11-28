@@ -2,7 +2,7 @@ import express from 'express';
 export const router = express.Router();
 import { sendAcceptMessage, validateSignature } from '../lib/users.js';
 import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification } from '../lib/account.js';
-import { createActivity, recordLike, recordUndoLike, recordBoost, noteExists} from '../lib/notes.js';
+import { createActivity, recordLike, recordUndoLike, recordBoost, noteExists, getActivity} from '../lib/notes.js';
 import debug from 'debug';
 const logger = debug('inbox');
 
@@ -67,7 +67,11 @@ router.post('/', function (req, res) {
                     if (noteExists(incomingRequest.object)) {
                         recordBoost(incomingRequest);
                     } else {
-                        console.log('BOOST INTO FEED!');
+                        // fetch the boosted post if it doesn't exist
+                        getActivity(incomingRequest.object);
+                        
+                        // log the boost itself to the activity stream
+                        createActivity(incomingRequest);
                     }
                     break;
                 case 'Create':

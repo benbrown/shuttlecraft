@@ -1,35 +1,28 @@
-<h1>Notifications</h1>
-
+<div class="stream">
+<header>🔔 Notifications</header>
 {{#each notifications}}
-    <div class="{{this.notification.type}}">
+    <div class="activity">
     {{#with this}}
         {{#isEq notification.type "Announce"}}
-            <div>🚀 <a href="{{../actor.id}}">{{../actor.name}}</a> boosted <a href="{{../note.id}}">your post</a></div>
+            <div class="notification">🚀 <a href="{{../actor.id}}">{{../actor.name}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
             <div class="preview">
                 {{{...note.content}}}
             </div>
         {{/isEq}}
         {{#isEq notification.type "Reply"}}
-            <div>💬 <a href="{{../actor.id}}">{{../actor.name}}</a> replied <a href="{{../original.id}}">your post</a></div>
-            <div class="preview">
-                {{{...note.content}}}
-            </div>
+            {{> note actor=../actor note=../note}}
         {{/isEq}}
         {{#isEq notification.type "Like"}}
-            <div>⭐️ <a href="{{../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a></div>
+            <div class="notification">⭐️ <a href="{{../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a>  {{timesince ../time}}</div>
             <div class="preview">
                 {{{...note.content}}}
             </div>
         {{/isEq}}
         {{#isEq notification.type "Follow"}}
-            <div>🤷🏽‍♂️ <a href="{{../actor.id}}">{{../actor.name}}</a> followed you</div>
-            <div class="preview">
-                <img src="{{../actor.icon.url}}" class="avatar">
-                {{{...actor.preferredUsername}}}
-                {{{...actor.id}}}
-            </div>
+            <div class="notification">🤷🏽‍♂️ <a href="{{../actor.id}}">{{../actor.name}}</a> followed you {{timesince ../time}}</div>
+            {{> byline actor=../actor}}
         {{/isEq}}
-
     {{/with}}
     </div>
 {{/each}}
+</div>

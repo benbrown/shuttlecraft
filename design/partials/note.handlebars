@@ -1,0 +1,33 @@
+        {{> byline actor=actor}}
+        <div class="content">
+            {{#if note.summary}}
+            content warning: {{note.summary}}
+            {{/if}}
+            {{{note.content}}}
+
+            {{#if note.inReplyTo}}
+            <p><a href="{{note.inReplyTo}}">Show Thread</a></p>
+            {{/if}}
+
+            {{#each note.attachment}}
+                <div class="attachment">
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
+                    {{/isVideo}}
+                </div>
+            {{/each}}
+            <footer>
+                <div class="tools">
+                    <button>↩️</button>
+                    <button>🔁</button>
+                    <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
+                        <span class="active">⭐️</span>
+                        <span class="inactive">☆</span>
+                    </button>
+                </div>
+                <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
+            </footer>
+        </div>

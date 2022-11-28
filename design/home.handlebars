@@ -1,0 +1,39 @@
+<h1>ben's single-player fediverse server</h1>
+
+<p>
+    Follow this site on Mastodon or other fediverse clients: 
+    <input type="text" value="{{user}}@{{domain}}" size="50"/>
+</p>
+
+<div class="stream">
+{{#each activitystream}}
+<div class="activity">
+    {{#with this}}
+        <div class="content">
+            {{#if summary}}
+            content warning: {{summary}}
+            {{/if}}
+            {{{content}}}
+
+            {{#if inReplyTo}}
+            <div><a href="{{inReplyTo}}">Show Thread</a></div>
+            {{/if}}
+
+            {{#each attachment}}
+                <div class="attachment">
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
+                    {{/isVideo}}
+                </div>
+            {{/each}}
+            <a href="{{url}}">#</a>
+        </div>
+    {{/with}}
+</div>
+{{/each}}
+
+<a href="/?offset={{next}}">More</a>
+</div>

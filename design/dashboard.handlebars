@@ -1,56 +1,26 @@
-<h1>Dashbort</h1>
-
-
 <div class="stream">
-<div class="composer">
+<div id="composer">
     <form onsubmit="return app.post()">
-        <textarea id="post"></textarea>
+        <textarea id="post" required placeholder="The coolest thing I can think of right now..."></textarea>
         <input type="text" id="cw" placeholder="content warning" />
-        <button type="submit">Post</button>
+        <button id="submit" type="submit">Post</button>
     </form>
 </div>
+<header>
+    🏠 Latest
+</header>
 {{#each activitystream}}
-<div class="activity">
     {{#with this}}
-        <div class="header">
-            <img src="{{actor.icon.url}}" class="avatar">
-            <div>
-                <div><strong>{{actor.preferredUsername}}</strong></div>
-                @{{actor.name}}
+    <div class="activity">
+        {{#if boost}}
+            <div class="boost">
+            🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
             </div>
-        </div>
-        <div class="content">
-            {{#if note.summary}}
-            content warning: {{note.summary}}
-            {{/if}}
-            {{{note.content}}}
+        {{/if}}
+        {{> note note=note}}
+    </div>
+{{/with}}
 
-            {{#if note.inReplyTo}}
-            <div><a href="{{note.inReplyTo}}">Show Thread</a></div>
-            {{/if}}
-
-            {{#each note.attachment}}
-                <div class="attachment">
-                    {{#isImage mediaType}}
-                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
-                    {{/isImage}}
-                    {{#isVideo mediaType}}
-                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
-                    {{/isVideo}}
-                </div>
-            {{/each}}
-            <div class="tools">
-                <button>↩️</button>
-                <button>🔁</button>
-                <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
-                    <span class="active">⭐️</span>
-                    <span class="inactive">☆</span>
-                </button>
-                <a href="{{note.url}}">#</a>
-            </div>
-        </div>
-    {{/with}}
-</div>
 {{/each}}
 
 <a href="/private?offset={{next}}">More</a>
@@ -59,9 +29,9 @@
     Followers: {{followers}}
     Following: {{following}}
 
-    <form onsubmit="return app.follow()">
-        <input type="text" placeholder="user@instance.town" id="follow"></textarea>
-        <button type="submit">follow</button>
+    <form onsubmit="return app.lookup()">
+        <input type="search" placeholder="user@instance.town" id="lookup" />
+        <div id="lookup_results"></div>
     </form>
 
 </div>
