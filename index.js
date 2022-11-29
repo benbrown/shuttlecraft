@@ -1,8 +1,10 @@
 import fs from 'fs';
-import { getAccount} from './lib/account.js';
 import express from 'express';
 import {create} from 'express-handlebars';
 
+import dotenv from 'dotenv';
+// load process.env from .env file
+dotenv.config();
 
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -10,11 +12,10 @@ import http from 'http';
 import basicAuth from 'express-basic-auth';
 import moment from 'moment';
 
+import { ensureAccount, getAccount} from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
-import {sendFollowMessage} from './lib/users.js';
 
-const config = JSON.parse(fs.readFileSync('./config.json'));
-const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = config;
+const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
 const app = express();
 const hbs = create({
@@ -73,34 +74,39 @@ function asyncAuthorizer(username, password, cb) {
   }
 }
 
+if (!USER || !DOMAIN || !PASS) {
+  console.error('Specify USER PASS and DOMAIN in the .env file');
+  process.exit(1);
+}
+
 
 // Load/create account file
 const myaccount = getAccount(USER, DOMAIN);
 
-// sendFollowMessage('https://hachyderm.io/users/benbrown');
+ensureAccount(USER, DOMAIN).then((myaccount) => {
+  console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
 
-console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
+  // set up globals
+  app.set('domain', DOMAIN);
+  app.set('account', myaccount);
 
-// set up globals
-app.set('domain', DOMAIN);
-app.set('account', myaccount);
+  // serve webfinger response
+  app.use('/.well-known/webfinger', cors(), webfinger);
+  // server user profile and follower list
+  app.use('/u', cors(), account);
 
-// serve webfinger response
-app.use('/.well-known/webfinger', cors(), webfinger);
-// server user profile and follower list
-app.use('/u', cors(), account);
+  // serve individual posts
+  app.use('/m', cors(), notes);
 
-// serve individual posts
-app.use('/m', cors(), notes);
+  // handle incoming requests
+  app.use('/api/inbox', cors(), inbox);
+  app.use('/api/outbox', cors(), outbox);
 
-// handle incoming requests
-app.use('/api/inbox', cors(), inbox);
-app.use('/api/outbox', cors(), outbox);
+  app.use('/private', cors({ credentials: true, origin: true }), basicUserAuth, admin);
+  app.use('/', cors(), publicFacing);
+  app.use('/', express.static('public/'));
 
-app.use('/private', cors({ credentials: true, origin: true }), basicUserAuth, admin);
-app.use('/', cors(), publicFacing);
-app.use('/', express.static('public/'));
-
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  http.createServer(app).listen(app.get('port'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+  });
 });

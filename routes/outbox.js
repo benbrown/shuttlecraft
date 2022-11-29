@@ -1,15 +1,11 @@
 import express from 'express';
 export const router = express.Router();
-import fs from 'fs';
-import path from 'path';
-import debug from 'debug';
-const logger = debug('inbox');
-import { INDEX } from '../lib/storage.js';
-import { getNote, getOutboxPosts } from '../lib/account.js';
-import { getNoteGuid, } from '../lib/notes.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const config = JSON.parse(fs.readFileSync('./config.json'));
-const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = config;
+import { getOutboxPosts } from '../lib/account.js';
+
+const { DOMAIN } = process.env;
 
 
 router.get('/', async (req, res) => {

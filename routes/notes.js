@@ -1,8 +1,10 @@
 import express from 'express';
 export const router = express.Router();
-import debug from 'debug';
 import { getNote } from '../lib/account.js';
-const logger = debug('notes');
+import dotenv from 'dotenv';
+dotenv.config();
+
+const { DOMAIN } = process.env;
 
 router.get('/:guid',  async (req, res) => {
   let guid = req.params.guid;
@@ -10,7 +12,7 @@ router.get('/:guid',  async (req, res) => {
     return res.status(400).send('Bad request.');
   }
   else {
-    const note = await getNote(guid);
+    const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);
     } else {

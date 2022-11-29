@@ -4,8 +4,7 @@ export const router = express.Router();
 import debug from 'debug';
 import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes } from '../lib/account.js';
 import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage } from '../lib/users.js';
-import e from 'express';
-const logger = debug('admin');
+const logger = debug('ono:admin');
 
 router.get('/', async (req, res) => {
 
@@ -21,19 +20,23 @@ router.get('/', async (req, res) => {
             n.boost = n.note;
             n.booster = n.actor;
             try {
-            n.note = await getActivity(n.boost.object);
-            const acct = await fetchUser(n.note.attributedTo);
-            n.actor = acct.actor;
+                n.note = await getActivity(n.boost.object);
+                const acct = await fetchUser(n.note.attributedTo);
+                n.actor = acct.actor;
             } catch(err) {
                 console.error('Could not fetch boosted post...', n.boost.object);
                 return;
             }
         }
 
-        n.actor.isFollowing = (following.find((f)=>f===n.actor.id));
+        if (n.actor) {
+            n.actor.isFollowing = (following.find((f)=>f===n.actor.id));
 
-        // determine if this post has already been liked
-        n.note.isLiked = (likes.find((l) => l.activityId === n.note.id)) ? true : false;
+            // determine if this post has already been liked
+            n.note.isLiked = (likes.find((l) => l.activityId === n.note.id)) ? true : false;
+        } else {
+            console.error('Post without an actor found', n.note.id);
+        }
 
         return n;
     })); 
@@ -55,11 +58,11 @@ router.get('/notifications', async (req, res) => {
         actor.isFollowing = (following.find((f)=>f===actor.id));
 
         if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
-            note = await getNote(getNoteGuid(notification.notification.object));
+            note = await getNote(notification.notification.object);
         }
         if (notification.notification.type === 'Reply') {
             note = await getActivity(notification.notification.object);
-            original = await getNote(getNoteGuid(note.inReplyTo));
+            original = await getNote(note.inReplyTo);
             note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
         }
         return {

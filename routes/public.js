@@ -1,13 +1,15 @@
 import express from 'express';
 export const router = express.Router();
-import fs from 'fs';
 import debug from 'debug';
 import RSS from 'rss-generator';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { getNote, isMyPost, getAccount, getOutboxPosts } from '../lib/account.js';
 import { getActivity, getNoteGuid } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
-const config = JSON.parse(fs.readFileSync('./config.json'));
-const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = config;
+
+const { USER, DOMAIN } = process.env;
 
 import { fetchUser } from '../lib/users.js';
 
@@ -16,7 +18,7 @@ const logger = debug('notes');
 const unrollThread = async (noteId, results = [], ascend=true, descend=true) => {
   let post, actor;
   if (isMyPost({id:noteId})) {
-    post = await getNote(getNoteGuid(noteId));
+    post = await getNote(noteId);
     let account = getAccount();
     actor = account.actor;
   } else {
@@ -86,7 +88,7 @@ router.get('/notes/:guid',  async (req, res) => {
     return res.status(400).send('Bad request.');
   }
   else {
-    const note = await getNote(guid);
+    const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);
     } else {

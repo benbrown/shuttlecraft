@@ -1,10 +1,10 @@
 import express from 'express';
 export const router = express.Router();
 import { sendAcceptMessage, validateSignature } from '../lib/users.js';
-import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification } from '../lib/account.js';
-import { createActivity, recordLike, recordUndoLike, recordBoost, noteExists, getActivity} from '../lib/notes.js';
+import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost } from '../lib/account.js';
+import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
 import debug from 'debug';
-const logger = debug('inbox');
+const logger = debug('ono:inbox');
 
 router.post('/', function (req, res) {
 
@@ -64,8 +64,8 @@ router.post('/', function (req, res) {
                 case 'Announce':
                     // determine if this is a boost on MY post
                     // or someone boosting a post into my feed. DIFFERENT!
-                    if (noteExists(incomingRequest.object)) {
-                        recordBoost(incomingRequest);
+                    if (isMyPost({id: incomingRequest.object})) {
+                        recordBoost(incomingRequest.object);
                     } else {
                         // fetch the boosted post if it doesn't exist
                         getActivity(incomingRequest.object);
