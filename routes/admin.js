@@ -1,10 +1,20 @@
-import { getActivity, getActivityStream, getNoteGuid } from '../lib/notes.js';
+import { getActivity, getActivitySince, getActivityStream, getNoteGuid } from '../lib/notes.js';
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
 import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes } from '../lib/account.js';
 import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage } from '../lib/users.js';
 const logger = debug('ono:admin');
+
+router.get('/poll', async(req, res) => {
+
+    const sincePosts = new Date(req.cookies.latestPost).getTime();
+    const sinceNotifications = parseInt(req.cookies.latestNotification);
+    const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
+    const { activitystream } = await getActivitySince(sincePosts, true);
+    res.json({newPosts: activitystream.length, newNotifications: notifications.length});
+
+});
 
 router.get('/', async (req, res) => {
 
@@ -76,12 +86,13 @@ router.get('/notifications', async (req, res) => {
     res.render('notifications', {layout: 'private', notifications: notifications.reverse()});
 });
 
-router.post('/post', async (req, res) => {
 
+router.post('/post', async (req, res) => {
+    // TODO: this is probably supposed to be a post to /api/outbox
     console.log('INCOMING POST', req.body);
     const post = await createNote(req.body.post, req.body.cw);
-    res.status(200).json(post);
-
+    // return html partial of the new post for insertion in the feed
+    res.status(200).render('partials/note', {note: post, actor: req.app.get('account'),layout: null});
 });
 
 

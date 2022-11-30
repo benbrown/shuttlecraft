@@ -1,5 +1,9 @@
 <div class="stream">
-<header>🔔 Notifications</header>
+<header>
+    <span>🔔 Notifications</span>
+    <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
+</header>
+
 {{#each notifications}}
     <div class="activity">
     {{#with this}}
@@ -26,3 +30,11 @@
     </div>
 {{/each}}
 </div>
+<script>
+    // take note of the most recent post date
+    {{#each notifications}} {{#if @first}} 
+    app.latestNotification("{{this.time}}");
+     {{/if}}{{/each}}
+   
+    app.pollForPosts();
+</script>

@@ -67,11 +67,20 @@ router.post('/', function (req, res) {
                     if (isMyPost({id: incomingRequest.object})) {
                         recordBoost(incomingRequest.object);
                     } else {
+
                         // fetch the boosted post if it doesn't exist
-                        getActivity(incomingRequest.object);
+                        try {
+                            getActivity(incomingRequest.object);
+                        } catch(err) {
+                            console.error('Could not fetch boosted post');
+                        }
                         
                         // log the boost itself to the activity stream
-                        createActivity(incomingRequest);
+                        try {
+                            createActivity(incomingRequest);
+                        } catch(err) {
+                            console.error('Could not fetch boosted post...');
+                        }
                     }
                     break;
                 case 'Create':

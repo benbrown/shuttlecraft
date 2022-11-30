@@ -1,6 +1,7 @@
 import fs from 'fs';
 import express from 'express';
 import {create} from 'express-handlebars';
+import cookieParser from 'cookie-parser';
 
 import dotenv from 'dotenv';
 // load process.env from .env file
@@ -23,6 +24,7 @@ const hbs = create({
         isVideo: (str,options) => { if (str && str.includes('video')) return options.fn(this); },
         isImage: (str,options)=> { if (str && str.includes('image'))   return options.fn(this); },
         isEq: (a,b,options)=> { if (a===b)   return options.fn(this); },
+        or: (a,b,options)=> { return a || b },
         timesince: (date) => { return moment(date).fromNow(); }
     }
 });
@@ -51,6 +53,7 @@ app.set('views', PATH_TO_TEMPLATES)
 app.set('view engine', 'handlebars');
 app.use(bodyParser.json({type: 'application/activity+json'})); // support json encoded bodies
 app.use(bodyParser.json({type: 'application/json'})); // support json encoded bodies
+app.use(cookieParser())
 
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 

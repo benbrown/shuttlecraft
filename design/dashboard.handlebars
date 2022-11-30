@@ -7,21 +7,23 @@
     </form>
 </div>
 <header>
-    🏠 Latest
+    <span>🏠 Latest</span>
+    <a href="/private" id="newPosts" class="unread" hidden></a>
 </header>
-{{#each activitystream}}
-    {{#with this}}
-    <div class="activity">
-        {{#if boost}}
-            <div class="boost">
-            🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+<div id="home_stream">
+    {{#each activitystream}}
+        {{#with this}}
+            <div class="activity">
+                {{#if boost}}
+                    <div class="boost">
+                    🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                    </div>
+                {{/if}}
+                {{> note note=note}}
             </div>
-        {{/if}}
-        {{> note note=note}}
-    </div>
-{{/with}}
-
-{{/each}}
+        {{/with}}
+    {{/each}}
+</div>
 
 <a href="/private?offset={{next}}">More</a>
 </div>
@@ -35,3 +37,11 @@
     </form>
 
 </div>
+<script>
+    // take note of the most recent post date
+    {{#each activitystream}} {{#if @first}} 
+    app.latestPost("{{or this.boost.published this.note.published}}");
+     {{/if}}{{/each}}
+   
+    app.pollForPosts();
+</script>

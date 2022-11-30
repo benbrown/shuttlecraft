@@ -9,13 +9,14 @@
     <meta name="apple-mobile-web-app-title" content="ono sendai" />
     <meta name="apple-mobile-web-app-status-bar-style" content="white" />
     <meta name="theme-color" content="#ffffff" />
+    <script src="/app.js"></script>
   </head>
   <body>
     <div id="wrapper">
       <nav class="toolbar">
         <ul>
-          <li><a href="{{rootUrl}}/private">🏠 <span class="label">Home</span></a></li>
-          <li><a href="{{rootUrl}}/private/notifications">🔔 <span class="label">Notifications</span></a></li>
+          <li><a href="{{rootUrl}}/private">🏠 <span class="label">Home</span></a><span class="badge" id="newPostsBadge" hidden></span></li>
+          <li><a href="{{rootUrl}}/private/notifications">🔔 <span class="label">Notifications</span></a><span class="badge" id="newNotificationsBadge" hidden></span></li>
           <li><a href="#">💬 <span class="label">Messages</span></a></li>
         </ul>
       </nav>
@@ -28,6 +29,5 @@
         </div>
       </div>
     </div>
-    <script src="/app.js"></script>
   </body>
 </html>
