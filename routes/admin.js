@@ -4,7 +4,12 @@ export const router = express.Router();
 import debug from 'debug';
 import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes } from '../lib/account.js';
 import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage } from '../lib/users.js';
+import { INDEX } from '../lib/storage.js';
 const logger = debug('ono:admin');
+
+router.get('/index', async(req, res) => {
+    res.json(INDEX);
+});
 
 router.get('/poll', async(req, res) => {
 

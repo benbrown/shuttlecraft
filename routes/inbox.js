@@ -6,7 +6,7 @@ import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } 
 import debug from 'debug';
 const logger = debug('ono:inbox');
 
-router.post('/', function (req, res) {
+router.post('/', async (req, res) => {
 
     let domain = req.app.get('domain');
     const actor = new URL(req.body.actor);
@@ -35,6 +35,7 @@ router.post('/', function (req, res) {
                     sendAcceptMessage(incomingRequest);
                     break;
                 case 'Undo':
+                    console.log('Incoming undo');
                     switch (incomingRequest.object.type) {
                         case 'Follow':
                             logger('Incoming unfollow request');
@@ -59,9 +60,11 @@ router.post('/', function (req, res) {
                     }
                     break;
                 case 'Like':
+                    console.log('Incoming like');
                     recordLike(incomingRequest);
                     break;
                 case 'Announce':
+                    console.log('Incoming boost');
                     // determine if this is a boost on MY post
                     // or someone boosting a post into my feed. DIFFERENT!
                     if (isMyPost({id: incomingRequest.object})) {
@@ -70,14 +73,14 @@ router.post('/', function (req, res) {
 
                         // fetch the boosted post if it doesn't exist
                         try {
-                            getActivity(incomingRequest.object);
+                            await getActivity(incomingRequest.object);
                         } catch(err) {
                             console.error('Could not fetch boosted post');
                         }
                         
                         // log the boost itself to the activity stream
                         try {
-                            createActivity(incomingRequest);
+                            await createActivity(incomingRequest);
                         } catch(err) {
                             console.error('Could not fetch boosted post...');
                         }
@@ -95,7 +98,7 @@ router.post('/', function (req, res) {
                     // - a mention from a stranger (notification only)
                     if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
-                        createActivity(incomingRequest.object);
+                        await createActivity(incomingRequest.object);
                         addNotification({
                             type: 'Reply',
                             actor: incomingRequest.object.attributedTo,
@@ -105,7 +108,7 @@ router.post('/', function (req, res) {
                         // TODO: detect mentions!!
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
-                        createActivity(incomingRequest.object);
+                        await createActivity(incomingRequest.object);
                     } else {
                         // this is a reply
                         // from a following
@@ -114,7 +117,7 @@ router.post('/', function (req, res) {
                         // TODO: we may want to discard things NOT from followings
                         // since they may never be seen
                         // and we can always go fetch them...
-                        createActivity(incomingRequest.object);
+                        await createActivity(incomingRequest.object);
                     }
 
                     break;
