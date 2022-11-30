@@ -21,6 +21,47 @@ router.get('/poll', async(req, res) => {
 
 });
 
+
+router.get('/followers', async(req, res) => {
+    const following = await Promise.all(getFollowing().map(async (f) => {
+        const acct = await fetchUser(f);
+        acct.actor.isFollowing = true; // duh
+        return acct.actor;
+    }));
+    const followers = await Promise.all(getFollowers().map(async (f) => {
+        const acct = await fetchUser(f);
+        acct.actor.isFollowing = following.find((p) => p.id === f);
+        return acct.actor;
+    }));
+
+    if (req.query.json) {
+        res.json(notes);
+    } else {
+        res.render('followers', {layout: 'private', followers: followers, following: following, followersCount: followers.length, followingCount: following.length});
+    }
+
+});
+
+router.get('/following', async(req, res) => {
+    const following = await Promise.all(getFollowing().map(async (f) => {
+        const acct = await fetchUser(f);
+        acct.actor.isFollowing = true; // duh
+        return acct.actor;
+    }));
+    const followers = await Promise.all(getFollowers().map(async (f) => {
+        const acct = await fetchUser(f);
+        acct.actor.isFollowing = following.find((p) => p.id === f);
+        return acct.actor;
+    }));
+
+    if (req.query.json) {
+        res.json(notes);
+    } else {
+        res.render('following', {layout: 'private', followers: followers, following: following, followersCount: followers.length, followingCount: following.length});
+    }
+});
+
+
 router.get('/', async (req, res) => {
 
     const followers = await getFollowers();
@@ -59,7 +100,7 @@ router.get('/', async (req, res) => {
     if (req.query.json) {
         res.json(notes);
     } else {
-        res.render('dashboard', {layout: 'private', next: next, activitystream: notes, followers: followers.length, following: following.length});
+        res.render('dashboard', {layout: 'private', next: next, activitystream: notes, followers: followers, following: following, followersCount: followers.length, followingCount: following.length});
     }
 });
 
