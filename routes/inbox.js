@@ -1,7 +1,7 @@
 import express from 'express';
 export const router = express.Router();
 import { sendAcceptMessage, validateSignature } from '../lib/users.js';
-import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost } from '../lib/account.js';
+import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost, isBlocked } from '../lib/account.js';
 import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
 import debug from 'debug';
 const logger = debug('ono:inbox');
@@ -21,11 +21,18 @@ router.post('/', async (req, res) => {
     }
 
     if (incomingRequest) {
-        // FIRST, validate the actor
+        // TODO: handle this better
+        // should remove post/user if found
         if (incomingRequest.type==='Delete') {
             return res.status(200).send();
         }
-        if (validateSignature(req.body.actor, req)) {
+
+        if (isBlocked(incomingRequest.actor)) {
+            return res.status(403).send('');
+        }
+
+        // FIRST, validate the actor
+        if (validateSignature(incomingRequest.actor, req)) {
             switch (incomingRequest.type) {
                 case 'Follow':
                     logger('Incoming follow request');
