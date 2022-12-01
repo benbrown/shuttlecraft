@@ -162,6 +162,16 @@ Configure nginx with a certbot ssl certificate.
 
 Configure your domain to proxy requests to the localhost port.
 
+### Basic: Container
+
+(Experimental | tested with Docker only | Data will NOT currently persist)
+
+Clone the repo to your container host
+
+Build the container `docker build . -t onosendai`
+
+Run the container `docker run --env=USERNAME=yourusername --env=PASS=yourpass --env=DOMAIN=your.domain --env=PORT=3000 -p 3000:3000 -d onosendai:latest`
+
 ## Login
 
 To login, visit `https://yourdomain.com/private` and provide the username and password from your .env file
