@@ -2,8 +2,8 @@ import { getActivity, getActivitySince, getActivityStream, getNoteGuid } from '.
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
-import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes } from '../lib/account.js';
-import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage } from '../lib/users.js';
+import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts } from '../lib/account.js';
+import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage } from '../lib/users.js';
 import { INDEX } from '../lib/storage.js';
 const logger = debug('ono:admin');
 
@@ -67,6 +67,7 @@ router.get('/', async (req, res) => {
     const followers = await getFollowers();
     const following = await getFollowing();
     const likes = await getLikes();
+    const boosts = await getBoosts();
     const offset = parseInt(req.query.offset) || 0;
     const {activitystream, next} = await getActivityStream(10, offset);
 
@@ -90,6 +91,8 @@ router.get('/', async (req, res) => {
 
             // determine if this post has already been liked
             n.note.isLiked = (likes.find((l) => l.activityId === n.note.id)) ? true : false;
+            n.note.isBoosted = (boosts.find((l) => l.activityId === n.note.id)) ? true : false;
+
         } else {
             console.error('Post without an actor found', n.note.id);
         }
@@ -201,4 +204,31 @@ router.post('/like', async (req, res) => {
         res.status(200).json({isLiked: false});
     }
     writeLikes(likes);
+});
+
+router.post('/boost', async (req, res) => {
+    console.log('INCOMING like', req.body);
+    const activityId = req.body.post;
+    let boosts = getBoosts();
+    if (!boosts.find((l)=>l.activityId===activityId)) {
+
+        const guid = await sendBoostMessage(activityId);
+
+        boosts.push({
+            id: guid,
+            activityId,
+        });
+        res.status(200).json({isBoosted: true});
+    } else {
+        // extract so we can send an undo record
+        const recordToUndo = boosts.find((l)=>l.activityId===activityId);
+        await sendUndoBoostMessage(activityId, recordToUndo.id);
+
+        // filter out the one we are removing
+        boosts = boosts.filter((l)=>l.activityId!==activityId);
+
+        // send status back
+        res.status(200).json({isBoosted: false});
+    }
+    writeBoosts(boosts);
 });

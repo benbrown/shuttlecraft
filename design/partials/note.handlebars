@@ -22,7 +22,10 @@
             <footer>
                 <div class="tools">
                     <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>↩️</button>
-                    <button>🔁</button>
+                    <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "{{note.id}}")'>
+                        <span class="active">🚀</span>
+                        <span class="inactive">🔁</span>
+                    </button>
                     <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
                         <span class="active">⭐️</span>
                         <span class="inactive">☆</span>

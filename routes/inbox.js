@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
                     // determine if this is a boost on MY post
                     // or someone boosting a post into my feed. DIFFERENT!
                     if (isMyPost({id: incomingRequest.object})) {
-                        recordBoost(incomingRequest.object);
+                        recordBoost(incomingRequest);
                     } else {
 
                         // fetch the boosted post if it doesn't exist

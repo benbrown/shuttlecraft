@@ -87,10 +87,33 @@ const app = {
             console.error(err);
         });
     },
-    toggleLike: (el, postId) => {
-        const post = document.getElementById('post');
-        const cw = document.getElementById('cw');
+    toggleBoost: (el, postId) => {
+        const Http = new XMLHttpRequest();
+        const proxyUrl ='/private/boost';
+        Http.open("POST", proxyUrl);
+        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        Http.send(JSON.stringify({
+            post: postId,
+        }));
 
+        Http.onreadystatechange = () => {
+            if (Http.readyState == 4 && Http.status == 200) {
+                const resRaw = Http.responseText;
+                const res = JSON.parse(resRaw);
+                if (res.isBoosted) {
+                    console.log('boosted!');
+                    el.classList.add("active");
+                } else {
+                    console.log('unboosted');
+                    el.classList.remove("active");
+                }
+            } else {
+                console.error('HTTP PROXY CHANGE', Http);
+            }
+        }
+        return false;
+    },
+    toggleLike: (el, postId) => {
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/like';
         Http.open("POST", proxyUrl);
