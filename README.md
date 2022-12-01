@@ -88,13 +88,13 @@ Fediverse actor ID.
 In the .env file, put:
 
 ```
-USER=yourusername
+USERNAME=yourusername
 PASS=yourpasswordforadmintools
 DOMAIN=yourdomainname
 PORT=3000
 ```
 
-USER and PASS are required to login to the private dashboard tools.
+USERNAME and PASS are required to login to the private dashboard tools.
 
 When you launch the app for the first time, these values will be used
 to create the `.data/account.json` file which is the source of your

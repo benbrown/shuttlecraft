@@ -9,7 +9,7 @@ import { getNote, isMyPost, getAccount, getOutboxPosts } from '../lib/account.js
 import { getActivity, getNoteGuid } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
 
-const { USER, DOMAIN } = process.env;
+const { USERNAME, DOMAIN } = process.env;
 
 import { fetchUser } from '../lib/users.js';
 
@@ -53,7 +53,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {total, posts } = await getOutboxPosts(offset);
-  res.render('home', { activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USER});
+  res.render('home', { activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USERNAME});
 });
 
 
@@ -61,7 +61,7 @@ router.get('/feed', async (req, res) => {
   const {total, posts } = await getOutboxPosts(0);
 
   var feed = new RSS({
-    title: `${USER}@${DOMAIN}`,
+    title: `${USERNAME}@${DOMAIN}`,
     site_url: DOMAIN,
     pubDate: posts[0].published,
   });
@@ -105,7 +105,7 @@ router.get('/notes/:guid',  async (req, res) => {
             return 0;
         }
       });
-      res.render('note', { activitystream: notes, layout: 'public', domain: DOMAIN, user: USER  });        
+      res.render('note', { activitystream: notes, layout: 'public', domain: DOMAIN, user: USERNAME  });        
     }
   }
 });

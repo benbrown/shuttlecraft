@@ -17,7 +17,7 @@ import { ensureAccount, getAccount} from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
 import { getUsername } from './lib/users.js';
 
-const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
+const { USERNAME, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
 const app = express();
 const hbs = create({
@@ -79,16 +79,14 @@ function asyncAuthorizer(username, password, cb) {
   }
 }
 
-if (!USER || !DOMAIN || !PASS) {
+if (!USERNAME || !DOMAIN || !PASS) {
   console.error('Specify USER PASS and DOMAIN in the .env file');
   process.exit(1);
 }
 
 
 // Load/create account file
-const myaccount = getAccount(USER, DOMAIN);
-
-ensureAccount(USER, DOMAIN).then((myaccount) => {
+ensureAccount(USERNAME, DOMAIN).then((myaccount) => {
   console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
 
   // set up globals
