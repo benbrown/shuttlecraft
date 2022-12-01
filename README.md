@@ -17,6 +17,7 @@ Including features:
 
 Not yet supported:
 - DMs
+- Incoming updates and deletes
 - Media uploads
 - Mentions
 - Boost/like counts
@@ -50,6 +51,10 @@ shard the index into multiple files and page through it, etc. But.
 ALSO, there is nothing fancy happening in terms of queuing or rate
 limiting outgoing posts. When you post, it will send out HTTP requests
 right away, all at once. This may cause issues.
+
+## Acknowledgements
+
+This is mostly 
 
 ## Bug Reports
 
