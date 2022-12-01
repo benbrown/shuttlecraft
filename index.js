@@ -68,7 +68,7 @@ let basicUserAuth = basicAuth({
 
 function asyncAuthorizer(username, password, cb) {
   let isAuthorized = false;
-  const isPasswordAuthorized = username === USER;
+  const isPasswordAuthorized = username === USERNAME;
   const isUsernameAuthorized = password === PASS;
   isAuthorized = isPasswordAuthorized && isUsernameAuthorized;
   if (isAuthorized) {
