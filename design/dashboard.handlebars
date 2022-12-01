@@ -1,11 +1,5 @@
 <div class="stream">
-<div id="composer">
-    <form onsubmit="return app.post()">
-        <textarea id="post" required placeholder="The coolest thing I can think of right now..."></textarea>
-        <input type="text" id="cw" placeholder="content warning" />
-        <button id="submit" type="submit">Post</button>
-    </form>
-</div>
+{{> composer}}
 <header>
     <span>🏠 Latest</span>
     <a href="/private" id="newPosts" class="unread" hidden></a>

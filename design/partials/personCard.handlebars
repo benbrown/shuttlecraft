@@ -1,8 +1,11 @@
-<div class="byline">
+<div class="personCard">
     <a href="{{actor.url}}"><img src="{{actor.icon.url}}" class="avatar"></a>
     <div>
         <a href="{{actor.url}}" class="author">{{actor.name}}</a>
-        <span class="handle">{{getUsername actor.id}}</span>
+        <span class="handle">@{{actor.preferredUsername}}</span>
+
+        {{{summary}}}
+
     </div>
     <div>
         {{#if actor.isFollowing}}{{else}}

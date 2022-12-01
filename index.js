@@ -15,6 +15,7 @@ import moment from 'moment';
 
 import { ensureAccount, getAccount} from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
+import { getUsername } from './lib/users.js';
 
 const { USER, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
@@ -25,7 +26,8 @@ const hbs = create({
         isImage: (str,options)=> { if (str && str.includes('image'))   return options.fn(this); },
         isEq: (a,b,options)=> { if (a===b)   return options.fn(this); },
         or: (a,b,options)=> { return a || b },
-        timesince: (date) => { return moment(date).fromNow(); }
+        timesince: (date) => { return moment(date).fromNow(); },
+        getUsername: (user) => { const {username, targetDomain} = getUsername(user); return `${username}@${targetDomain}`; },
     }
 });
 

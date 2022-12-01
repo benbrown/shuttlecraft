@@ -4,6 +4,7 @@ import { sendAcceptMessage, validateSignature } from '../lib/users.js';
 import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost, isBlocked } from '../lib/account.js';
 import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
 import debug from 'debug';
+import { isIndexed } from '../lib/storage.js';
 const logger = debug('ono:inbox');
 
 router.post('/', async (req, res) => {
@@ -105,12 +106,16 @@ router.post('/', async (req, res) => {
                     // - a mention from a stranger (notification only)
                     if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
-                        await createActivity(incomingRequest.object);
-                        addNotification({
-                            type: 'Reply',
-                            actor: incomingRequest.object.attributedTo,
-                            object: incomingRequest.object.id
-                        });
+                        if (!isIndexed(incomingRequest.object.id)) {
+                            await createActivity(incomingRequest.object);
+                            addNotification({
+                                type: 'Reply',
+                                actor: incomingRequest.object.attributedTo,
+                                object: incomingRequest.object.id
+                            });
+                        } else {
+                            console.log('already created reply');
+                        }
                     } else if (false) {
                         // TODO: detect mentions!!
                     } else if (!incomingRequest.object.inReplyTo) {

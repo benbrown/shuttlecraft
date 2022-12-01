@@ -6,7 +6,7 @@
             {{{note.content}}}
 
             {{#if note.inReplyTo}}
-            <p><a href="{{note.inReplyTo}}">Show Thread</a></p>
+            <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
             {{/if}}
 
             {{#each note.attachment}}
@@ -21,7 +21,7 @@
             {{/each}}
             <footer>
                 <div class="tools">
-                    <button>↩️</button>
+                    <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>↩️</button>
                     <button>🔁</button>
                     <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
                         <span class="active">⭐️</span>

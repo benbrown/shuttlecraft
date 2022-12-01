@@ -136,9 +136,9 @@ router.get('/notifications', async (req, res) => {
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
     console.log('INCOMING POST', req.body);
-    const post = await createNote(req.body.post, req.body.cw);
+    const post = await createNote(req.body.post, req.body.cw,  req.body.inReplyTo);
     // return html partial of the new post for insertion in the feed
-    res.status(200).render('partials/note', {note: post, actor: req.app.get('account'),layout: null});
+    res.status(200).render('partials/note', {note: post, actor: req.app.get('account').actor,layout: null});
 });
 
 
@@ -156,18 +156,24 @@ router.get('/lookup', async (req, res) => {
 router.post('/follow', async (req, res) => {
 
     console.log('INCOMING follow', req.body);
-    const { actor } = await fetchUser(req.body.handle);
-    if (actor) {
-        const following = await getFollowing();
-        if (!following.find((f)=>f===actor.id)) {
-            const post = await sendFollowMessage(actor.id);
+    const handle = req.body.handle;
+    if (handle) {
+        if (handle === req.app.get('account').actor.id) {
+            console.log('Self follow DENIED!');
+            return res.status(200).json({isFollowed: false});
         }
+        const { actor } = await fetchUser(handle);
+        if (actor) {
+            const following = await getFollowing();
+            if (!following.find((f)=>f===actor.id)) {
+                const post = await sendFollowMessage(actor.id);
+            }
 
-        // TODO: send unfollow, etc
-        res.status(200).json({isFollowed: true});
-    } else {
-        res.status(404).send('not found');
+            // TODO: send unfollow, etc
+            return res.status(200).json({isFollowed: true});
+        }
     }
+    res.status(404).send('not found');
 });
 
 router.post('/like', async (req, res) => {

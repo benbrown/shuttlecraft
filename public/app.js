@@ -119,6 +119,7 @@ const app = {
     post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
+        const inReplyTo = document.getElementById('inReplyTo');
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -127,6 +128,7 @@ const app = {
         Http.send(JSON.stringify({
             post: post.value,
             cw: cw.value,
+            inReplyTo: inReplyTo.value,
         }));
 
         Http.onreadystatechange = () => {
@@ -148,6 +150,13 @@ const app = {
             }
         }
         return false;
+    },
+    replyTo: (activityId, mention) => {
+        const inReplyTo = document.getElementById('inReplyTo');
+        const post = document.getElementById('post');
+        post.value = `@${ mention } `;
+        inReplyTo.value = activityId;
+        post.focus();
     },
     toggleFollow: (el, userId) => {
         const Http = new XMLHttpRequest();
@@ -171,8 +180,6 @@ const app = {
                     console.log('unfollowed');
                     el.classList.remove("active");
                 }
-
-                follow.value = '';
             } else {
                 console.error('HTTP PROXY CHANGE', Http);
             }
