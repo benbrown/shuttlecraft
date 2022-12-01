@@ -1,5 +1,3 @@
-data/*.json
-data/**/*.json
+.data/
 node_modules/
-config.json
 .env
