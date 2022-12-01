@@ -69,6 +69,9 @@ Install node dependencies:
 
 You are ready to run! But first, set your configuration.
 
+When you are ready to start, run:
+`npm start`
+
 ## Config
 
 Initial configuration of your instance is done by editing the
@@ -99,6 +102,14 @@ HOWEVER PLEASE NOTE that your ID is a real URL, and it must reflect
 the real URL served by this app. Also note that it is embedded in
 every post you write - so if you change values in the `account.json` file,
 your previous posts may break.
+
+## Debugging
+
+If you want more logging or want to see what is happening in the background,
+enable debugging by adding DEBUG=ono:* to the .env file, or starting the app
+with:
+
+`DEBUG=ono:* npm start`
 
 ## Where is my data?
 
