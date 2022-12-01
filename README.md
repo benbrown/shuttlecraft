@@ -54,7 +54,8 @@ right away, all at once. This may cause issues.
 
 ## Acknowledgements
 
-This is mostly 
+This project owes a great debt to @dariusk's excellent [express-activitypub](https://github.com/dariusk/express-activitypub) repo.
+My work started from his reference implementation, and there are many lines of code cribbed from his work.
 
 ## Bug Reports
 
