@@ -37,6 +37,20 @@ wide array of other instances -- not all of which is necessary or
 relevant to you. As a result, operating this software on a small basis
 may result in unexpected amounts of incoming traffic.
 
+## Warning: Known limitations!
+
+My goal with this app is to not use any major external services.
+As a result, all data is written as PLAIN TEXT FILES to the disk.
+
+Right now, the app builds an IN-MEMORY INDEX of EVERY SINGLE POST.
+This will work for several thousand posts, but ... maybe not for 10,000s of posts.
+I'm not sure how far it will go. I have ideas about being able to
+shard the index into multiple files and page through it, etc. But.
+
+ALSO, there is nothing fancy happening in terms of queuing or rate
+limiting outgoing posts. When you post, it will send out HTTP requests
+right away, all at once. This may cause issues.
+
 ## Bug Reports
 
 Please file bugs on Github:
@@ -152,3 +166,8 @@ Customize the backend:
 - Templates are in `design/dashboard.handlebars` and `design/notifications.handlebars` and `design/layouts/private.handlebars`
 - Some common components in `design/partials`
 - CSS in `public/css/secret.css`
+
+To block users or instances:
+- Add an entry to the file at `.data/blocks`
+- You can block a user using their actor ID (something like https://foo.bar/@jerk) or their entire domain (https://foo.bar/)
+- Restart the app 
