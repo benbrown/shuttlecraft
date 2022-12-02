@@ -95,8 +95,8 @@ router.get('/notes/:guid',  async (req, res) => {
 
       const notes = await unrollThread(note.id);
       notes.sort((a, b) => {
-        const ad = new Date(a.published).getTime();
-        const bd = new Date(b.published).getTime();
+        const ad = new Date(a.note.published).getTime();
+        const bd = new Date(b.note.published).getTime();
         if (ad > bd) {
             return 1;
         } else if (ad < bd) {
