@@ -13,9 +13,10 @@ import http from 'http';
 import basicAuth from 'express-basic-auth';
 import moment from 'moment';
 
-import { ensureAccount, getAccount} from './lib/account.js';
+import { ensureAccount } from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
-import { getUsername } from './lib/users.js';
+import { getUsername, fetchOutbox, fetchUser} from './lib/users.js';
+import fetch from 'node-fetch';
 
 const { USERNAME, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
