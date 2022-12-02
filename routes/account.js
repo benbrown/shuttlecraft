@@ -7,23 +7,19 @@ router.get('/:name', function (req, res) {
   let name = req.params.name;
   if (!name) {
     return res.status(400).send('Bad request.');
-  }
-  else {
+  } else {
     let domain = req.app.get('domain');
     let username = name;
     name = `https://${domain}/u/${name}`;
 
     if (name != req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
-    }
-    else {
-      let tempActor = req.app.get('account').actor;
-      // Added this followers URI for Pleroma compatibility, see https://github.com/dariusk/rss-to-activitypub/issues/11#issuecomment-471390881
-      // New Actors should have this followers URI but in case of migration from an old version this will add it in on the fly
-      if (tempActor.followers === undefined) {
-        tempActor.followers = `https://${domain}/u/${username}/followers`;
+    } else {
+      if (req.headers.accept?.includes('application/ld+json; profile="https://www.w3.org/ns/activitystreams"')) {
+        res.json(req.app.get('account').actor);
+      } else {
+        res.redirect(req.app.get('account').actor.url || `https://${domain}/`);
       }
-      res.json(tempActor);
     }
   }
 });
