@@ -1,10 +1,10 @@
-import { getActivity, getActivitySince, getActivityStream, getNoteGuid } from '../lib/notes.js';
+import { getActivity, getActivitySince, getActivityStream, getLikesForNote } from '../lib/notes.js';
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
 import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts } from '../lib/account.js';
 import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage } from '../lib/users.js';
-import { INDEX } from '../lib/storage.js';
+import { INDEX, isMyPost } from '../lib/storage.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async(req, res) => {
@@ -96,6 +96,14 @@ router.get('/', async (req, res) => {
         } else {
             console.error('Post without an actor found', n.note.id);
         }
+
+        // if (isMyPost(n.note.id)) {
+        //     const stats = getLikesForNote(n.note.id);
+        //     n.stats = {
+        //         likes: stats.likes.length,
+        //         boosts: stats.boosts.length,
+        //     }
+        // }
 
         return n;
     })); 
