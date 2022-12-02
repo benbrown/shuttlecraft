@@ -1,10 +1,13 @@
 FROM node:16
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Bundle app source
 COPY . .
+
+#Create volume for persistent data
+VOLUME /app/.data
 
 RUN npm install
 # If you are building your code for production
