@@ -2,8 +2,8 @@ import { getActivity, getActivitySince, getActivityStream, getLikesForNote } fro
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
-import { getFollowers, getFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts } from '../lib/account.js';
-import { sendFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage } from '../lib/users.js';
+import { getFollowers, getFollowing, writeFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts, isFollowing } from '../lib/account.js';
+import { sendFollowMessage, sendUndoFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage } from '../lib/users.js';
 import { INDEX, isMyPost } from '../lib/storage.js';
 const logger = debug('ono:admin');
 
@@ -24,7 +24,7 @@ router.get('/poll', async(req, res) => {
 
 router.get('/followers', async(req, res) => {
     const following = await Promise.all(getFollowing().map(async (f) => {
-        const acct = await fetchUser(f);
+        const acct = await fetchUser(f.actorId);
         acct.actor.isFollowing = true; // duh
         return acct.actor;
     }));
@@ -44,7 +44,7 @@ router.get('/followers', async(req, res) => {
 
 router.get('/following', async(req, res) => {
     const following = await Promise.all(getFollowing().map(async (f) => {
-        const acct = await fetchUser(f);
+        const acct = await fetchUser(f.actorId);
         acct.actor.isFollowing = true; // duh
         return acct.actor;
     }));
@@ -87,7 +87,7 @@ router.get('/', async (req, res) => {
         }
 
         if (n.actor) {
-            n.actor.isFollowing = (following.find((f)=>f===n.actor.id));
+            n.actor.isFollowing = isFollowing(n.actor.id);
 
             // determine if this post has already been liked
             n.note.isLiked = (likes.find((l) => l.activityId === n.note.id)) ? true : false;
@@ -116,13 +116,12 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/notifications', async (req, res) => {
-    const following = await getFollowing();
     const likes = await getLikes();
     const notifications = await Promise.all(getNotifications().map(async (notification) => {
         const {actor} = await fetchUser(notification.notification.actor);
         let note, original;
         // TODO: check if user is in following list
-        actor.isFollowing = (following.find((f)=>f===actor.id));
+        actor.isFollowing = isFollowing(actor.id);
 
         if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
             note = await getNote(notification.notification.object);
@@ -156,8 +155,7 @@ router.post('/post', async (req, res) => {
 router.get('/lookup', async (req, res) => {
     const { actor } = await fetchUser(req.query.handle);
     if (actor) {
-        const following = await getFollowing();
-        actor.isFollowing = (following.find((f)=>f===actor.id));
+        actor.isFollowing = isFollowing(actor.id);
         res.status(200).render('partials/byline',{actor, layout: null});
     } else {
         res.status(200).send('No user found');
@@ -175,13 +173,27 @@ router.post('/follow', async (req, res) => {
         }
         const { actor } = await fetchUser(handle);
         if (actor) {
-            const following = await getFollowing();
-            if (!following.find((f)=>f===actor.id)) {
-                const post = await sendFollowMessage(actor.id);
-            }
+            const status = isFollowing(actor.id);
+            if (!status) {
+                const guid = await sendFollowMessage(actor.id);
 
-            // TODO: send unfollow, etc
-            return res.status(200).json({isFollowed: true});
+                return res.status(200).json({isFollowed: true});
+
+            } else {
+                // send unfollow
+                await sendUndoFollowMessage(actor.id, status.id);
+
+                // todo: this should just be a function like removeFollowing
+
+                let following = getFollowing();
+
+                // filter out the one we are removing
+                following = following.filter((l)=>l.actorId!==actor.id);
+       
+                writeFollowing(following);
+
+                return res.status(200).json({isFollowed: false});
+            }
         }
     }
     res.status(404).send('not found');
@@ -192,7 +204,6 @@ router.post('/like', async (req, res) => {
     const activityId = req.body.post;
     let likes = getLikes();
     if (!likes.find((l)=>l.activityId===activityId)) {
-
         const guid = await sendLikeMessage(activityId);
 
         likes.push({

@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
                     switch (incomingRequest.object.type) {
                         case 'Follow':
                             logger('Incoming follow request');
-                            follow(incomingRequest.actor);
+                            follow(incomingRequest);
                             break;
                         default:
                             console.log('Unknown undo type');
