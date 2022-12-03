@@ -1,0 +1,53 @@
+<div class="profile stream">
+    <div class="profileHeader">
+        {{#if actor.image}}
+            <img src="{{actor.image.url}}">
+        {{/if}}
+    </div>
+    <div class="profileBody">
+        <a href="{{or actor.url actor.id}}"><img src="{{actor.icon.url}}" class="avatar"></a>
+        <div class="profile">
+            <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
+            <span class="handle">{{getUsername actor.id}}</span>
+            {{{actor.summary}}}
+
+            {{#if actor.attachment}}
+                <dl>
+                {{#each actor.attachment}}
+                    <dt>
+                        {{this.name}}
+                    </dt>
+                    <dd>
+                        {{{this.value}}}
+                    </dd>
+                {{/each}}
+                </dl>
+            {{/if}}
+        </div>
+        <div class="tools">
+            <button class="follow {{#if actor.isFollowing}}active{{/if}}" onclick='return app.toggleFollow(this, "{{actor.id}}")'>
+                <span class="active">Unfollow</span>
+                <span class="inactive">Follow</span>
+            </button>
+        </div>
+    </div>
+    <header>
+        <span>🏠 Latest</span>
+        <a href="/private" id="newPosts" class="unread" hidden></a>
+    </header>
+    <div id="profile_stream">
+        {{#each activitystream}}
+            {{#with this}}
+                <div class="activity">
+                    {{#if boost}}
+                        <div class="boost">
+                        🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                        </div>
+                    {{/if}}
+                    {{> note note=note}}
+                </div>
+            {{/with}}
+        {{/each}}
+    </div>
+
+</div>

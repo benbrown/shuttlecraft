@@ -8,7 +8,7 @@
     <div class="activity">
     {{#with this}}
         {{#isEq notification.type "Announce"}}
-            <div class="notification">🚀 <a href="{{../actor.id}}">{{../actor.name}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
+            <div class="notification">🚀 <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
             <div class="preview">
                 {{{...note.content}}}
             </div>
@@ -17,13 +17,13 @@
             {{> note actor=../actor note=../note}}
         {{/isEq}}
         {{#isEq notification.type "Like"}}
-            <div class="notification">⭐️ <a href="{{../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a>  {{timesince ../time}}</div>
+            <div class="notification">⭐️ <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a>  {{timesince ../time}}</div>
             <div class="preview">
                 {{{...note.content}}}
             </div>
         {{/isEq}}
         {{#isEq notification.type "Follow"}}
-            <div class="notification">🤷🏽‍♂️ <a href="{{../actor.id}}">{{../actor.name}}</a> followed you {{timesince ../time}}</div>
+            <div class="notification">🤷🏽‍♂️ <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> followed you {{timesince ../time}}</div>
             {{> byline actor=../actor}}
         {{/isEq}}
     {{/with}}

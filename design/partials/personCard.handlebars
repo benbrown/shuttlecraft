@@ -1,17 +1,15 @@
 <div class="personCard">
-    <a href="{{or actor.url actor.id}}"><img src="{{actor.icon.url}}" class="avatar"></a>
-    <div>
-        <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
+    <a href="/private/profile/{{getUsername actor.id}}"><img src="{{actor.icon.url}}" class="avatar"></a>
+    <div class="profile">
+        <a href="/private/profile/{{getUsername actor.id}}" class="author">{{actor.name}}</a>
         <span class="handle">{{getUsername actor.id}}</span>
         {{{summary}}}
 
     </div>
-    <div>
-        {{#if actor.isFollowing}}{{else}}
-        <button class="follow" onclick='return app.toggleFollow(this, "{{actor.id}}")'>
-            <span class="active">😎</span>
-            <span class="inactive">🫥</span>
+    <div class="tools">
+        <button class="follow {{#if actor.isFollowing}}active{{/if}}" onclick='return app.toggleFollow(this, "{{actor.id}}")'>
+            <span class="active">🧡</span>
+            <span class="inactive">🖤</span>
         </button>
-        {{/if}}
     </div>
 </div>

@@ -3,8 +3,8 @@ import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
 import { getFollowers, getFollowing, writeFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts, isFollowing } from '../lib/account.js';
-import { sendFollowMessage, sendUndoFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage } from '../lib/users.js';
-import { INDEX, isMyPost } from '../lib/storage.js';
+import { sendFollowMessage, sendUndoFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage, fetchOutbox } from '../lib/users.js';
+import { INDEX } from '../lib/storage.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async(req, res) => {
@@ -151,12 +151,35 @@ router.post('/post', async (req, res) => {
     res.status(200).render('partials/note', {note: post, actor: req.app.get('account').actor,layout: null});
 });
 
+router.get('/profile/:handle', async (req, res) => {
+    const { actor } = await fetchUser(req.params.handle);
+    if (actor) {
+        actor.isFollowing = isFollowing(actor.id);
+        const posts = (await fetchOutbox(actor)).filter((post) => {
+            // filter to only include my posts
+            // not boosts or other activity
+            // TODO: support boosts
+            return post.type==='Create';
+        }).map((post) => {
+            let note = post.object;
+            console.log('returning note', note);
+            return {
+                actor: actor,
+                note: note,
+            };
+        });
+        res.status(200).render('partials/profile',{actor, activitystream: posts, layout: 'private'});
+    } else {
+        res.status(200).send('No user found');
+    }
+});
+
 
 router.get('/lookup', async (req, res) => {
     const { actor } = await fetchUser(req.query.handle);
     if (actor) {
         actor.isFollowing = isFollowing(actor.id);
-        res.status(200).render('partials/byline',{actor, layout: null});
+        res.status(200).render('partials/personCard',{actor, layout: null});
     } else {
         res.status(200).send('No user found');
     }

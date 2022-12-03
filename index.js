@@ -15,8 +15,7 @@ import moment from 'moment';
 
 import { ensureAccount } from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
-import { getUsername, fetchOutbox, fetchUser} from './lib/users.js';
-import fetch from 'node-fetch';
+import { getUsername } from './lib/users.js';
 
 const { USERNAME, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
@@ -29,6 +28,7 @@ const hbs = create({
         or: (a,b,options)=> { return a || b },
         timesince: (date) => { return moment(date).fromNow(); },
         getUsername: (user) => { const {username, targetDomain} = getUsername(user); return `${username}@${targetDomain}`; },
+        stripProtocol: (str) => str.replace(/^https\:\/\//,''),
     }
 });
 
