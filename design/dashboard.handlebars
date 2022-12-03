@@ -28,7 +28,9 @@
     <a href="/private/following">
         Following: {{followingCount}}
     </a>
+
     <form onsubmit="return app.lookup()">
+        <label for="lookup">find a person</label>
         <input type="search" placeholder="user@instance.town" id="lookup" />
         <div id="lookup_results"></div>
     </form>
