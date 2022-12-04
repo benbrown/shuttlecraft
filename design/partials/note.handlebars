@@ -1,8 +1,13 @@
         {{> byline actor=actor}}
-        <div class="content">
-            {{#if note.summary}}
-            content warning: {{note.summary}}
-            {{/if}}
+        {{#if note.summary}}
+        <div class="content content_warning">
+            <span>⚠️ {{note.summary}}</span>
+            <div class="tools">
+                <a href="#" onclick='return app.toggleCW("{{note.id}}");'>Toggle</a>
+            </div>
+        </div>
+        {{/if}}
+        <div class="content {{#if note.summary}}collapsed{{/if}}" id="{{note.id}}">
             {{{note.content}}}
 
             {{#if note.inReplyTo}}
@@ -15,7 +20,7 @@
                     <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
                     {{/isImage}}
                     {{#isVideo mediaType}}
-                    <video role="application" src="{{../url}}" autoplay="" loop="" controls="true" type="{{../mediaType}}"></video>
+                    <video role="application" src="{{../url}}" loop controls type="{{../mediaType}}"></video>
                     {{/isVideo}}
                 </div>
             {{/each}}

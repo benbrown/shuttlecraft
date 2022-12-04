@@ -46,6 +46,13 @@ const app = {
     latestNotification: (date) => {
         setCookie('latestNotification', date, 7);
     },
+    toggleCW: (id) => {
+        if (document.getElementById(id).classList.contains('collapsed')) {
+            document.getElementById(id).classList.remove('collapsed');
+        } else {
+            document.getElementById(id).classList.add('collapsed');
+        }
+    },
     alertNewPosts: (meta) => {
         const newPosts = document.getElementById('newPosts') || document.getElementById('newPostsBadge');
         if (newPosts) {

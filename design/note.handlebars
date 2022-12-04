@@ -10,10 +10,12 @@
                 {{getUsername actor.id}}
             </div>
         </div>
-        <div class="content">
-            {{#if note.summary}}
+        {{#if note.summary}}
+        <div class="content_warning">
             content warning: {{note.summary}}
-            {{/if}}
+        </div>
+        {{/if}}
+        <div class="content">
             {{{note.content}}}
 
             {{#each note.attachment}}

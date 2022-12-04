@@ -19,21 +19,23 @@
     {{/each}}
 </div>
 
-<a href="/private?offset={{next}}">More</a>
+<a href="/private?offset={{next}}" class="moreLink">More</a>
 </div>
 <div class="states">
-    <a href="/private/followers">
-        Followers: {{followersCount}}
-    </a>
-    <a href="/private/following">
-        Following: {{followingCount}}
-    </a>
+    <div class="box">
+        <a href="/private/followers">
+            Followers: <span class="count">{{followersCount}}</span>
+        </a>
+        <a href="/private/following">
+            Following: <span class="count">{{followingCount}}</span>
+        </a>
 
-    <form onsubmit="return app.lookup()">
-        <label for="lookup">find a person</label>
-        <input type="search" placeholder="user@instance.town" id="lookup" />
-        <div id="lookup_results"></div>
-    </form>
+        <form onsubmit="return app.lookup()">
+            <label for="lookup">find a person</label>
+            <input type="search" placeholder="user@instance.town" id="lookup" />
+            <div id="lookup_results"></div>
+        </form>
+    </div>
 </div>
 <script>
     // take note of the most recent post date
