@@ -25,10 +25,6 @@
                 </div>
             {{/each}}
             <footer>
-                {{!-- {{#if stats}}
-                {{stats.likes}} likes
-                {{stats.boosts}} boosts
-                {{/if}} --}}
                 <div class="tools">
                     <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>↩️</button>
                     <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "{{note.id}}")'>

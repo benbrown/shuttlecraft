@@ -61,7 +61,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {total, posts } = await getOutboxPosts(offset);
-
+  const { actor } = getAccount();
   let enrichedPosts = posts.map((post) => {
     let stats;
     console.log('load likes for note', post.id);
@@ -77,7 +77,7 @@ router.get('/', async (req, res) => {
     return post;
   })
 
-  res.render('home', { activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USERNAME});
+  res.render('public/home', { actor: actor, activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USERNAME});
 });
 
 
@@ -108,10 +108,12 @@ router.get('/feed', async (req, res) => {
 
 router.get('/notes/:guid',  async (req, res) => {
   let guid = req.params.guid;
+  
   if (!guid) {
     return res.status(400).send('Bad request.');
   }
   else {
+    const { actor } = getAccount();
     const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);
@@ -129,7 +131,7 @@ router.get('/notes/:guid',  async (req, res) => {
             return 0;
         }
       });
-      res.render('note', { activitystream: notes, layout: 'public', domain: DOMAIN, user: USERNAME  });        
+      res.render('public/note', { actor: actor, activitystream: notes, layout: 'public', domain: DOMAIN, user: USERNAME  });        
     }
   }
 });

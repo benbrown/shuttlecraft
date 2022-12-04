@@ -1,5 +1,14 @@
-<a href="#" onclick="history.back(); return false;">Back</a>
 <div class="stream">
+    <div>
+        <p>
+            Follow this site on Mastodon or other fediverse clients: 
+            <input type="text" value="{{user}}@{{domain}}" size="50"/>
+        </p>
+    </div>
+<header class="back">
+    <a  href="#" onclick="history.back(); return false;"><img src="{{actor.icon.url}}" class="avatar"></a>
+    <a href="#" onclick="history.back(); return false;">Back to {{actor.preferredUsername}}</a>
+</header>
 {{#each activitystream}}
 <div class="activity">
     {{#with this}}
@@ -29,19 +38,19 @@
                 </div>
             {{/each}}
             <footer>
-                {{#if stats}}
                 <div class="tools">
-                    <div>
-                        ↩️ {{ stats.replies }}
-                    </div>
-                    <div>
-                        🔁 {{ stats.boosts }}
-                    </div>
-                    <div>
-                        ⭐️ {{ stats.likes }}
-                    </div>
+                    {{#if stats}}
+                        <div>
+                            ↩️ {{ stats.replies }}
+                        </div>
+                        <div>
+                            🔁 {{ stats.boosts }}
+                        </div>
+                        <div>
+                            ⭐️ {{ stats.likes }}
+                        </div>
+                    {{/if}}
                 </div>
-                {{/if}}
                 <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
             </footer>
         </div>

@@ -1,0 +1,88 @@
+<div class="profile stream">
+    <div>
+        <p>
+            Follow this site on Mastodon or other fediverse clients: 
+            <input type="text" value="{{user}}@{{domain}}" size="50"/>
+        </p>
+    </div>
+    <div class="profileHeader">
+        {{#if actor.image}}
+            <img src="{{actor.image.url}}">
+        {{/if}}
+    </div>
+    <div class="profileToolbar">
+        <a href="{{or actor.url actor.id}}"  class="avatarLink"><img src="{{actor.icon.url}}" class="avatar"></a>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="profileBody">
+        <div class="profile">
+            <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
+            <span class="handle">{{getUsername actor.id}}</span>
+
+            {{{actor.summary}}}
+
+            {{#if actor.attachment}}
+                <dl>
+                {{#each actor.attachment}}
+                    <dt>
+                        {{this.name}}
+                    </dt>
+                    <dd>
+                        {{{this.value}}}
+                    </dd>
+                {{/each}}
+                </dl>
+            {{/if}}
+        </div>
+    </div>
+    <header>
+        <span>🏠 Latest</span>
+        <a href="/private" id="newPosts" class="unread" hidden></a>
+    </header>
+    {{#each activitystream}}
+        <div class="activity">
+            {{#with this}}
+                <div class="content">
+                    {{#if summary}}
+                    content warning: {{summary}}
+                    {{/if}}
+                    {{{content}}}
+
+                    {{#if note.inReplyTo}}
+                    <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
+                    {{/if}}
+
+                    {{#each note.attachment}}
+                        <div class="attachment">
+                            {{#isImage mediaType}}
+                            <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                            {{/isImage}}
+                            {{#isVideo mediaType}}
+                            <video role="application" src="{{../url}}" loop controls type="{{../mediaType}}"></video>
+                            {{/isVideo}}
+                        </div>
+                    {{/each}}
+
+                    <footer>
+                        <div class="tools">
+                            {{#if stats}}
+                            <div>
+                                ↩️ {{ stats.replies }}
+                            </div>
+                            <div>
+                                🔁 {{ stats.boosts }}
+                            </div>
+                            <div>
+                                ⭐️ {{ stats.likes }}
+                            </div>
+                            {{/if}}
+                        </div>
+                        <a href="{{url}}" class="permalink">{{timesince published}}</a>
+                    </footer>
+                </div>
+            {{/with}}
+        </div>
+    {{/each}}
+    <a href="/?offset={{next}}"  class="moreLink">More</a>
+</div>

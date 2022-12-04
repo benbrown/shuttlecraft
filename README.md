@@ -172,7 +172,7 @@ To login, visit `https://yourdomain.com/private` and provide the username and pa
 This app uses HandlebarsJS for templating.
 
 Customize the public pages:
-- Templates are in `design/home.handlebars` and `design/note.handlebars` and `design/layouts/public.handlebars`
+- Templates are in `design/public/home.handlebars` and `design/public/note.handlebars` and `design/layouts/public.handlebars`
 - CSS is in `public/css/main.css`
 
 Customize your avatar:
