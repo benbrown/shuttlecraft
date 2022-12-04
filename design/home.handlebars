@@ -29,7 +29,22 @@
                     {{/isVideo}}
                 </div>
             {{/each}}
-            <a href="{{url}}">#</a>
+            <footer>
+                {{#if stats}}
+                <div class="tools">
+                    <div>
+                        ↩️ {{ stats.replies }}
+                    </div>
+                    <div>
+                        🔁 {{ stats.boosts }}
+                    </div>
+                    <div>
+                        ⭐️ {{ stats.likes }}
+                    </div>
+                </div>
+                {{/if}}
+                <a href="{{url}}" class="permalink">{{timesince note.published}}</a>
+            </footer>
         </div>
     {{/with}}
 </div>

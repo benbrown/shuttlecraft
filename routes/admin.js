@@ -97,14 +97,6 @@ router.get('/', async (req, res) => {
             console.error('Post without an actor found', n.note.id);
         }
 
-        // if (isMyPost(n.note.id)) {
-        //     const stats = getLikesForNote(n.note.id);
-        //     n.stats = {
-        //         likes: stats.likes.length,
-        //         boosts: stats.boosts.length,
-        //     }
-        // }
-
         return n;
     })); 
 

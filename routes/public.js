@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { getNote, isMyPost, getAccount, getOutboxPosts } from '../lib/account.js';
-import { getActivity, getNoteGuid } from '../lib/notes.js';
+import { getActivity, getLikesForNote, getReplyCountForNote } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
 
 const { USERNAME, DOMAIN } = process.env;
@@ -17,10 +17,17 @@ const logger = debug('notes');
 
 const unrollThread = async (noteId, results = [], ascend=true, descend=true) => {
   let post, actor;
+  let stats;
   if (isMyPost({id:noteId})) {
     post = await getNote(noteId);
     let account = getAccount();
     actor = account.actor;
+    const likes = getLikesForNote(post.id)
+    stats = {
+        likes: likes.likes.length,
+        boosts: likes.boosts.length,
+        replies: getReplyCountForNote(post.id),
+    }
   } else {
     post = await getActivity(noteId);
     let account = await fetchUser(post.attributedTo);
@@ -28,6 +35,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
   }
 
   results.push({
+    stats: stats,
     note:  post,
     actor: actor,
    });
@@ -53,6 +61,22 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {total, posts } = await getOutboxPosts(offset);
+
+  let enrichedPosts = posts.map((post) => {
+    let stats;
+    console.log('load likes for note', post.id);
+    if (isMyPost(post)) {
+      const likes = getLikesForNote(post.id)
+      stats = {
+          likes: likes.likes.length,
+          boosts: likes.boosts.length,
+          replies: getReplyCountForNote(post.id),
+      }
+      post.stats = stats;
+    }
+    return post;
+  })
+
   res.render('home', { activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USERNAME});
 });
 
