@@ -157,7 +157,6 @@ router.get('/profile/:handle', async (req, res) => {
             return post.type==='Create';
         }).map((post) => {
             let note = post.object;
-            console.log('returning note', note);
             // determine if this post has already been liked
             note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
             note.isBoosted = (boosts.find((l) => l.activityId === note.id)) ? true : false;
