@@ -145,6 +145,9 @@ router.post('/post', async (req, res) => {
 
 router.get('/profile/:handle', async (req, res) => {
     const { actor } = await fetchUser(req.params.handle);
+    const likes = await getLikes();
+    const boosts = await getBoosts();
+
     if (actor) {
         actor.isFollowing = isFollowing(actor.id);
         const posts = (await fetchOutbox(actor)).filter((post) => {
@@ -155,6 +158,11 @@ router.get('/profile/:handle', async (req, res) => {
         }).map((post) => {
             let note = post.object;
             console.log('returning note', note);
+            // determine if this post has already been liked
+            note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
+            note.isBoosted = (boosts.find((l) => l.activityId === note.id)) ? true : false;
+
+
             return {
                 actor: actor,
                 note: note,
