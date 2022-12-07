@@ -55,7 +55,7 @@ router.get('/poll', async (req, res) => {
 router.get('/followers', async (req, res) => {
     let following = await Promise.all(getFollowing().map(async (f) => {
         const acct = await fetchUser(f.actorId);
-        if (acct ? .actor ? .id) {
+        if (acct ?.actor?.id) {
             acct.actor.isFollowing = true; // duh
             return acct.actor;
         }
@@ -66,8 +66,8 @@ router.get('/followers', async (req, res) => {
 
     let followers = await Promise.all(getFollowers().map(async (f) => {
         const acct = await fetchUser(f);
-        if (acct ? .actor ? .id) {
-            acct.actor.isFollowing = following.find((p) => p.id === f);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.some((p) => p.id === f);
             return acct.actor;
         }
         return undefined;
@@ -92,7 +92,7 @@ router.get('/followers', async (req, res) => {
 router.get('/following', async (req, res) => {
     let following = await Promise.all(getFollowing().map(async (f) => {
         const acct = await fetchUser(f.actorId);
-        if (acct ? .actor ? .id) {
+        if (acct?.actor?.id) {
             acct.actor.isFollowing = true; // duh
             return acct.actor;
         }
@@ -102,8 +102,8 @@ router.get('/following', async (req, res) => {
 
     let followers = await Promise.all(getFollowers().map(async (f) => {
         const acct = await fetchUser(f);
-        if (acct ? .actor ? .id) {
-            acct.actor.isFollowing = following.find((p) => p.id === f);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.some((p) => p.id === f);
             return acct.actor;
         }
         return undefined;
@@ -157,8 +157,8 @@ router.get('/', async (req, res) => {
             n.actor.isFollowing = isFollowing(n.actor.id);
 
             // determine if this post has already been liked
-            n.note.isLiked = (likes.find((l) => l.activityId === n.note.id)) ? true : false;
-            n.note.isBoosted = (boosts.find((l) => l.activityId === n.note.id)) ? true : false;
+            n.note.isLiked = (likes.some((l) => l.activityId === n.note.id)) ? true : false;
+            n.note.isBoosted = (boosts.some((l) => l.activityId === n.note.id)) ? true : false;
 
         } else {
             console.error('Post without an actor found', n.note.id);
@@ -198,7 +198,7 @@ router.get('/notifications', async (req, res) => {
         if (notification.notification.type === 'Reply') {
             note = await getActivity(notification.notification.object);
             original = await getNote(note.inReplyTo);
-            note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
+            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
         }
         return {
             actor,
@@ -313,8 +313,8 @@ router.get('/profile/:handle', async (req, res) => {
 
             let note = post.object;
             // determine if this post has already been liked
-            note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
-            note.isBoosted = (boosts.find((l) => l.activityId === note.id)) ? true : false;
+            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+            note.isBoosted = (boosts.some((l) => l.activityId === note.id)) ? true : false;
 
             return {
                 actor: actor,
@@ -396,7 +396,7 @@ router.post('/like', async (req, res) => {
     console.log('INCOMING like', req.body);
     const activityId = req.body.post;
     let likes = getLikes();
-    if (!likes.find((l) => l.activityId === activityId)) {
+    if (!likes.some((l) => l.activityId === activityId)) {
 
         const post = await getActivity(activityId);
         const recipient = await fetchUser(post.attributedTo);
@@ -434,7 +434,7 @@ router.post('/boost', async (req, res) => {
     console.log('INCOMING like', req.body);
     const activityId = req.body.post;
     let boosts = getBoosts();
-    if (!boosts.find((l) => l.activityId === activityId)) {
+    if (!boosts.some((l) => l.activityId === activityId)) {
 
         const post = await getActivity(activityId);
         const account = await fetchUser(post.attributedTo);

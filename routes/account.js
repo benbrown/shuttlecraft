@@ -17,7 +17,7 @@ router.get('/:name', function (req, res) {
     if (name != req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
     } else {
-      if (req.headers.accept ? .includes('application/ld+json')) {
+      if (req.headers.accept?.includes('application/ld+json')) {
         res.json(req.app.get('account').actor);
       } else {
         res.redirect(req.app.get('account').actor.url || `https://${domain}/`);
