@@ -3,20 +3,27 @@ export const router = express.Router();
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { getOutboxPosts } from '../lib/account.js';
+import {
+    getOutboxPosts
+} from '../lib/account.js';
 
-const { DOMAIN } = process.env;
+const {
+    DOMAIN
+} = process.env;
 
 
 router.get('/', async (req, res) => {
-    const {total, posts } = await getOutboxPosts(req.query.offset || 0);
+    const {
+        total,
+        posts
+    } = await getOutboxPosts(req.query.offset || 0);
     const outboxUrl = req.app.get('account').actor.outbox;
 
     let collection = {
-        "type":"OrderedCollection",
-        "totalItems":total,
+        "type": "OrderedCollection",
+        "totalItems": total,
         "id": outboxUrl,
-        "@context":["https://www.w3.org/ns/activitystreams"]
+        "@context": ["https://www.w3.org/ns/activitystreams"]
     };
 
     if (isNaN(req.query.offset)) {
@@ -24,11 +31,11 @@ router.get('/', async (req, res) => {
     } else {
         const offset = parseInt(req.query.offset);
         collection.type = 'OrderedCollectionPage';
-        collection.id =  `${outboxUrl}?offset=${offset}`
+        collection.id = `${outboxUrl}?offset=${offset}`
         collection.partOf = outboxUrl;
         collection.next = `${outboxUrl}?offset=${offset+10}`;
         // todo: stop at 0
-        if (offset-10 > 0) {
+        if (offset - 10 > 0) {
             collection.prev = `${outboxUrl}?offset=${offset-10}`;
         } else {
             collection.first = `${outboxUrl}?offset=0`;

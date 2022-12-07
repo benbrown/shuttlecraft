@@ -5,28 +5,48 @@ import RSS from 'rss-generator';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { getNote, isMyPost, getAccount, getOutboxPosts } from '../lib/account.js';
-import { getActivity, getLikesForNote, getReplyCountForNote } from '../lib/notes.js';
-import { INDEX } from '../lib/storage.js';
-import { ActivityPub } from '../lib/ActivityPub.js';
+import {
+  getNote,
+  isMyPost,
+  getAccount,
+  getOutboxPosts
+} from '../lib/account.js';
+import {
+  getActivity,
+  getLikesForNote,
+  getReplyCountForNote
+} from '../lib/notes.js';
+import {
+  INDEX
+} from '../lib/storage.js';
+import {
+  ActivityPub
+} from '../lib/ActivityPub.js';
 
-const { USERNAME, DOMAIN } = process.env;
+const {
+  USERNAME,
+  DOMAIN
+} = process.env;
 
-import { fetchUser } from '../lib/users.js';
+import {
+  fetchUser
+} from '../lib/users.js';
 
 const logger = debug('notes');
 
-const unrollThread = async (noteId, results = [], ascend=true, descend=true) => {
+const unrollThread = async (noteId, results = [], ascend = true, descend = true) => {
   let post, actor;
   let stats;
-  if (isMyPost({id:noteId})) {
+  if (isMyPost({
+      id: noteId
+    })) {
     post = await getNote(noteId);
     actor = ActivityPub.actor;
     const likes = getLikesForNote(post.id)
     stats = {
-        likes: likes.likes.length,
-        boosts: likes.boosts.length,
-        replies: getReplyCountForNote(post.id),
+      likes: likes.likes.length,
+      boosts: likes.boosts.length,
+      replies: getReplyCountForNote(post.id),
     }
   } else {
     post = await getActivity(noteId);
@@ -36,9 +56,9 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 
   results.push({
     stats: stats,
-    note:  post,
+    note: post,
     actor: actor,
-   });
+  });
 
   // if this is a reply, get the parent and any other parents straight up the chain
   // this does NOT get replies to those parents that are not part of the active thread right now.
@@ -48,7 +68,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 
   // now, find all posts that are below this one...
   if (descend) {
-    const replies = INDEX.filter((p) => p.inReplyTo === noteId);  
+    const replies = INDEX.filter((p) => p.inReplyTo === noteId);
     for (let r = 0; r < replies.length; r++) {
       await unrollThread(replies[r].id, results, false, true);
     }
@@ -60,7 +80,10 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
-  const {total, posts } = await getOutboxPosts(offset);
+  const {
+    total,
+    posts
+  } = await getOutboxPosts(offset);
   const actor = ActivityPub.actor;
   let enrichedPosts = posts.map((post) => {
     let stats;
@@ -68,21 +91,31 @@ router.get('/', async (req, res) => {
     if (isMyPost(post)) {
       const likes = getLikesForNote(post.id)
       stats = {
-          likes: likes.likes.length,
-          boosts: likes.boosts.length,
-          replies: getReplyCountForNote(post.id),
+        likes: likes.likes.length,
+        boosts: likes.boosts.length,
+        replies: getReplyCountForNote(post.id),
       }
       post.stats = stats;
     }
     return post;
   })
 
-  res.render('public/home', { actor: actor, activitystream: posts, layout: 'public', next: offset+posts.length, domain: DOMAIN, user: USERNAME});
+  res.render('public/home', {
+    actor: actor,
+    activitystream: posts,
+    layout: 'public',
+    next: offset + posts.length,
+    domain: DOMAIN,
+    user: USERNAME
+  });
 });
 
 
 router.get('/feed', async (req, res) => {
-  const {total, posts } = await getOutboxPosts(0);
+  const {
+    total,
+    posts
+  } = await getOutboxPosts(0);
 
   var feed = new RSS({
     title: `${USERNAME}@${DOMAIN}`,
@@ -93,26 +126,27 @@ router.get('/feed', async (req, res) => {
   posts.forEach((post) => {
     /* loop over data and add to feed */
     feed.item({
-        title:  post.subject,
-        description: post.content,
-        url: post.url,
-        date: post.published, // any format that js Date can parse.
+      title: post.subject,
+      description: post.content,
+      url: post.url,
+      date: post.published, // any format that js Date can parse.
     });
   });
 
   res.set('Content-Type', 'text/xml');
-  res.send(feed.xml({indent: true}));
+  res.send(feed.xml({
+    indent: true
+  }));
 
 
 });
 
-router.get('/notes/:guid',  async (req, res) => {
+router.get('/notes/:guid', async (req, res) => {
   let guid = req.params.guid;
-  
+
   if (!guid) {
     return res.status(400).send('Bad request.');
-  }
-  else {
+  } else {
     const actor = ActivityPub.actor;
     const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
     if (note === undefined) {
@@ -124,17 +158,20 @@ router.get('/notes/:guid',  async (req, res) => {
         const ad = new Date(a.note.published).getTime();
         const bd = new Date(b.note.published).getTime();
         if (ad > bd) {
-            return 1;
+          return 1;
         } else if (ad < bd) {
-            return -1;
+          return -1;
         } else {
-            return 0;
+          return 0;
         }
       });
-      res.render('public/note', { actor: actor, activitystream: notes, layout: 'public', domain: DOMAIN, user: USERNAME  });        
+      res.render('public/note', {
+        actor: actor,
+        activitystream: notes,
+        layout: 'public',
+        domain: DOMAIN,
+        user: USERNAME
+      });
     }
   }
 });
-
-
-

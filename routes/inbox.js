@@ -1,11 +1,33 @@
 import express from 'express';
 export const router = express.Router();
-import { ActivityPub } from '../lib/ActivityPub.js';
-import { fetchUser } from '../lib/users.js';
-import { acceptDM, addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost, isBlocked, addressedOnlyToMe } from '../lib/account.js';
-import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
+import {
+    ActivityPub
+} from '../lib/ActivityPub.js';
+import {
+    fetchUser
+} from '../lib/users.js';
+import {
+    acceptDM,
+    addFollower,
+    removeFollower,
+    follow,
+    isReplyToMyPost,
+    addNotification,
+    isMyPost,
+    isBlocked,
+    addressedOnlyToMe
+} from '../lib/account.js';
+import {
+    createActivity,
+    recordLike,
+    recordUndoLike,
+    recordBoost,
+    getActivity
+} from '../lib/notes.js';
 import debug from 'debug';
-import { isIndexed } from '../lib/storage.js';
+import {
+    isIndexed
+} from '../lib/storage.js';
 const logger = debug('ono:inbox');
 
 
@@ -17,7 +39,7 @@ router.post('/', async (req, res) => {
     if (incomingRequest) {
         // TODO: handle this better
         // should remove post/user if found
-        if (incomingRequest.type==='Delete') {
+        if (incomingRequest.type === 'Delete') {
             return res.status(200).send();
         }
 
@@ -25,7 +47,9 @@ router.post('/', async (req, res) => {
             return res.status(403).send('');
         }
 
-        const { actor } = await fetchUser(incomingRequest.actor);
+        const {
+            actor
+        } = await fetchUser(incomingRequest.actor);
 
         // FIRST, validate the actor
         if (ActivityPub.validateSignature(actor, req)) {
@@ -33,7 +57,7 @@ router.post('/', async (req, res) => {
                 case 'Follow':
                     logger('Incoming follow request');
                     addFollower(incomingRequest);
-                    
+
                     // TODO: should wait to confirm follow acceptance?
                     ActivityPub.sendAccept(actor, incomingRequest);
                     break;
@@ -70,21 +94,23 @@ router.post('/', async (req, res) => {
                     console.log('Incoming boost');
                     // determine if this is a boost on MY post
                     // or someone boosting a post into my feed. DIFFERENT!
-                    if (isMyPost({id: incomingRequest.object})) {
+                    if (isMyPost({
+                            id: incomingRequest.object
+                        })) {
                         recordBoost(incomingRequest);
                     } else {
 
                         // fetch the boosted post if it doesn't exist
                         try {
                             await getActivity(incomingRequest.object);
-                        } catch(err) {
+                        } catch (err) {
                             console.error('Could not fetch boosted post');
                         }
-                        
+
                         // log the boost itself to the activity stream
                         try {
                             await createActivity(incomingRequest);
-                        } catch(err) {
+                        } catch (err) {
                             console.error('Could not fetch boosted post...');
                         }
                     }
@@ -142,4 +168,4 @@ router.post('/', async (req, res) => {
         console.log('Unknown request format:', incomingRequest);
     }
     return res.status(200).send();
-  });
+});
