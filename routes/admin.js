@@ -24,16 +24,27 @@ router.get('/poll', async(req, res) => {
 
 
 router.get('/followers', async(req, res) => {
-    const following = await Promise.all(getFollowing().map(async (f) => {
+    let following = await Promise.all(getFollowing().map(async (f) => {
         const acct = await fetchUser(f.actorId);
-        acct.actor.isFollowing = true; // duh
-        return acct.actor;
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = true; // duh
+            return acct.actor;
+        }
+        return undefined;
     }));
-    const followers = await Promise.all(getFollowers().map(async (f) => {
+
+    following = following.filter((f)=>f!==undefined);
+
+    let followers = await Promise.all(getFollowers().map(async (f) => {
         const acct = await fetchUser(f);
-        acct.actor.isFollowing = following.find((p) => p.id === f);
-        return acct.actor;
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.find((p) => p.id === f);
+            return acct.actor;
+        }
+        return undefined;
     }));
+
+    followers = followers.filter((f)=>f!==undefined);
 
     if (req.query.json) {
         res.json(notes);
@@ -44,16 +55,27 @@ router.get('/followers', async(req, res) => {
 });
 
 router.get('/following', async(req, res) => {
-    const following = await Promise.all(getFollowing().map(async (f) => {
+    let following = await Promise.all(getFollowing().map(async (f) => {
         const acct = await fetchUser(f.actorId);
-        acct.actor.isFollowing = true; // duh
-        return acct.actor;
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = true; // duh
+            return acct.actor;
+        }
+        return undefined;
     }));
-    const followers = await Promise.all(getFollowers().map(async (f) => {
+    following = following.filter((f)=>f!==undefined);
+
+    let followers = await Promise.all(getFollowers().map(async (f) => {
         const acct = await fetchUser(f);
-        acct.actor.isFollowing = following.find((p) => p.id === f);
-        return acct.actor;
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.find((p) => p.id === f);
+            return acct.actor;
+        }
+        return undefined;
     }));
+
+    followers = followers.filter((f)=>f!==undefined);
+
 
     if (req.query.json) {
         res.json(notes);
