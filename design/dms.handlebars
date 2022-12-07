@@ -1,0 +1,32 @@
+<div class="feeds">
+    {{#each inboxes}}
+        <div>
+            <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
+            {{#if this.unread}}unread{{/if}}
+        </div>
+    {{/each}}
+</div>
+{{#if error}}
+<div class="error">
+    {{error.message}}
+</div>
+{{else}}
+<div class="stream">
+    <header>{{#if recipient}}Messages with {{recipient.preferredUsername}}{{else}}Inbox{{/if}}</header>
+    {{#if recipient}}
+    <div class="inbox">
+        <div class="messages">
+            {{#each inbox}}
+                <div class="message">
+                    {{{this.content}}}
+
+                    {{timesince this.published}} ({{this.id}})
+                </div>
+            {{/each}}
+        </div>
+    {{>composer inReplyTo=lastIncoming to=recipient.id}}
+    </div>
+    {{/if}}
+
+</div>
+{{/if}}

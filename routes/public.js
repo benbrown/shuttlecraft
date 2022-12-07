@@ -8,6 +8,7 @@ dotenv.config();
 import { getNote, isMyPost, getAccount, getOutboxPosts } from '../lib/account.js';
 import { getActivity, getLikesForNote, getReplyCountForNote } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
+import { ActivityPub } from '../lib/ActivityPub.js';
 
 const { USERNAME, DOMAIN } = process.env;
 
@@ -20,8 +21,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
   let stats;
   if (isMyPost({id:noteId})) {
     post = await getNote(noteId);
-    let account = getAccount();
-    actor = account.actor;
+    actor = ActivityPub.actor;
     const likes = getLikesForNote(post.id)
     stats = {
         likes: likes.likes.length,
@@ -61,7 +61,7 @@ const unrollThread = async (noteId, results = [], ascend=true, descend=true) => 
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {total, posts } = await getOutboxPosts(offset);
-  const { actor } = getAccount();
+  const actor = ActivityPub.actor;
   let enrichedPosts = posts.map((post) => {
     let stats;
     console.log('load likes for note', post.id);
@@ -113,7 +113,7 @@ router.get('/notes/:guid',  async (req, res) => {
     return res.status(400).send('Bad request.');
   }
   else {
-    const { actor } = getAccount();
+    const actor = ActivityPub.actor;
     const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);

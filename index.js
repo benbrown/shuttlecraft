@@ -12,10 +12,9 @@ import cors from 'cors';
 import http from 'http';
 import basicAuth from 'express-basic-auth';
 import moment from 'moment';
-
+import { ActivityPub } from './lib/ActivityPub.js';
 import { ensureAccount } from './lib/account.js';
 import {account, webfinger, inbox, outbox, admin, notes, publicFacing} from './routes/index.js';
-import { getUsername } from './lib/users.js';
 
 const { USERNAME, PASS, DOMAIN, PRIVKEY_PATH, CERT_PATH, PORT } = process.env;
 const PATH_TO_TEMPLATES = './design';
@@ -27,7 +26,7 @@ const hbs = create({
         isEq: (a,b,options)=> { if (a===b)   return options.fn(this); },
         or: (a,b,options)=> { return a || b },
         timesince: (date) => { return moment(date).fromNow(); },
-        getUsername: (user) => { const {username, targetDomain} = getUsername(user); return `${username}@${targetDomain}`; },
+        getUsername: (user) => { return ActivityPub.getUsername(user) },
         stripProtocol: (str) => str.replace(/^https\:\/\//,''),
     }
 });
@@ -88,6 +87,9 @@ if (!USERNAME || !DOMAIN || !PASS) {
 
 // Load/create account file
 ensureAccount(USERNAME, DOMAIN).then((myaccount) => {
+
+  // set the server to use the main account as its primary actor
+  ActivityPub.account = myaccount;
   console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
 
   // set up globals

@@ -150,6 +150,7 @@ const app = {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
+        const to = document.getElementById('to');
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -159,6 +160,7 @@ const app = {
             post: post.value,
             cw: cw.value,
             inReplyTo: inReplyTo.value,
+            to: to.value,
         }));
 
         Http.onreadystatechange = () => {

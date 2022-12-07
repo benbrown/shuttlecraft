@@ -1,10 +1,11 @@
-import { getActivity, getActivitySince, getActivityStream, getLikesForNote } from '../lib/notes.js';
+import { getActivity, getActivitySince, getActivityStream } from '../lib/notes.js';
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
-import { getFollowers, getFollowing, writeFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts, isFollowing } from '../lib/account.js';
-import { sendFollowMessage, sendUndoFollowMessage, fetchUser, sendLikeMessage, sendUndoLikeMessage, sendBoostMessage, sendUndoBoostMessage, fetchOutbox } from '../lib/users.js';
+import { getFollowers, getFollowing, writeFollowing, createNote, getNotifications, getNote, getLikes, writeLikes, getBoosts, writeBoosts, isFollowing, getInboxIndex, getInbox } from '../lib/account.js';
+import {  fetchUser } from '../lib/users.js';
 import { INDEX } from '../lib/storage.js';
+import { ActivityPub } from '../lib/ActivityPub.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async(req, res) => {
@@ -135,10 +136,65 @@ router.get('/notifications', async (req, res) => {
 });
 
 
+router.get('/dms/:handle?', async(req,res) => {
+    const inboxIndex = getInboxIndex();
+    let error, inbox, recipient, lastIncoming;
+
+    const inboxes = Object.keys(inboxIndex).map((k) => {
+        return {
+            id: k,
+            unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
+            ...inboxIndex[k]
+        }
+    }).sort((a,b) => {
+        if (a.latest > b.latest) {
+            return -1;
+        } else if (a.latest < b.latest) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    if (req.params.handle) {
+        console.log('load specific inbox');
+        // first validate that this is a real user
+        try {
+            const account = await fetchUser(req.params.handle);
+            recipient = account.actor;
+            inbox = getInbox(recipient.id);
+
+            // reverse sort!
+            inbox && inbox.sort((a, b) => {
+                if (a.published > b.published) {
+                    return -1;
+                } else if (a.published < b.published) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            });
+
+            // find last incoming message
+            lastIncoming = inbox.slice().find((message) => {
+                return message.attributedTo != ActivityPub.actor.id;
+            });
+
+        } catch (err) {
+            error = {
+                message: `Could not load user: ${ err.message }`,
+            }
+        }
+    }
+
+
+    res.render('dms', {layout: 'private', lastIncoming: lastIncoming ? lastIncoming.id : null, inboxes, inbox, actor,recipient, error });
+});
+
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
     console.log('INCOMING POST', req.body);
-    const post = await createNote(req.body.post, req.body.cw,  req.body.inReplyTo);
+    const post = await createNote(req.body.post, req.body.cw,  req.body.inReplyTo, req.body.to);
     // return html partial of the new post for insertion in the feed
     res.status(200).render('partials/note', {note: post, actor: req.app.get('account').actor,layout: null});
 });
@@ -150,17 +206,20 @@ router.get('/profile/:handle', async (req, res) => {
 
     if (actor) {
         actor.isFollowing = isFollowing(actor.id);
-        const posts = (await fetchOutbox(actor)).filter((post) => {
+        const {items } = await ActivityPub.fetchOutbox(actor);
+        const posts = items.filter((post) => {
             // filter to only include my posts
             // not boosts or other activity
             // TODO: support boosts
             return post.type==='Create';
         }).map((post) => {
+            // TODO: this should fetch in case the outbox only has ids
+            // let note = (typeof post.object==="string") ? await getActivity(post.object) : post.object;
+
             let note = post.object;
             // determine if this post has already been liked
             note.isLiked = (likes.find((l) => l.activityId === note.id)) ? true : false;
             note.isBoosted = (boosts.find((l) => l.activityId === note.id)) ? true : false;
-
 
             return {
                 actor: actor,
@@ -197,13 +256,13 @@ router.post('/follow', async (req, res) => {
         if (actor) {
             const status = isFollowing(actor.id);
             if (!status) {
-                const guid = await sendFollowMessage(actor.id);
+                const message = await ActivityPub.sendFollow(actor);
 
                 return res.status(200).json({isFollowed: true});
 
             } else {
                 // send unfollow
-                await sendUndoFollowMessage(actor.id, status.id);
+                await ActivityPub.sendUndoFollow(actor, status.id);
 
                 // todo: this should just be a function like removeFollowing
 
@@ -226,7 +285,11 @@ router.post('/like', async (req, res) => {
     const activityId = req.body.post;
     let likes = getLikes();
     if (!likes.find((l)=>l.activityId===activityId)) {
-        const guid = await sendLikeMessage(activityId);
+
+        const post = await getActivity(activityId);
+        const recipient = await fetchUser(post.attributedTo);
+        const message = await ActivityPub.sendLike(post, recipient.actor);
+        const guid = message.id;
 
         likes.push({
             id: guid,
@@ -236,7 +299,11 @@ router.post('/like', async (req, res) => {
     } else {
         // extract so we can send an undo record
         const recordToUndo = likes.find((l)=>l.activityId===activityId);
-        await sendUndoLikeMessage(activityId, recordToUndo.id);
+
+        const post = await getActivity(activityId);
+        const recipient = await fetchUser(post.attributedTo);
+
+        await ActivityPub.sendUndoLike(post, recipient.actor, recordToUndo.id);
 
         // filter out the one we are removing
         likes = likes.filter((l)=>l.activityId!==activityId);
@@ -253,17 +320,31 @@ router.post('/boost', async (req, res) => {
     let boosts = getBoosts();
     if (!boosts.find((l)=>l.activityId===activityId)) {
 
-        const guid = await sendBoostMessage(activityId);
+        const post = await getActivity(activityId);
+        const account = await fetchUser(post.attributedTo);
+        const followers = await getFollowers();
+        const fullFollowers = await Promise.all(followers.map(async(follower) => {
+            const {actor} = await fetchUser(follower);
+            return actor;
+        }));
+        const message = await ActivityPub.sendBoost(account.actor, post, fullFollowers);
 
         boosts.push({
-            id: guid,
+            id: message.id,
             activityId,
         });
         res.status(200).json({isBoosted: true});
     } else {
         // extract so we can send an undo record
         const recordToUndo = boosts.find((l)=>l.activityId===activityId);
-        await sendUndoBoostMessage(activityId, recordToUndo.id);
+        const post = await getActivity(activityId);
+        const account = await fetchUser(post.attributedTo);
+        const followers = await getFollowers();
+        const fullFollowers = await Promise.all(followers.map(async(follower) => {
+            const {actor} = await fetchUser(follower);
+            return actor;
+        }));
+        await ActivityPub.sendUndoBoost(account.actor, post, fullFollowers, recordToUndo.id);
 
         // filter out the one we are removing
         boosts = boosts.filter((l)=>l.activityId!==activityId);

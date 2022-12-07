@@ -1,25 +1,18 @@
 import express from 'express';
 export const router = express.Router();
-import { sendAcceptMessage, validateSignature } from '../lib/users.js';
-import { addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost, isBlocked } from '../lib/account.js';
+import { ActivityPub } from '../lib/ActivityPub.js';
+import { fetchUser } from '../lib/users.js';
+import { acceptDM, addFollower, removeFollower, follow, isReplyToMyPost, addNotification, isMyPost, isBlocked, addressedOnlyToMe } from '../lib/account.js';
 import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
 import debug from 'debug';
 import { isIndexed } from '../lib/storage.js';
 const logger = debug('ono:inbox');
 
+
+
 router.post('/', async (req, res) => {
 
-    let domain = req.app.get('domain');
-    const actor = new URL(req.body.actor);
-    let targetDomain = actor.hostname;
     const incomingRequest = req.body;
-    let signature;
-
-    if (incomingRequest.signature) {
-        signature = incomingRequest.signature;
-    } else {
-        signature = req.header('Signature');        
-    }
 
     if (incomingRequest) {
         // TODO: handle this better
@@ -32,15 +25,17 @@ router.post('/', async (req, res) => {
             return res.status(403).send('');
         }
 
+        const { actor } = await fetchUser(incomingRequest.actor);
+
         // FIRST, validate the actor
-        if (validateSignature(incomingRequest.actor, req)) {
+        if (ActivityPub.validateSignature(actor, req)) {
             switch (incomingRequest.type) {
                 case 'Follow':
                     logger('Incoming follow request');
                     addFollower(incomingRequest);
                     
                     // TODO: should wait to confirm follow acceptance?
-                    sendAcceptMessage(incomingRequest);
+                    ActivityPub.sendAccept(actor, incomingRequest);
                     break;
                 case 'Undo':
                     console.log('Incoming undo');
@@ -104,7 +99,10 @@ router.post('/', async (req, res) => {
                     // - a post that is from someone you follow, but is a reply to a post from someone you do not follow (should be ignored?)
                     // - a mention from a following (notification and feed)
                     // - a mention from a stranger (notification only)
-                    if (isReplyToMyPost(incomingRequest.object)) {
+                    if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
+                        console.log('GOT AN INCOMING DM', incomingRequest);
+                        await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo)
+                    } else if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
                         if (!isIndexed(incomingRequest.object.id)) {
                             await createActivity(incomingRequest.object);
