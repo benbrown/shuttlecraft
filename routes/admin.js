@@ -272,7 +272,7 @@ router.get('/dms/:handle?', async (req, res) => {
         lastIncoming: lastIncoming ? lastIncoming.id : null,
         inboxes,
         inbox,
-        actor,
+        actor: ActivityPub.actor,
         recipient,
         error
     });
