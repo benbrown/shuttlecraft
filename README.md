@@ -55,10 +55,12 @@ right away, all at once. This may cause issues.
 This project owes a great debt to @dariusk's excellent [express-activitypub](https://github.com/dariusk/express-activitypub) repo.
 My work started from his reference implementation, and there are many lines of code cribbed from his work.
 
-## Bug Reports
+## Bug Reports & Contributions
 
 Please file bugs on Github:
 https://github.com/benbrown/shuttlecraft/issues
+
+Please read the [contributor's guide](CONTRIBUTING.md) before sending pull requests.
 
 ## Install
 
@@ -106,6 +108,13 @@ HOWEVER PLEASE NOTE that your ID is a real URL, and it must reflect
 the real URL served by this app. Also note that it is embedded in
 every post you write - so if you change values in the `account.json` file,
 your previous posts may break.
+
+
+## Login
+
+To login, visit `https://yourdomain.com/private` and provide the username and password from your .env file
+
+
 
 ## Debugging
 
@@ -159,11 +168,6 @@ Configure it and set it up to run on a port of your choosing.
 Configure nginx with a certbot ssl certificate.
 
 Configure your domain to proxy requests to the localhost port.
-
-## Login
-
-To login, visit `https://yourdomain.com/private` and provide the username and password from your .env file
-
 
 ## Customize
 

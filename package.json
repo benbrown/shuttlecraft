@@ -1,6 +1,6 @@
 {
   "name": "shuttlecraft",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "a single user activitypub server - join the federation!",
   "main": "index.js",
   "type": "module",
@@ -25,12 +25,23 @@
     "md5": "^2.3.0",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.0",
-    "request": "^2.87.0",
     "rss-generator": "^0.0.3"
   },
   "keywords": [
-    "fediverse"
+    "fediverse",
+    "mastodon",
+    "socialmedia",
+    "indieweb",
+    "benbrown"
   ],
   "author": "ben brown <benbrown@gmail.com>",
-  "license": "UNLICENSED"
+  "homepage": "https://shuttlecraft.net",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benbrown/shuttlecraft"
+  },
+  "bugs":{
+    "url": "https://github.com/benbrown/shuttlecraft/issues"
+  },
+  "license": "MIT"
 }
