@@ -153,7 +153,7 @@ SSL-enabled endpoint.
 
 Use Glitch to create a new project.
 
-Import the repo from Github.
+[Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft)
 
 Configure using their handy .env editor.
 
