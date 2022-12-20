@@ -64,6 +64,8 @@ Please read the [contributor's guide](CONTRIBUTING.md) before sending pull reque
 
 ## Install
 
+Quick start: [Remix on Glitc](#easiest-glitch)
+
 Clone the repo:
 `git clone git@github.com:benbrown/shuttlecraft.git`
 
