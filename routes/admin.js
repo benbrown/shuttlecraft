@@ -42,6 +42,8 @@ router.get('/poll', async (req, res) => {
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
+
+
     const {
         activitystream
     } = await getActivitySince(sincePosts, true);
@@ -227,7 +229,6 @@ router.get('/dms/:handle?', async (req, res) => {
 
 
     if (req.params.handle) {
-        console.log('load specific inbox');
         // first validate that this is a real user
         try {
             const account = await fetchUser(req.params.handle);
@@ -251,8 +252,10 @@ router.get('/dms/:handle?', async (req, res) => {
             });
 
             // mark all of these messages as seen
-            inboxIndex[recipient.id].lastRead = new Date().getTime();
-            writeInboxIndex(inboxIndex);
+            if (inboxIndex[recipient.id]) {
+                inboxIndex[recipient.id].lastRead = new Date().getTime();
+                writeInboxIndex(inboxIndex);
+            }
 
         } catch (err) {
             error = {
@@ -291,9 +294,7 @@ router.get('/dms/:handle?', async (req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    console.log('INCOMING POST', req.body);
     const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
-
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {
@@ -324,7 +325,8 @@ router.get('/profile/:handle', async (req, res) => {
         const {
             items
         } = await ActivityPub.fetchOutbox(actor);
-        const posts = items.filter((post) => {
+
+        const posts = !items ? [] : items.filter((post) => {
             // filter to only include my posts
             // not boosts or other activity
             // TODO: support boosts

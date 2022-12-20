@@ -169,7 +169,7 @@ const app = {
 
                 // prepend the new post
                 const newHtml = Http.responseText;
-                const el = document.getElementById('home_stream');
+                const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
 
                 // todo: ideally this would come back with all the html it needs
                 el.innerHTML = newHtml + el.innerHTML;

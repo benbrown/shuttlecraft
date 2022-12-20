@@ -1,28 +1,39 @@
 <div class="feeds {{#if recipient}}inbox_visible{{/if}}">
-    {{#each inboxes}}
-        <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
-            <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
-            {{#if this.unread}}<span class="badge">New</span>{{/if}}
+    <header>Messages</header>
+    {{#if inboxes}}
+        {{#each inboxes}}
+            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
+                <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
+                {{#if this.unread}}<span class="badge">New</span>{{/if}}
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="empty">
+            No messages.
         </div>
-    {{/each}}
+    {{/if}}
 </div>
 {{#if error}}
 <div class="error">
     {{error.message}}
 </div>
 {{else}}
-<div class="stream">
-    <header>{{#if recipient}}<a href="/private/dms">Inbox</a> &raquo; Messages with {{recipient.preferredUsername}}{{else}}Inbox{{/if}}</header>
-    {{#if recipient}}
-    <div class="inbox">
-        <div class="messages" id="home_stream">
-            {{#each inbox}}
-                {{> dm message=this me=../actor}}
-            {{/each}}
+    <div class="stream">
+        {{#if recipient}}
+        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/profile/{{getUsername recipient.id}}">{{recipient.preferredUsername}}</a></header>
+        <div class="inbox">
+            <div class="messages" id="inbox_stream">
+                {{#each inbox}}
+                    {{> dm message=this me=../actor}}
+                {{/each}}
+            </div>
+        {{> minicomposer inReplyTo=lastIncoming to=recipient.id}}
         </div>
-    {{>composer inReplyTo=lastIncoming to=recipient.id}}
+        {{else}}
+            <!-- TODO: empty state? -->
+            <div class="empty">
+                Select a conversation. To create a new one, navigate to a profile.
+            </div>
+        {{/if}}
     </div>
-    {{/if}}
-
-</div>
 {{/if}}
