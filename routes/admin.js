@@ -19,7 +19,8 @@ import {
     writeBoosts,
     isFollowing,
     getInboxIndex,
-    getInbox
+    getInbox,
+    writeInboxIndex
 } from '../lib/account.js';
 import {
     fetchUser
@@ -224,21 +225,6 @@ router.get('/dms/:handle?', async (req, res) => {
     const inboxIndex = getInboxIndex();
     let error, inbox, recipient, lastIncoming;
 
-    const inboxes = Object.keys(inboxIndex).map((k) => {
-        return {
-            id: k,
-            unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
-            ...inboxIndex[k]
-        }
-    }).sort((a, b) => {
-        if (a.latest > b.latest) {
-            return -1;
-        } else if (a.latest < b.latest) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
 
     if (req.params.handle) {
         console.log('load specific inbox');
@@ -264,12 +250,32 @@ router.get('/dms/:handle?', async (req, res) => {
                 return message.attributedTo != ActivityPub.actor.id;
             });
 
+            // mark all of these messages as seen
+            inboxIndex[recipient.id].lastRead = new Date().getTime();
+            writeInboxIndex(inboxIndex);
+
         } catch (err) {
             error = {
                 message: `Could not load user: ${ err.message }`,
             }
         }
     }
+
+    const inboxes = Object.keys(inboxIndex).map((k) => {
+        return {
+            id: k,
+            unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
+            ...inboxIndex[k]
+        }
+    }).sort((a, b) => {
+        if (a.latest > b.latest) {
+            return -1;
+        } else if (a.latest < b.latest) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
 
 
     res.render('dms', {
@@ -293,6 +299,7 @@ router.post('/post', async (req, res) => {
         res.status(200).render('partials/dm', {
             message: post,
             actor: req.app.get('account').actor,
+            me: req.app.get('account').actor,
             layout: null,
         });
     } else {

@@ -1,5 +1,8 @@
-<div class="message">
-    {{{message.content}}}
-
-    {{timesince message.published}}
+<div class="message {{#isEq message.attributedTo me.id}}outgoing{{/isEq}}">
+    <div class="message_text">
+        {{{message.content}}}
+    </div>
+    <div class="message_timestamp">
+        {{timesince message.published}}
+    </div>
 </div>

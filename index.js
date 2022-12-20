@@ -48,6 +48,7 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
+      console.log('isEq', a, b);
       if (a === b) return options.fn(this);
     },
     or: (a, b, options) => {

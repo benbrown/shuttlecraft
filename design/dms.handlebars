@@ -1,8 +1,8 @@
-<div class="feeds">
+<div class="feeds {{#if recipient}}inbox_visible{{/if}}">
     {{#each inboxes}}
-        <div>
+        <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
             <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
-            {{#if this.unread}}unread{{/if}}
+            {{#if this.unread}}<span class="badge">New</span>{{/if}}
         </div>
     {{/each}}
 </div>
@@ -12,12 +12,12 @@
 </div>
 {{else}}
 <div class="stream">
-    <header>{{#if recipient}}Messages with {{recipient.preferredUsername}}{{else}}Inbox{{/if}}</header>
+    <header>{{#if recipient}}<a href="/private/dms">Inbox</a> &raquo; Messages with {{recipient.preferredUsername}}{{else}}Inbox{{/if}}</header>
     {{#if recipient}}
     <div class="inbox">
         <div class="messages" id="home_stream">
             {{#each inbox}}
-                {{> dm message=this}}
+                {{> dm message=this me=../actor}}
             {{/each}}
         </div>
     {{>composer inReplyTo=lastIncoming to=recipient.id}}
