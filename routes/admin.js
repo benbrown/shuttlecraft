@@ -175,6 +175,10 @@ router.get('/', async (req, res) => {
     if (req.query.json) {
         res.json(notes);
     } else {
+
+        // set auth cookie
+        res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
+
         res.render('dashboard', {
             layout: 'private',
             me: ActivityPub.actor,

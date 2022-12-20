@@ -88,6 +88,8 @@ let basicUserAuth = basicAuth({
   challenge: true
 });
 
+
+
 function asyncAuthorizer(username, password, cb) {
   let isAuthorized = false;
   const isPasswordAuthorized = username === USERNAME;
@@ -100,14 +102,28 @@ function asyncAuthorizer(username, password, cb) {
   }
 }
 
+
 if (!USERNAME || !DOMAIN || !PASS) {
   console.error('Specify USER PASS and DOMAIN in the .env file');
   process.exit(1);
 }
 
 
+
+
+
 // Load/create account file
 ensureAccount(USERNAME, DOMAIN).then((myaccount) => {
+
+  const authWrapper = (req, res, next) => {
+    if (req.cookies.token) {
+      if (req.cookies.token === myaccount.apikey) {
+        return next();
+      }
+    }
+    return basicUserAuth(req, res, next);
+  }
+
 
   // set the server to use the main account as its primary actor
   ActivityPub.account = myaccount;
@@ -132,7 +148,7 @@ ensureAccount(USERNAME, DOMAIN).then((myaccount) => {
   app.use('/private', cors({
     credentials: true,
     origin: true
-  }), basicUserAuth, admin);
+  }), authWrapper, admin);
   app.use('/', cors(), publicFacing);
   app.use('/', express.static('public/'));
 
