@@ -64,7 +64,7 @@ Please read the [contributor's guide](CONTRIBUTING.md) before sending pull reque
 
 ## Install
 
-Quick start: [Remix on Glitc](#easiest-glitch)
+Quick start: [Remix on Glitch](#easiest-glitch)
 
 Clone the repo:
 `git clone git@github.com:benbrown/shuttlecraft.git`
@@ -153,11 +153,16 @@ SSL-enabled endpoint.
 
 ### Easiest: Glitch
 
-Use Glitch to create a new project.
+Use Glitch to create a new project! Glitch will provide you with hosting for your instance of Shuttlecraft,
+and you can start for FREE!
 
 [Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft)
 
-Configure using their handy .env editor.
+First, make sure the URL of your Glitch project is the one you like. You can change it in the "Settings" menu.
+
+Then, configure the options [as described above](#config) using the .env editor.
+
+Finally, login to the dashboard at `https://yourdomain.glitch.me/private`
 
 Done!
 
