@@ -83,6 +83,7 @@ router.get('/followers', async (req, res) => {
     } else {
         res.render('followers', {
             layout: 'private',
+            me: ActivityPub.actor,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -120,6 +121,7 @@ router.get('/following', async (req, res) => {
     } else {
         res.render('following', {
             layout: 'private',
+            me: ActivityPub.actor,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -175,6 +177,7 @@ router.get('/', async (req, res) => {
     } else {
         res.render('dashboard', {
             layout: 'private',
+            me: ActivityPub.actor,
             next: next,
             activitystream: notes,
             followers: followers,
@@ -218,6 +221,7 @@ router.get('/notifications', async (req, res) => {
 
     res.render('notifications', {
         layout: 'private',
+        me: ActivityPub.actor,
         notifications: notifications.reverse()
     });
 });
@@ -283,10 +287,10 @@ router.get('/dms/:handle?', async (req, res) => {
 
     res.render('dms', {
         layout: 'private',
+        me: ActivityPub.actor,
         lastIncoming: lastIncoming ? lastIncoming.id : null,
         inboxes,
         inbox,
-        actor: ActivityPub.actor,
         recipient,
         error
     });
@@ -348,6 +352,7 @@ router.get('/profile/:handle', async (req, res) => {
         res.status(200).render('partials/profile', {
             actor,
             activitystream: posts,
+            me: ActivityPub.actor,
             layout: 'private'
         });
     } else {
@@ -373,11 +378,9 @@ router.get('/lookup', async (req, res) => {
 
 router.post('/follow', async (req, res) => {
 
-    console.log('INCOMING follow', req.body);
     const handle = req.body.handle;
     if (handle) {
         if (handle === req.app.get('account').actor.id) {
-            console.log('Self follow DENIED!');
             return res.status(200).json({
                 isFollowed: false
             });
@@ -417,7 +420,6 @@ router.post('/follow', async (req, res) => {
 });
 
 router.post('/like', async (req, res) => {
-    console.log('INCOMING like', req.body);
     const activityId = req.body.post;
     let likes = getLikes();
     if (!likes.some((l) => l.activityId === activityId)) {
@@ -455,7 +457,6 @@ router.post('/like', async (req, res) => {
 });
 
 router.post('/boost', async (req, res) => {
-    console.log('INCOMING like', req.body);
     const activityId = req.body.post;
     let boosts = getBoosts();
     if (!boosts.some((l) => l.activityId === activityId)) {

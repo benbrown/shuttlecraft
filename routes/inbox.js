@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
                     ActivityPub.sendAccept(actor, incomingRequest);
                     break;
                 case 'Undo':
-                    console.log('Incoming undo');
+                    logger('Incoming undo');
                     switch (incomingRequest.object.type) {
                         case 'Follow':
                             logger('Incoming unfollow request');
@@ -74,7 +74,7 @@ router.post('/', async (req, res) => {
                             recordUndoLike(incomingRequest.object);
                             break;
                         default:
-                            console.log('Unknown undo type');
+                            logger('Unknown undo type');
                     }
                     break;
                 case 'Accept':
@@ -84,15 +84,15 @@ router.post('/', async (req, res) => {
                             follow(incomingRequest);
                             break;
                         default:
-                            console.log('Unknown undo type');
+                            logger('Unknown undo type');
                     }
                     break;
                 case 'Like':
-                    console.log('Incoming like');
+                    logger('Incoming like');
                     recordLike(incomingRequest);
                     break;
                 case 'Announce':
-                    console.log('Incoming boost');
+                    logger('Incoming boost');
                     // determine if this is a boost on MY post
                     // or someone boosting a post into my feed. DIFFERENT!
                     if (isMyPost({
@@ -117,7 +117,7 @@ router.post('/', async (req, res) => {
                     }
                     break;
                 case 'Create':
-                    console.log('incoming create');
+                    logger('incoming create');
 
                     // determine what type of post this is, if it should show up, etc.
                     // - a post that is a reply to your own post from someone you follow (notification AND feed)
@@ -138,7 +138,7 @@ router.post('/', async (req, res) => {
                                 object: incomingRequest.object.id
                             });
                         } else {
-                            console.log('already created reply');
+                            logger('already created reply');
                         }
                     } else if (isMention(incomingRequest.object)) {
                         if (!isIndexed(incomingRequest.object.id)) {
@@ -149,7 +149,7 @@ router.post('/', async (req, res) => {
                                 object: incomingRequest.object.id
                             });
                         } else {
-                            console.log('already created mention');
+                            logger('already created mention');
                         }
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
@@ -167,14 +167,14 @@ router.post('/', async (req, res) => {
 
                     break;
                 default:
-                    console.log('Unknown request type:', incomingRequest.type);
+                    logger('Unknown request type:', incomingRequest.type);
             }
         } else {
-            console.log('Signature failed:', incomingRequest);
+            logger('Signature failed:', incomingRequest);
             return res.status(501).send('Invalid signature');
         }
     } else {
-        console.log('Unknown request format:', incomingRequest);
+        logger('Unknown request format:', incomingRequest);
     }
     return res.status(200).send();
 });

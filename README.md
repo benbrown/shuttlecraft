@@ -1,4 +1,4 @@
-# Ben's Single-user Social Instance
+# SHUTTLECRAFT
 
 This is a project to create an "easy" way to participate in the ActivityPub "Fediverse" and other indie web protocols like RSS.
 
@@ -13,14 +13,12 @@ Including features:
 - Compose posts and deliver on the web, and also via ActivityPub, RSS
 - Fave, boost and reply to posts
 - View notifications
+- Send and receive DMs
 - Block people or instances
 
 Not yet supported:
-- DMs
 - Incoming updates and deletes
 - Media uploads
-- Mentions
-- Boost/like counts
 
 ## Warning: Experimental Software! 
 
@@ -60,15 +58,15 @@ My work started from his reference implementation, and there are many lines of c
 ## Bug Reports
 
 Please file bugs on Github:
-https://github.com/benbrown/onosendai/issues
+https://github.com/benbrown/shuttlecraft/issues
 
 ## Install
 
 Clone the repo:
-`git clone git@github.com:benbrown/onosendai.git`
+`git clone git@github.com:benbrown/shuttlecraft.git`
 
 Enter folder:
-`cd onosendai`
+`cd shuttlecraft`
 
 Install node dependencies:
 `npm install`

@@ -57,7 +57,12 @@ a { color: #8c8dff; }
 }
 
 
-
+.follow_box {
+    padding: 1rem;
+}
+.follow_box p {
+    margin: 0;
+}
 
 
 

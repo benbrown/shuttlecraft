@@ -4,7 +4,6 @@
         {{#each inboxes}}
             <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
                 <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
-                {{#if this.unread}}<span class="badge">New</span>{{/if}}
             </div>
         {{/each}}
     {{else}}
@@ -24,7 +23,7 @@
         <div class="inbox">
             <div class="messages" id="inbox_stream">
                 {{#each inbox}}
-                    {{> dm message=this me=../actor}}
+                    {{> dm message=this me=../me}}
                 {{/each}}
             </div>
         {{> minicomposer inReplyTo=lastIncoming to=recipient.id}}

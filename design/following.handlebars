@@ -9,22 +9,7 @@
     </div>
 {{/each}}
 </div>
-<div class="states">
-    <div class="box">
-        <a href="/private/followers">
-            Followers: <span class="count">{{followersCount}}</span>
-        </a>
-        <a href="/private/following">
-            Following: <span class="count">{{followingCount}}</span>
-        </a>
-
-        <form onsubmit="return app.lookup()">
-            <label for="lookup">find a person</label>
-            <input type="search" placeholder="user@instance.town" id="lookup" />
-            <div id="lookup_results"></div>
-        </form>
-    </div>
-</div>
+{{> peopleTools}}
 <script>
     app.pollForPosts();
 </script>

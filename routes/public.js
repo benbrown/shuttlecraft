@@ -87,7 +87,6 @@ router.get('/', async (req, res) => {
   const actor = ActivityPub.actor;
   let enrichedPosts = posts.map((post) => {
     let stats;
-    console.log('load likes for note', post.id);
     if (isMyPost(post)) {
       const likes = getLikesForNote(post.id)
       stats = {
@@ -101,6 +100,7 @@ router.get('/', async (req, res) => {
   })
 
   res.render('public/home', {
+    me: ActivityPub.actor,
     actor: actor,
     activitystream: posts,
     layout: 'public',
@@ -166,6 +166,7 @@ router.get('/notes/:guid', async (req, res) => {
         }
       });
       res.render('public/note', {
+        me: ActivityPub.actor,
         actor: actor,
         activitystream: notes,
         layout: 'public',
