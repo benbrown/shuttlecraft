@@ -34,10 +34,9 @@ const {
   USERNAME,
   PASS,
   DOMAIN,
-  PRIVKEY_PATH,
-  CERT_PATH,
   PORT
 } = process.env;
+
 const PATH_TO_TEMPLATES = './design';
 const app = express();
 const hbs = create({
@@ -63,21 +62,6 @@ const hbs = create({
     stripProtocol: (str) => str.replace(/^https\:\/\//, ''),
   }
 });
-
-let sslOptions;
-
-try {
-  sslOptions = {
-    key: fs.readFileSync(PRIVKEY_PATH),
-    cert: fs.readFileSync(CERT_PATH)
-  };
-} catch (err) {
-  if (err.errno === -2) {
-    console.log('No SSL key and/or cert found, not enabling https server');
-  } else {
-    console.log(err);
-  }
-}
 
 app.set('domain', DOMAIN);
 app.set('port', process.env.PORT || PORT || 3000);

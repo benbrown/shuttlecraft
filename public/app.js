@@ -172,7 +172,7 @@ const app = {
                 const el = document.getElementById('home_stream');
 
                 // todo: ideally this would come back with all the html it needs
-                el.innerHTML = '<div class="activity">' + newHtml + '</div>' + el.innerHTML;
+                el.innerHTML = newHtml + el.innerHTML;
 
                 // reset the inputs to blank
                 post.value = '';

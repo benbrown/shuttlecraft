@@ -15,7 +15,8 @@ import {
     addNotification,
     isMyPost,
     isBlocked,
-    addressedOnlyToMe
+    addressedOnlyToMe,
+    isMention
 } from '../lib/account.js';
 import {
     createActivity,
@@ -126,7 +127,6 @@ router.post('/', async (req, res) => {
                     // - a mention from a following (notification and feed)
                     // - a mention from a stranger (notification only)
                     if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
-                        console.log('GOT AN INCOMING DM', incomingRequest);
                         await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo)
                     } else if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
@@ -140,8 +140,17 @@ router.post('/', async (req, res) => {
                         } else {
                             console.log('already created reply');
                         }
-                    } else if (false) {
-                        // TODO: detect mentions!!
+                    } else if (isMention(incomingRequest.object)) {
+                        if (!isIndexed(incomingRequest.object.id)) {
+                            await createActivity(incomingRequest.object);
+                            addNotification({
+                                type: 'Mention',
+                                actor: incomingRequest.object.attributedTo,
+                                object: incomingRequest.object.id
+                            });
+                        } else {
+                            console.log('already created mention');
+                        }
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
                         await createActivity(incomingRequest.object);

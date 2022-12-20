@@ -1,7 +1,7 @@
 {
-  "name": "onosendai",
+  "name": "shuttlecraft",
   "version": "1.0.0",
-  "description": "a single user federated server",
+  "description": "a single user activitypub server - join the federation!",
   "main": "index.js",
   "type": "module",
   "scripts": {

@@ -15,13 +15,9 @@
     <header>{{#if recipient}}Messages with {{recipient.preferredUsername}}{{else}}Inbox{{/if}}</header>
     {{#if recipient}}
     <div class="inbox">
-        <div class="messages">
+        <div class="messages" id="home_stream">
             {{#each inbox}}
-                <div class="message">
-                    {{{this.content}}}
-
-                    {{timesince this.published}} ({{this.id}})
-                </div>
+                {{> dm message=this}}
             {{/each}}
         </div>
     {{>composer inReplyTo=lastIncoming to=recipient.id}}

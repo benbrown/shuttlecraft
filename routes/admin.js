@@ -200,6 +200,11 @@ router.get('/notifications', async (req, res) => {
             original = await getNote(note.inReplyTo);
             note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
         }
+        if (notification.notification.type === 'Mention') {
+            note = await getActivity(notification.notification.object);
+            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+        }
+
         return {
             actor,
             note,
@@ -282,12 +287,22 @@ router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
     console.log('INCOMING POST', req.body);
     const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
-    // return html partial of the new post for insertion in the feed
-    res.status(200).render('partials/note', {
-        note: post,
-        actor: req.app.get('account').actor,
-        layout: null
-    });
+
+    if (post.directMessage === true) {
+        // return html partial of the new post for insertion in the feed
+        res.status(200).render('partials/dm', {
+            message: post,
+            actor: req.app.get('account').actor,
+            layout: null,
+        });
+    } else {
+        // return html partial of the new post for insertion in the feed
+        res.status(200).render('partials/note', {
+            note: post,
+            actor: req.app.get('account').actor,
+            layout: 'activity'
+        });
+    }
 });
 
 router.get('/profile/:handle', async (req, res) => {
