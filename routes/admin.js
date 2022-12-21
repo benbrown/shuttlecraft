@@ -264,10 +264,8 @@ router.get('/dms/:handle?', async (req, res) => {
                 }
             });
 
-            // find last incoming message
-            lastIncoming = inbox.slice().find((message) => {
-                return message.attributedTo != ActivityPub.actor.id;
-            });
+            // find last message in thread
+            lastIncoming = inbox.length ? inbox[0] : null;
 
             // mark all of these messages as seen
             if (inboxIndex[recipient.id]) {
