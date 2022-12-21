@@ -1,4 +1,4 @@
-<div class="stream" id="composer">
+<div class="stream" >
     {{#if originalPost}}
         <Header>Reply</Header>
         <div class="activity">
@@ -8,7 +8,7 @@
     {{else}}
         <Header>Compose</Header>
     {{/if}}
-    <form onsubmit="return app.post()">
+    <form onsubmit="return app.post()" id="composer">
         <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
         <input type="text" id="cw" placeholder="content warning" />
         <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" hidden />
