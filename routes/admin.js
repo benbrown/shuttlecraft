@@ -42,6 +42,10 @@ router.get('/poll', async (req, res) => {
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
+    const inboxIndex = getInboxIndex();
+    const unreadDM = Object.keys(inboxIndex).filter((k) => {
+            return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
+    })?.length || 0;
 
 
     const {
@@ -49,7 +53,8 @@ router.get('/poll', async (req, res) => {
     } = await getActivitySince(sincePosts, true);
     res.json({
         newPosts: activitystream.length,
-        newNotifications: notifications.length
+        newNotifications: notifications.length,
+        newDMs: unreadDM,
     });
 
 });
