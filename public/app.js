@@ -84,6 +84,22 @@ const app = {
                 newNotifications.hidden = true;
             }
         }
+        const newDMs = document.getElementById('newDMs') || document.getElementById('newDMsBadge');
+        if (newDMs) {
+            if (meta.newDMs > 0) {
+                if (meta.newDMs > app.newDMs) {
+                    // BEEP!
+                    console.log('BEEP!');
+                }
+                app.newDMs = meta.newDMs;
+                newDMs.innerHTML = `${meta.newDMs}<span> new</span>`;
+                newDMs.hidden = false;
+            } else {
+                newDMs.innerHTML = '';
+                newDMs.hidden = true;
+            }
+        }
+
     },
     pollForPosts: () => {
         fetch('/private/poll','get').then((json) => {
@@ -177,7 +193,7 @@ const app = {
                 // reset the inputs to blank
                 post.value = '';
                 cw.value = '';
-                inReplyTo.value = '';
+                // inReplyTo.value = '';
             } else {
                 console.error('HTTP PROXY CHANGE', Http);
             }
