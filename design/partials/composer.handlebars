@@ -1,10 +1,30 @@
-<div id="composer">
+<div class="stream" id="composer">
+    {{#if originalPost}}
+        <Header>Reply</Header>
+        <div class="activity">
+            {{> byline actor=actor}}
+            {{{originalPost.content}}}
+        </div>
+    {{else}}
+        <Header>Compose</Header>
+    {{/if}}
     <form onsubmit="return app.post()">
-        <textarea id="post" required placeholder="The coolest thing I can think of right now..."></textarea>
+        <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
         <input type="text" id="cw" placeholder="content warning" />
-        <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" />
-        <input id="to" placeholder="to" value="{{to}}" />
-
+        <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" hidden />
+        <input id="to" placeholder="to" value="{{to}}" hidden />
         <button id="submit" type="submit">Post</button>
     </form>
 </div>
+<script>
+
+    // scroll to bottom
+    var div = document.getElementById("main");
+    div.scrollTop = div.scrollHeight;
+
+    // focus the text input
+    const input = document.getElementById('post');
+    input.focus();
+    input.selectionStart = input.selectionEnd = input.value.length;
+
+</script>
