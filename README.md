@@ -112,6 +112,24 @@ the real URL served by this app. Also note that it is embedded in
 every post you write - so if you change values in the `account.json` file,
 your previous posts may break.
 
+## Install via docker
+
+Run the server on [https://localhost](https://localhost) with:
+
+    docker-compose down && docker-compose build && docker-compose up
+
+ - Buy a domain, configure DNS, create a valid key pair
+ - Copy the cert over `nginx-alpine-ssl/nginx-selfsigned.crt` and the key over `nginx-alpine-ssl/nginx-selfsigned.key`
+
+Edit Dockerfile and change values for:
+
+    ENV DOMAIN=localhost
+    ENV USERNAME=testuser
+    ENV PASS=mypassword
+
+Run the server with:
+
+    docker-compose down && docker-compose build && docker-compose up
 
 ## Login
 
