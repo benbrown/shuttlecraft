@@ -1,6 +1,7 @@
 # SHUTTLECRAFT by Ben Brown
 
 This is a project to create an "easy" way to participate in the ActivityPub "Fediverse" and other indie web protocols like RSS.
+This was created and is maintained by [Ben Brown](https://benbrown.com).
 
 Currently, this means:
 
