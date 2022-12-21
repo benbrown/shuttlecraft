@@ -197,7 +197,6 @@ const app = {
                 // reset the inputs to blank
                 post.value = '';
                 cw.value = '';
-                // inReplyTo.value = '';
             } else {
                 console.error('HTTP PROXY CHANGE', Http);
             }
