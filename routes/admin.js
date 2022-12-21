@@ -327,8 +327,6 @@ router.get('/post', async(req, res) => {
         actor = account.actor;
     }
 
-    console.log('REQ.QUERY', req.query);
-
     res.status(200).render('partials/composer', {
         to,
         inReplyTo,
