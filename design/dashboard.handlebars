@@ -5,18 +5,27 @@
     <a href="/private" id="newPosts" class="unread" hidden></a>
 </header>
 <div id="home_stream">
-    {{#each activitystream}}
-        {{#with this}}
-            <div class="activity">
-                {{#if boost}}
-                    <div class="boost">
-                    🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
-                    </div>
-                {{/if}}
-                {{> note note=note}}
-            </div>
-        {{/with}}
-    {{/each}}
+    {{#if activitystream}}
+        {{#each activitystream}}
+            {{#with this}}
+                <div class="activity">
+                    {{#if boost}}
+                        <div class="boost">
+                        🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                        </div>
+                    {{/if}}
+                    {{> note note=note}}
+                </div>
+            {{/with}}
+        {{/each}}
+    {{else}}
+        <div class="empty">
+            <p>Follow some people to fill your feed with posts.</p>
+            <p>I suggest following me! 
+                I'm <a href="/private/profile/benbrown@hackers.town">benbrown@hackers.town</a>
+            </p>
+        </div>
+    {{/if}}
 </div>
 
 <a href="/private?offset={{next}}" class="moreLink">More</a>
