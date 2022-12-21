@@ -187,6 +187,10 @@ const app = {
                 const newHtml = Http.responseText;
                 const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
 
+                if (!el) {
+                    window.location = '/private/';
+                }
+
                 // todo: ideally this would come back with all the html it needs
                 el.innerHTML = newHtml + el.innerHTML;
 
@@ -201,6 +205,10 @@ const app = {
         return false;
     },
     replyTo: (activityId, mention) => {
+
+        window.location = '/private/post?inReplyTo=' + activityId;
+        return;
+
         const inReplyTo = document.getElementById('inReplyTo');
         const post = document.getElementById('post');
         post.value = `@${ mention } `;

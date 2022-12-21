@@ -136,6 +136,8 @@ router.get('/following', async (req, res) => {
 });
 
 
+
+
 router.get('/', async (req, res) => {
 
     const followers = await getFollowers();
@@ -311,6 +313,30 @@ router.get('/dms/:handle?', async (req, res) => {
         recipient,
         error
     });
+});
+
+router.get('/post', async(req, res) => {
+
+    const to = req.query.to;
+    const inReplyTo = req.query.inReplyTo;
+    let op;
+    let actor;
+    if (inReplyTo) {
+        op = await getActivity(inReplyTo);
+        const account = await fetchUser(op.attributedTo);
+        actor = account.actor;
+    }
+
+    res.status(200).render('partials/composer', {
+        to,
+        inReplyTo,
+        actor,
+        originalPost: op,
+        me: req.app.get('account').actor,
+        layout: 'private'
+    });
+
+
 });
 
 router.post('/post', async (req, res) => {
