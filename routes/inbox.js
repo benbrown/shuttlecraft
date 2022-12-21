@@ -166,6 +166,9 @@ router.post('/', async (req, res) => {
                     }
 
                     break;
+                case 'Update':
+                    await createActivity(incomingRequest.object);
+                    break;
                 default:
                     logger('Unknown request type:', incomingRequest.type);
             }
