@@ -206,13 +206,23 @@ router.get('/notifications', async (req, res) => {
             note = await getNote(notification.notification.object);
         }
         if (notification.notification.type === 'Reply') {
-            note = await getActivity(notification.notification.object);
-            original = await getNote(note.inReplyTo);
-            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+            try {
+                note = await getActivity(notification.notification.object);
+                original = await getNote(note.inReplyTo);
+                note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+            } catch(err) {
+                console.error('Could not fetch parent post', err);
+                return null;
+            }
         }
         if (notification.notification.type === 'Mention') {
-            note = await getActivity(notification.notification.object);
-            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+            try {
+                note = await getActivity(notification.notification.object);
+                note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+            } catch(err) {
+                console.log('Could not fetch mention post', err);
+                return null;
+            }
         }
 
         return {
@@ -226,7 +236,7 @@ router.get('/notifications', async (req, res) => {
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
-        notifications: notifications.reverse()
+        notifications: notifications.filter((n)=>n!==null).reverse()
     });
 });
 
