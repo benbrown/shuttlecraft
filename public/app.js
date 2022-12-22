@@ -162,11 +162,34 @@ const app = {
         }
         return false;
     },
-    post: () => {
+    readAttachment: async () => {
+        // read the file into base64, return mimtype and data
+        const files = document.getElementById('attachment').files;
+        if (files) {
+            return new Promise((resolve, reject) => {
+                let f = files[0];   // only read the first file
+                let reader = new FileReader();
+                reader.onload = (function(theFile) {
+                    return function(e) {
+                        let base64 = btoa(
+                            new Uint8Array(e.target.result)
+                                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                            );
+                        resolve({type: f.type, data: base64});
+                    };
+                })(f);
+                reader.readAsArrayBuffer(f);
+            });
+        } else {
+            resolve(null);
+        }
+    },
+    post: async () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const attachment = await app.readAttachment();
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -177,6 +200,7 @@ const app = {
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
+            attachment: attachment
         }));
 
         Http.onreadystatechange = () => {

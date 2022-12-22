@@ -6,6 +6,7 @@ import {
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
+import { createHash } from 'crypto';
 import {
     getFollowers,
     getFollowing,
@@ -20,7 +21,8 @@ import {
     isFollowing,
     getInboxIndex,
     getInbox,
-    writeInboxIndex
+    writeInboxIndex,
+    writeMedia,
 } from '../lib/account.js';
 import {
     fetchUser
@@ -341,7 +343,22 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
+
+    let attachment;
+
+    if (req.body.attachment) {
+        // get data from base64 to generate a hash
+        let data = Buffer.from(req.body.attachment.data, 'base64');
+        let hash = createHash('md5').update(data).digest("hex");
+        // use hash as filename, save the JSON (to keep mime type record as told by browser)
+        writeMedia(hash, req.body.attachment);
+        attachment = {
+            type: req.body.attachment.type,
+            relativeUrl: `/media/${hash}`
+        };
+    }
+
+    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, attachment);
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {

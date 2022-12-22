@@ -73,7 +73,8 @@ app.use(bodyParser.json({
   type: 'application/activity+json'
 })); // support json encoded bodies
 app.use(bodyParser.json({
-  type: 'application/json'
+  type: 'application/json',
+  limit: '4mb' // allow large bodies as attachments are base64 in JSON
 })); // support json encoded bodies
 app.use(cookieParser())
 
