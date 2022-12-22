@@ -42,9 +42,16 @@ router.get('/index', async (req, res) => {
 
 router.get('/poll', async (req, res) => {
     if (!req.query.nowait) {
-        await UserEvent.waitForEvent();
+        req.on('close', function (err){
+            UserEvent.abort();
+            return;
+        });
+        try {
+            await UserEvent.waitForEvent();
+        } catch(e) {
+            // we got aborted
+        }
     }
-
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
