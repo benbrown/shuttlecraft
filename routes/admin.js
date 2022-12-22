@@ -41,7 +41,9 @@ router.get('/index', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
-    await UserEvent.waitForEvent();
+    if (!req.query.nowait) {
+        await UserEvent.waitForEvent();
+    }
 
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
