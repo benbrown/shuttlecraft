@@ -347,15 +347,14 @@ router.post('/post', async (req, res) => {
     let attachment;
 
     if (req.body.attachment) {
-        // get data from base64 to generate a hash
-        let data = Buffer.from(req.body.attachment.data, 'base64');
-        let hash = createHash('md5').update(data).digest("hex");
-        // use hash as filename, save the JSON (to keep mime type record as told by browser)
-        writeMedia(hash, req.body.attachment);
+        // convert attachment.data to raw buffer
         attachment = {
             type: req.body.attachment.type,
-            relativeUrl: `/media/${hash}`
+            data: Buffer.from(req.body.attachment.data, 'base64')
         };
+        attachment.hash = createHash('md5').update(attachment.data).digest("hex");
+        // use hash as filename
+        writeMedia(attachment);
     }
 
     const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, attachment);
