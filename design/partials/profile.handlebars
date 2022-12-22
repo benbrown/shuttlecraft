@@ -5,7 +5,9 @@
         {{/if}}
     </div>
     <div class="profileToolbar">
-        <a href="{{or actor.url actor.id}}"  class="avatarLink"><img src="{{actor.icon.url}}" class="avatar"></a>
+        <div class="avatarLink">
+            {{> avatar actor=actor public=true}}
+        </div>
         <div class="tools">
             <button class="bigfollow {{#if actor.isFollowing}}active{{/if}}" onclick='return app.toggleFollow(this, "{{actor.id}}")'>
                 <span class="active">Unfollow</span>
