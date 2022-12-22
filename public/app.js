@@ -165,8 +165,8 @@ const app = {
     readAttachment: async () => {
         // read the file into base64, return mimtype and data
         const files = document.getElementById('attachment').files;
-        if (files) {
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            if (files && files[0]) {
                 let f = files[0];   // only read the first file
                 let reader = new FileReader();
                 reader.onload = (function(theFile) {
@@ -179,10 +179,10 @@ const app = {
                     };
                 })(f);
                 reader.readAsArrayBuffer(f);
-            });
-        } else {
-            resolve(null);
-        }
+            } else {
+                resolve(null);
+            }
+        });
     },
     post: async () => {
         const post = document.getElementById('post');
