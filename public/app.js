@@ -163,7 +163,7 @@ const app = {
         return false;
     },
     readAttachment: async () => {
-        // read the file into base64, return mimtype and data
+        // read the file into base64, return mimetype and data
         const files = document.getElementById('attachment').files;
         return new Promise((resolve, reject) => {
             if (files && files[0]) {
