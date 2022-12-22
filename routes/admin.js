@@ -31,6 +31,9 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -38,6 +41,7 @@ router.get('/index', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
+    await UserEvent.waitForEvent();
 
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
@@ -46,7 +50,6 @@ router.get('/poll', async (req, res) => {
     const unreadDM = Object.keys(inboxIndex).filter((k) => {
             return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
     })?.length || 0;
-
 
     const {
         activitystream
