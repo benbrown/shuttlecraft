@@ -33,6 +33,9 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import { encode as blurhashEncode } from 'blurhash';
+import { getSync as imageDataGetSync } from '@andreekeberg/imagedata'
+
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -352,12 +355,20 @@ router.post('/post', async (req, res) => {
             type: req.body.attachment.type,
             data: Buffer.from(req.body.attachment.data, 'base64'),
             description: req.body.description || '',
-            blurhash: null,
-            width: null,
-            height: null
         };
+
+        // used as filename/id
         attachment.hash = createHash('md5').update(attachment.data).digest("hex");
-        // use hash as filename
+
+        if (attachment.type.split('/')[0] == 'image') {
+            // calculate dimensions and blurhash
+            let imageData = imageDataGetSync(attachment.data);
+            attachment.focalPoint = '0.0,0.0';
+            attachment.width = imageData.width;
+            attachment.height = imageData.height;
+            attachment.blurhash = blurhashEncode(imageData.data, imageData.width, imageData.height, 4, 4);
+        }
+
         writeMedia(attachment);
     }
 

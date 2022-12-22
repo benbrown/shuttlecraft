@@ -25,7 +25,9 @@
     "md5": "^2.3.0",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.0",
-    "rss-generator": "^0.0.3"
+    "rss-generator": "^0.0.3",
+    "blurhash": "^2.0.4",
+    "@andreekeberg/imagedata": "^1.0.2"
   },
   "keywords": [
     "fediverse",
