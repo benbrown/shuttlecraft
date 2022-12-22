@@ -184,47 +184,48 @@ const app = {
             }
         });
     },
-    post: async () => {
+    post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
-        const attachment = await app.readAttachment();
 
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/post';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: post.value,
-            cw: cw.value,
-            inReplyTo: inReplyTo.value,
-            to: to.value,
-            attachment: attachment
-        }));
+        app.readAttachment().then((attachment) => {
+            const Http = new XMLHttpRequest();
+            const proxyUrl ='/private/post';
+            Http.open("POST", proxyUrl);
+            Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            Http.send(JSON.stringify({
+                post: post.value,
+                cw: cw.value,
+                inReplyTo: inReplyTo.value,
+                to: to.value,
+                attachment: attachment
+            }));
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                console.log('posted!');
+            Http.onreadystatechange = () => {
+                if (Http.readyState == 4 && Http.status == 200) {
+                    console.log('posted!');
 
-                // prepend the new post
-                const newHtml = Http.responseText;
-                const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
+                    // prepend the new post
+                    const newHtml = Http.responseText;
+                    const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
 
-                if (!el) {
-                    window.location = '/private/';
+                    if (!el) {
+                        window.location = '/private/';
+                    }
+
+                    // todo: ideally this would come back with all the html it needs
+                    el.innerHTML = newHtml + el.innerHTML;
+
+                    // reset the inputs to blank
+                    post.value = '';
+                    cw.value = '';
+                } else {
+                    console.error('HTTP PROXY CHANGE', Http);
                 }
-
-                // todo: ideally this would come back with all the html it needs
-                el.innerHTML = newHtml + el.innerHTML;
-
-                // reset the inputs to blank
-                post.value = '';
-                cw.value = '';
-            } else {
-                console.error('HTTP PROXY CHANGE', Http);
             }
-        }
+        });
         return false;
     },
     replyTo: (activityId, mention) => {
