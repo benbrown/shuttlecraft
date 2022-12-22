@@ -13,7 +13,7 @@
 <div class="activity">
     {{#with this}}
         <div class="header">
-            <img src="{{actor.icon.url}}" class="avatar">
+            {{> avatar actor=actor public=true}}
             <div>
                 <div><strong>{{actor.preferredUsername}}</strong></div>
                 {{getUsername actor.id}}
