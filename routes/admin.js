@@ -31,6 +31,9 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -38,11 +41,11 @@ router.get('/index', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
+    await UserEvent.waitForEvent();
 
     const sincePosts = new Date(req.cookies.latestPost).getTime();
     const sinceNotifications = parseInt(req.cookies.latestNotification);
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
-
 
     const {
         activitystream
