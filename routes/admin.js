@@ -350,7 +350,11 @@ router.post('/post', async (req, res) => {
         // convert attachment.data to raw buffer
         attachment = {
             type: req.body.attachment.type,
-            data: Buffer.from(req.body.attachment.data, 'base64')
+            data: Buffer.from(req.body.attachment.data, 'base64'),
+            description: req.body.description || '',
+            blurhash: null,
+            width: null,
+            height: null
         };
         attachment.hash = createHash('md5').update(attachment.data).digest("hex");
         // use hash as filename

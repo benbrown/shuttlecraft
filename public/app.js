@@ -189,6 +189,7 @@ const app = {
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const description = document.getElementById('description');
 
         app.readAttachment().then((attachment) => {
             const Http = new XMLHttpRequest();
@@ -200,7 +201,8 @@ const app = {
                 cw: cw.value,
                 inReplyTo: inReplyTo.value,
                 to: to.value,
-                attachment: attachment
+                attachment: attachment,
+                description: description.value
             }));
 
             Http.onreadystatechange = () => {
