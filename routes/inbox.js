@@ -126,6 +126,10 @@ router.post('/', async (req, res) => {
                     // - a post that is from someone you follow, but is a reply to a post from someone you do not follow (should be ignored?)
                     // - a mention from a following (notification and feed)
                     // - a mention from a stranger (notification only)
+                    if (!incomingRequest.object.published) {    // If published datestamp is missing, add one
+                        incomingRequest.object.published = (new Date()).toISOString();
+                    }
+
                     if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
                         await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo)
                     } else if (isReplyToMyPost(incomingRequest.object)) {
