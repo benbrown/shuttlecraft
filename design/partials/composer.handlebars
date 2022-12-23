@@ -94,10 +94,14 @@
     }
 
     function validatePoll() {
-        if (document.getElementById('polldesigner').style.display === 'none') {
+        if (document.getElementById('polldesigner')) {
+            if (document.getElementById('polldesigner').style.display === 'none') {
+                return true;
+            }
+            return !polldata.choices.includes(null);    // undefined elements in poll
+        } else {
             return true;
         }
-        return !polldata.choices.includes(null);    // undefined elements in poll
     }
 
     function updatePollHTML(dataOnly) {

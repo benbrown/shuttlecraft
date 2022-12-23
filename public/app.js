@@ -171,7 +171,7 @@ const app = {
         const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
         // get hidden element for poll designer (sending a new poll)
         let polldata;
-        if (document.getElementById('polldata').value) {
+        if (document.getElementById('polldata') && document.getElementById('polldata').value) {
             polldata = JSON.parse(document.getElementById('polldata').value);
             if (polldata.choices.includes(null)) {
                 polldata = null;    // invalid options
