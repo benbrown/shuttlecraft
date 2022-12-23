@@ -348,13 +348,14 @@ router.get('/post', async(req, res) => {
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
     let post;
+
     if (req.body.names.length > 0) {
         // send multiple notes, one for each choice made in poll
         for (const name of req.body.names) {
-            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to);
+            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to, null);
         }
     } else {
-        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to);
+        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to, req.body.polldata);
     }
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed

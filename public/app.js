@@ -167,8 +167,13 @@ const app = {
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
-        // get hidden elements for poll choices
+        // get hidden elements for poll choices (replying to poll)
         const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
+        // get hidden element for poll designer (sending a new poll)
+        let polldata;
+        if (document.getElementById('polldata')) {
+            polldata = JSON.parse(document.getElementById('polldata').value);
+        }
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -179,7 +184,8 @@ const app = {
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
-            names: names
+            names: names,   // list of things being voted for
+            polldata: polldata // poll being created by user
         }));
 
         Http.onreadystatechange = () => {

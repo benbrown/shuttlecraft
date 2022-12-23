@@ -9,36 +9,139 @@
         <Header>Compose</Header>
     {{/if}}
     <form onsubmit="return app.post()" id="composer">
-        {{#if names}}
-        Vote for:
-        <ul>
-        {{#each names}}
-            <li>{{this}}</li>
-        {{/each}}
-        </ul>
-        <textarea id="post" hidden></textarea>
-        <input type="text" id="cw" hidden />
+        {{#if names}} <!-- When voting, show the user's choice before posting -->
+            Vote for:
+            <ul>
+            {{#each names}}
+                <li>{{this}}</li>
+            {{/each}}
+            </ul>
+            <textarea id="post" hidden></textarea> <!-- no post content on poll vote -->
+            <input type="text" id="cw" hidden /> <!-- no cw on poll vote -->
         {{else}}
-        <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
-        <input type="text" id="cw" placeholder="content warning" />
+            <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
+            <input type="text" id="cw" placeholder="content warning" />
+            <div id="polldesigner" style="display:none"></div> <!-- The interactive poll designer -->
+            <input id="polldata" type="text" hidden> <!-- JSON data for the designed poll -->
+            <button id="togglepoll" type="button">📊</button>
         {{/if}}
         <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" hidden />
         <input id="to" placeholder="to" value="{{to}}" hidden />
-        {{#each names}}
+        {{#each names}} <!-- replying to a post containing a poll, embed user's choice in field so it can be posted -->
             <input class="pollchoice" value="{{{this}}}" hidden />
         {{/each}}
         <button id="submit" type="submit">Post</button>
     </form>
 </div>
 <script>
+    let polldata = {
+        type: 'oneOf',
+        choices: [null, null],
+        time: 86400,
+    };
 
-    // scroll to bottom
-    var div = document.getElementById("main");
-    div.scrollTop = div.scrollHeight;
+    let times = {
+        '5 minutes': 5 * 60,
+        '30 minutes': 30 * 60,
+        '1 hour': 60 * 60,
+        '6 hours': 6 * 60 * 60,
+        '1 day': 24 * 60 * 60,
+        '3 days': 3 * 24 * 60 * 60,
+        '7 days': 7 * 24 * 60 * 60
+    };
 
-    // focus the text input
-    const input = document.getElementById('post');
-    input.focus();
-    input.selectionStart = input.selectionEnd = input.value.length;
+    function escapeHTML(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
+    function addChoice() {
+        polldata.choices.push(null);
+        updatePollHTML();
+    }
+
+    function deleteChoice(n) {
+        polldata.choices.splice(n, 1);
+        updatePollHTML();
+    }
+
+    function changeChoiceText(n, value) {
+        console.log(n, value);
+        polldata.choices[n] = value;
+        updatePollHTML();
+    }
+
+    function togglePollType() {
+        if (polldata.type === 'oneOf') {
+            polldata.type = 'anyOf';
+        } else {
+            polldata.type = 'oneOf';
+        }
+        updatePollHTML();
+        return false;
+    }
+
+    function updateTime(value) {
+        polldata.time = parseInt(value);
+        updatePollHTML();
+    }
+
+    function validatePoll() {
+        return !polldata.choices.includes(null);    // undefined elements in poll
+    }
+
+    function updatePollHTML() {
+        // FIXME, removing and replacing DOM elements doesn't preserve focus. Need to manually restore or do it without complete rewrite of div
+        let div = document.getElementById('polldesigner');
+        let html = '';
+        html += '<form>';
+        for (let i=0;i<polldata.choices.length;i++) {
+            let radioOrCheckbox = '<a href="#" onclick="togglePollType()">' + (polldata.type == 'oneOf' ? '🔘' : '🔲') + '</a>';
+            let nameBox = '<input type="text" value="' + escapeHTML(polldata.choices[i] ? polldata.choices[i] : '') + '" size="20" onChange="changeChoiceText(' + i + ', this.value)" placeholder="Choice ' + (i+1) + '">';
+            let deleteButton = '<a href="#" onclick="deleteChoice(' + i + ')">' + (i > 1 ? '❎' : '') + '</a>';
+            html += radioOrCheckbox + nameBox + deleteButton + '<br>';
+        }
+
+        html += '<input type="button" value="➕ Add a choice" onclick="addChoice()">';
+        html += '<select id="time" name="time" onChange="updateTime(this.value)">';
+        Object.keys(times).forEach((k) => {
+            html += '   <option value="' + times[k] + '" ' + (polldata.time == times[k] ? 'selected' : '') + '>' + k + '</option>';
+        });
+        html += '</select>';
+        html += '</form>';
+
+        // update hidden field with data so that it gets posted
+        document.getElementById('polldata').value = JSON.stringify(polldata);
+        console.log(polldata);
+
+        // update display
+        div.innerHTML = html;
+    }
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        // scroll to bottom
+        var div = document.getElementById("main");
+        div.scrollTop = div.scrollHeight;
+
+        // focus the text input
+        const input = document.getElementById('post');
+        input.focus();
+        input.selectionStart = input.selectionEnd = input.value.length;
+
+        let togglepollButton = document.getElementById('togglepoll');
+        togglepollButton.onclick = function() {
+            let div = document.getElementById('polldesigner');
+            if (div.style.display !== 'none') {
+                div.style.display = 'none';
+            }
+            else {
+                updatePollHTML();
+                div.style.display = 'block';
+            }
+        };
+    });
 </script>
