@@ -15,16 +15,18 @@
             {{/if}}
 
             {{#if (isEq note.type 'Question')}}
-                <fieldset>
-                    {{#each note.oneOf}}
-                        <input type="radio" id="poll_option{{@index}}" name="pollchoice" value="{{name}}" disabled>
-                        <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
-                    {{/each}}
-                    {{#each note.anyOf}}
-                        <input type="checkbox" id="poll_option{{@index}}" name="pollchoice" value="{{name}}" disabled>
-                        <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
-                    {{/each}}
-                </fieldset>
+                <form id="{{note.id}}">
+                    <fieldset>
+                        {{#each note.oneOf}}
+                            <input type="radio" id="poll_option{{@index}}" name="pollchoice" value="{{name}}">
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                        {{#each note.anyOf}}
+                            <input type="checkbox" id="poll_option{{@index}}" name="pollchoice" value="{{name}}">
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                    </fieldset>
+                </form>
                 Ends at: {{note.endTime}}<br>
                 Votes cast: {{note.votersCount}}<br>
             {{/if}}

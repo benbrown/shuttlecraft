@@ -9,10 +9,24 @@
         <Header>Compose</Header>
     {{/if}}
     <form onsubmit="return app.post()" id="composer">
+        {{#if names}}
+        Vote for:
+        <ul>
+        {{#each names}}
+            <li>{{this}}</li>
+        {{/each}}
+        </ul>
+        <textarea id="post" hidden></textarea>
+        <input type="text" id="cw" hidden />
+        {{else}}
         <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
         <input type="text" id="cw" placeholder="content warning" />
+        {{/if}}
         <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" hidden />
         <input id="to" placeholder="to" value="{{to}}" hidden />
+        {{#each names}}
+            <input class="pollchoice" value="{{{this}}}" hidden />
+        {{/each}}
         <button id="submit" type="submit">Post</button>
     </form>
 </div>

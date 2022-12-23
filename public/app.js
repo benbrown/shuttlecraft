@@ -167,6 +167,8 @@ const app = {
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        // get hidden elements for poll choices
+        const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -177,6 +179,7 @@ const app = {
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
+            names: names
         }));
 
         Http.onreadystatechange = () => {
@@ -204,8 +207,18 @@ const app = {
         return false;
     },
     replyTo: (activityId, mention) => {
-
-        window.location = '/private/post?inReplyTo=' + activityId;
+        // get poll form response
+        let pollChoices = [];
+        Array.from(document.getElementById(activityId).getElementsByTagName('input')).forEach((inp) => {
+            if (inp.checked) {
+                pollChoices.push(inp.value);
+            }
+        });
+        if (pollChoices.length > 0) {
+            window.location = '/private/post?inReplyTo=' + activityId + '&names=' + encodeURIComponent(JSON.stringify(pollChoices));;
+        } else {
+            window.location = '/private/post?inReplyTo=' + activityId;
+        }
         return;
 
         const inReplyTo = document.getElementById('inReplyTo');
