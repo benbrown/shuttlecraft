@@ -8,7 +8,7 @@
     {{else}}
         <Header>Compose</Header>
     {{/if}}
-    <form onsubmit="return app.post()" id="composer">
+    <form onsubmit="return validatePoll() && app.post()" id="composer">
         {{#if names}} <!-- When voting, show the user's choice before posting -->
             Vote for:
             <ul>
@@ -61,18 +61,17 @@
 
     function addChoice() {
         polldata.choices.push(null);
-        updatePollHTML();
+        updatePollHTML(false);
     }
 
     function deleteChoice(n) {
         polldata.choices.splice(n, 1);
-        updatePollHTML();
+        updatePollHTML(false);
     }
 
     function changeChoiceText(n, value) {
-        console.log(n, value);
         polldata.choices[n] = value;
-        updatePollHTML();
+        updatePollHTML(true);
     }
 
     function togglePollType() {
@@ -81,45 +80,46 @@
         } else {
             polldata.type = 'oneOf';
         }
-        updatePollHTML();
+        updatePollHTML(false);
         return false;
     }
 
     function updateTime(value) {
         polldata.time = parseInt(value);
-        updatePollHTML();
+        updatePollHTML(true);
     }
 
     function validatePoll() {
+        if (document.getElementById('polldesigner').style.display === 'none') {
+            return true;
+        }
         return !polldata.choices.includes(null);    // undefined elements in poll
     }
 
-    function updatePollHTML() {
-        // FIXME, removing and replacing DOM elements doesn't preserve focus. Need to manually restore or do it without complete rewrite of div
+    function updatePollHTML(dataOnly) {
         let div = document.getElementById('polldesigner');
-        let html = '';
-        html += '<form>';
-        for (let i=0;i<polldata.choices.length;i++) {
-            let radioOrCheckbox = '<a href="#" onclick="togglePollType()">' + (polldata.type == 'oneOf' ? '🔘' : '🔲') + '</a>';
-            let nameBox = '<input type="text" value="' + escapeHTML(polldata.choices[i] ? polldata.choices[i] : '') + '" size="20" onChange="changeChoiceText(' + i + ', this.value)" placeholder="Choice ' + (i+1) + '">';
-            let deleteButton = '<a href="#" onclick="deleteChoice(' + i + ')">' + (i > 1 ? '❎' : '') + '</a>';
-            html += radioOrCheckbox + nameBox + deleteButton + '<br>';
+        if (!dataOnly) {
+            let html = '';
+            html += '<form>';
+            for (let i=0;i<polldata.choices.length;i++) {
+                let radioOrCheckbox = '<a href="#" onclick="togglePollType()">' + (polldata.type == 'oneOf' ? '🔘' : '🔲') + '</a>';
+                let nameBox = '<input type="text" value="' + escapeHTML(polldata.choices[i] ? polldata.choices[i] : '') + '" size="20" onChange="changeChoiceText(' + i + ', this.value)" placeholder="Choice ' + (i+1) + '">';
+                let deleteButton = '<a href="#" onclick="deleteChoice(' + i + ')">' + (i > 1 ? '❎' : '') + '</a>';
+                html += radioOrCheckbox + nameBox + deleteButton + '<br>';
+            }
+
+            html += '<input type="button" value="➕ Add a choice" onclick="addChoice()">';
+            html += '<select id="time" name="time" onChange="updateTime(this.value)">';
+            Object.keys(times).forEach((k) => {
+                html += '   <option value="' + times[k] + '" ' + (polldata.time == times[k] ? 'selected' : '') + '>' + k + '</option>';
+            });
+            html += '</select>';
+            html += '</form>';
+            // update display
+            div.innerHTML = html;
         }
-
-        html += '<input type="button" value="➕ Add a choice" onclick="addChoice()">';
-        html += '<select id="time" name="time" onChange="updateTime(this.value)">';
-        Object.keys(times).forEach((k) => {
-            html += '   <option value="' + times[k] + '" ' + (polldata.time == times[k] ? 'selected' : '') + '>' + k + '</option>';
-        });
-        html += '</select>';
-        html += '</form>';
-
         // update hidden field with data so that it gets posted
         document.getElementById('polldata').value = JSON.stringify(polldata);
-        console.log(polldata);
-
-        // update display
-        div.innerHTML = html;
     }
 
     document.addEventListener("DOMContentLoaded", function(event) {
@@ -139,7 +139,7 @@
                 div.style.display = 'none';
             }
             else {
-                updatePollHTML();
+                updatePollHTML(false);
                 div.style.display = 'block';
             }
         };
