@@ -34,11 +34,7 @@
     </form>
 </div>
 <script>
-    let polldata = {
-        type: 'oneOf',
-        choices: [null, null],
-        time: 86400,
-    };
+    let polldata;
 
     let times = {
         '5 minutes': 5 * 60,
@@ -49,6 +45,14 @@
         '3 days': 3 * 24 * 60 * 60,
         '7 days': 7 * 24 * 60 * 60
     };
+
+    function pollReset() {
+        polldata = {
+            type: 'oneOf',
+            choices: [null, null],
+            time: 86400,
+        };
+    }
 
     function escapeHTML(str) {
         return str
@@ -119,10 +123,14 @@
             div.innerHTML = html;
         }
         // update hidden field with data so that it gets posted
-        document.getElementById('polldata').value = JSON.stringify(polldata);
+        if (validatePoll()) {
+            document.getElementById('polldata').value = JSON.stringify(polldata);
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function(event) {
+        pollReset();
+
         // scroll to bottom
         var div = document.getElementById("main");
         div.scrollTop = div.scrollHeight;
@@ -137,8 +145,10 @@
             let div = document.getElementById('polldesigner');
             if (div.style.display !== 'none') {
                 div.style.display = 'none';
-            }
-            else {
+                pollReset();
+                updatePollHTML(true);
+            } else {
+                pollReset();
                 updatePollHTML(false);
                 div.style.display = 'block';
             }
