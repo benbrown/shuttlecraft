@@ -16,7 +16,9 @@ import {
     isMyPost,
     isBlocked,
     addressedOnlyToMe,
-    isMention
+    getNote,
+    isMention,
+    recordVote,
 } from '../lib/account.js';
 import {
     createActivity,
@@ -135,12 +137,24 @@ router.post('/', async (req, res) => {
                     } else if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
                         if (!isIndexed(incomingRequest.object.id)) {
-                            await createActivity(incomingRequest.object);
-                            addNotification({
-                                type: 'Reply',
-                                actor: incomingRequest.object.attributedTo,
-                                object: incomingRequest.object.id
-                            });
+                            // check if this is a vote on a Question we asked
+                            let originalPost = await getNote(incomingRequest.object.inReplyTo);
+                            if (originalPost.type === 'Question') {
+                                await recordVote(incomingRequest.object.inReplyTo, incomingRequest.object.name, incomingRequest.actor);
+                                addNotification({
+                                    type: 'Vote',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.id
+                                });
+
+                            } else {
+                                await createActivity(incomingRequest.object);
+                                addNotification({
+                                    type: 'Reply',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.id
+                                });
+                            }
                         } else {
                             logger('already created reply');
                         }
