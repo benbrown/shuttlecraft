@@ -27,7 +27,12 @@
                         {{/each}}
                     </fieldset>
                 </form>
-                Ends at: {{note.endTime}}<br>
+                {{#if (expired note.endTime)}}
+                Ended {{timesince note.endTime}}
+                {{else}}
+                Ends {{timesince note.endTime}}
+                {{/if}}
+                <br>
                 Votes cast: {{note.votersCount}}<br>
             {{/if}}
 

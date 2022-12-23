@@ -53,6 +53,9 @@ const hbs = create({
     or: (a, b, options) => {
       return a || b
     },
+    expired: (date) => {
+      return moment(date).isBefore(moment())
+    },
     timesince: (date) => {
       return moment(date).fromNow();
     },
