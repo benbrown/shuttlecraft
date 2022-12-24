@@ -162,9 +162,47 @@ const app = {
         }
         return false;
     },
-    readAttachment: async () => {
+    settings: () => {
+        const summary = document.getElementById('summary');
+        const preferredUsername = document.getElementById('preferredUsername');
+        let attachment_header;
+        let attachment_avatar;
+
+        app.readAttachment('avatarupload').then((att) => {
+            attachment_avatar = att;
+            return app.readAttachment('headerupload').then((att) => {
+                attachment_header = att;
+
+                const Http = new XMLHttpRequest();
+                const proxyUrl ='/private/settings';
+                Http.open("POST", proxyUrl);
+                Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                Http.send(JSON.stringify({
+                    attachment_avatar: attachment_avatar,
+                    attachment_header: attachment_header,
+                    account: {
+                        actor: {
+                            summary: summary.value,
+                            preferredUsername: preferredUsername.value,
+                        }
+                    }
+                }));
+
+                Http.onreadystatechange = () => {
+                    if (Http.readyState == 4 && Http.status == 200) {
+                        console.log('posted!');
+                        window.location = '/private/settings';
+                    } else {
+                        console.error('HTTP PROXY CHANGE', Http);
+                    }
+                }
+            });
+        });
+        return false;
+    },
+    readAttachment: async (id) => {
         // read the file into base64, return mimetype and data
-        const files = document.getElementById('attachment').files;
+        const files = document.getElementById(id).files;
         return new Promise((resolve, reject) => {
             if (files && files[0]) {
                 let f = files[0];   // only read the first file
@@ -191,7 +229,7 @@ const app = {
         const to = document.getElementById('to');
         const description = document.getElementById('description');
 
-        app.readAttachment().then((attachment) => {
+        app.readAttachment('attachment').then((attachment) => {
             const Http = new XMLHttpRequest();
             const proxyUrl ='/private/post';
             Http.open("POST", proxyUrl);
