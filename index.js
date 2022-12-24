@@ -48,7 +48,7 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      if (a === b) return options.fn(this);
+      return (a === b);
     },
     or: (a, b, options) => {
       return a || b
@@ -60,6 +60,7 @@ const hbs = create({
       return ActivityPub.getUsername(user)
     },
     stripProtocol: (str) => str.replace(/^https\:\/\//, ''),
+    stripHTML: (str) => str.replace(/(<([^>]+)>)/gi, "")
   }
 });
 

@@ -120,7 +120,6 @@ router.get('/following', async (req, res) => {
 
     followers = followers.filter((f) => f !== undefined);
 
-
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -149,6 +148,8 @@ router.get('/', async (req, res) => {
         activitystream,
         next
     } = await getActivityStream(10, offset);
+
+
 
     const notes = await Promise.all(activitystream.map(async (n) => {
         // handle boosted posts
@@ -179,10 +180,20 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    if (req.query.json) {
-        res.json(notes);
-    } else {
+    // de-dupe notes by id, else will get two on edits
+    const uniqueIds = new Set();
+    const uniqueNotes = notes.filter(element => {
+      const isDuplicate = uniqueIds.has(element.note.id);
+      uniqueIds.add(element.note.id);
+      if (!isDuplicate) {
+        return true;
+      }
+      return false;
+    });
 
+    if (req.query.json) {
+        res.json(uniqueNotes);
+    } else {
         // set auth cookie
         res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
 
@@ -190,7 +201,7 @@ router.get('/', async (req, res) => {
             layout: 'private',
             me: ActivityPub.actor,
             next: next,
-            activitystream: notes,
+            activitystream: uniqueNotes,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -321,17 +332,25 @@ router.get('/post', async(req, res) => {
     const inReplyTo = req.query.inReplyTo;
     let op;
     let actor;
+    let prev;
     if (inReplyTo) {
         op = await getActivity(inReplyTo);
         const account = await fetchUser(op.attributedTo);
         actor = account.actor;
     }
 
+    if (req.query.edit) {
+        console.log("COMPOSING EDIT", req.query.edit);
+        prev = await getNote(req.query.edit);
+        //console.log("ORIGINAL", original);
+    }
+
     res.status(200).render('partials/composer', {
         to,
         inReplyTo,
         actor,
-        originalPost: op,
+        originalPost: op,   // original post being replied to
+        prev: prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
         layout: 'private'
     });
@@ -341,7 +360,7 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
+    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, req.body.editOf);
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {
