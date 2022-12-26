@@ -167,6 +167,16 @@ const app = {
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        // get hidden elements for poll choices (replying to poll)
+        const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
+        // get hidden element for poll designer (sending a new poll)
+        let polldata;
+        if (document.getElementById('polldata') && document.getElementById('polldata').value) {
+            polldata = JSON.parse(document.getElementById('polldata').value);
+            if (polldata.choices.includes(null)) {
+                polldata = null;    // invalid options
+            }
+        }
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -177,6 +187,8 @@ const app = {
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
+            names: names,   // list of things being voted for
+            polldata: polldata // poll being created by user
         }));
 
         Http.onreadystatechange = () => {
@@ -204,8 +216,18 @@ const app = {
         return false;
     },
     replyTo: (activityId, mention) => {
-
-        window.location = '/private/post?inReplyTo=' + activityId;
+        // get poll form response
+        let pollChoices = [];
+        Array.from(document.getElementById(activityId).getElementsByTagName('input')).forEach((inp) => {
+            if (inp.checked) {
+                pollChoices.push(inp.value);
+            }
+        });
+        if (pollChoices.length > 0) {
+            window.location = '/private/post?inReplyTo=' + activityId + '&names=' + encodeURIComponent(JSON.stringify(pollChoices));;
+        } else {
+            window.location = '/private/post?inReplyTo=' + activityId;
+        }
         return;
 
         const inReplyTo = document.getElementById('inReplyTo');
