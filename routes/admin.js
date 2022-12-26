@@ -23,6 +23,7 @@ import {
     getInbox,
     writeInboxIndex,
     writeMedia,
+    updateAccountActor
 } from '../lib/account.js';
 import {
     fetchUser
@@ -38,6 +39,10 @@ import {
 } from '../lib/UserEvent.js';
 import { encode as blurhashEncode } from 'blurhash';
 import { getSync as imageDataGetSync } from '@andreekeberg/imagedata'
+const {
+  USERNAME,
+  DOMAIN
+} = process.env;
 
 const logger = debug('ono:admin');
 
@@ -363,14 +368,8 @@ router.post('/post', async (req, res) => {
 
     if (req.body.attachment) {
         // convert attachment.data to raw buffer
-        attachment = {
-            type: req.body.attachment.type,
-            data: Buffer.from(req.body.attachment.data, 'base64'),
-            description: req.body.description || '',
-        };
-
-        // used as filename/id
-        attachment.hash = createHash('md5').update(attachment.data).digest("hex");
+        attachment = calculateAttachmentHashAndData(req.body.attachment);
+        attachment.description = req.body.description || '';
 
         if (attachment.type.split('/')[0] == 'image') {
             // calculate dimensions and blurhash
@@ -589,3 +588,55 @@ router.post('/boost', async (req, res) => {
     }
     writeBoosts(boosts);
 });
+
+
+
+router.get('/settings', async (req, res) => {
+    res.render('settings', {
+        layout: 'private',
+        actor: ActivityPub.actor
+    });
+});
+
+function calculateAttachmentHashAndData(att) {
+    let attachment = {
+        type: att.type,
+        data: Buffer.from(att.data, 'base64'),
+    };
+    attachment.hash = createHash('md5').update(att.data).digest("hex");
+    return attachment;
+}
+
+router.post('/settings', async (req, res) => {
+    if (req.body.attachment_avatar || req.body.attachment_header) {
+        if (!req.body.account) {    // ensure account gets updated as we're changing the urls
+            req.body.account = {};
+        }
+        if (!req.body.account.actor) {
+            req.body.account.actor = {};
+        }
+    }
+    if (req.body.attachment_avatar) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_avatar);
+        writeMedia(att);
+        req.body.account.actor.icon = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.attachment_header) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_header);
+        writeMedia(att);
+        req.body.account.actor.image = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.account && req.body.account.actor) {
+        await updateAccountActor(req.body.account.actor);
+    }
+    res.status(200).send();
+});
+
