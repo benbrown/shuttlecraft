@@ -18,12 +18,6 @@
             <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
             <span class="handle">{{getUsername actor.id}}</span>
             <p>
-                <span class="handle">
-                    <label for="preferredUsername">Preferred Username</label>
-                    <input type="text" value="{{{actor.preferredUsername}}}" id="preferredUsername"/>
-                </span>
-            </p>
-            <p>
                 <label for="summary">Summary</label>
                 <textarea rows="4" cols="80" id="summary">{{actor.summary}}</textarea>
             </p>

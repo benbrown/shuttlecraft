@@ -166,7 +166,6 @@ const app = {
     },
     settings: () => {
         const summary = document.getElementById('summary');
-        const preferredUsername = document.getElementById('preferredUsername');
         let attachment_header;
         let attachment_avatar;
 
@@ -184,8 +183,7 @@ const app = {
                     attachment_header: attachment_header,
                     account: {
                         actor: {
-                            summary: summary.value,
-                            preferredUsername: preferredUsername.value,
+                            summary: summary.value
                         }
                     }
                 }));
