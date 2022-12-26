@@ -57,6 +57,11 @@
                         <span class="active">⭐️</span>
                         <span class="inactive">☆</span>
                     </button>
+                    {{#if (isEq note.attributedTo me.id)}}
+                    <button onclick='return app.editPost("{{note.id}}")'>
+                        <span>✏️</span>
+                    </button>
+                    {{/if}}
                 </div>
                 <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
             </footer>

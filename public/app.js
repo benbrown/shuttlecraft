@@ -228,11 +228,15 @@ const app = {
             return Promise.resolve(null);
         }
     },
+    editPost: (postId) => {
+        window.location = '/private/post?edit=' + encodeURIComponent(postId);
+    },
     post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const editOf = document.getElementById('editOf');
         const description = document.getElementById('description');
 
         // get hidden elements for poll choices (replying to poll)
@@ -245,6 +249,18 @@ const app = {
                 polldata = null;    // invalid options
             }
         }
+
+        const Http = new XMLHttpRequest();
+        const proxyUrl ='/private/post';
+        Http.open("POST", proxyUrl);
+        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        Http.send(JSON.stringify({
+            post: post.value,
+            cw: cw.value,
+            inReplyTo: inReplyTo.value,
+            to: to.value,
+            editOf: editOf ? editOf.value : null
+        }));
 
         app.readAttachment('attachment').then((attachment) => {
             const Http = new XMLHttpRequest();

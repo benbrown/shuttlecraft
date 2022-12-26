@@ -142,7 +142,6 @@ router.get('/following', async (req, res) => {
 
     followers = followers.filter((f) => f !== undefined);
 
-
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -171,6 +170,8 @@ router.get('/', async (req, res) => {
         activitystream,
         next
     } = await getActivityStream(10, offset);
+
+
 
     const notes = await Promise.all(activitystream.map(async (n) => {
         // handle boosted posts
@@ -201,10 +202,20 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    if (req.query.json) {
-        res.json(notes);
-    } else {
+    // de-dupe notes by id, else will get two on edits
+    const uniqueIds = new Set();
+    const uniqueNotes = notes.filter(element => {
+      const isDuplicate = uniqueIds.has(element.note.id);
+      uniqueIds.add(element.note.id);
+      if (!isDuplicate) {
+        return true;
+      }
+      return false;
+    });
 
+    if (req.query.json) {
+        res.json(uniqueNotes);
+    } else {
         // set auth cookie
         res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
 
@@ -212,7 +223,7 @@ router.get('/', async (req, res) => {
             layout: 'private',
             me: ActivityPub.actor,
             next: next,
-            activitystream: notes,
+            activitystream: uniqueNotes,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -344,6 +355,7 @@ router.get('/post', async(req, res) => {
     let names = [];
     let op;
     let actor;
+    let prev;
     if (inReplyTo) {
         op = await getActivity(inReplyTo);
         const account = await fetchUser(op.attributedTo);
@@ -354,11 +366,16 @@ router.get('/post', async(req, res) => {
         names = JSON.parse(req.query.names);
     }
 
+    if (req.query.edit) {
+        prev = await getNote(req.query.edit);
+    }
+
     res.status(200).render('partials/composer', {
         to,
         inReplyTo,
         actor,
-        originalPost: op,
+        originalPost: op,   // original post being replied to
+        prev: prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
         names: names,
         layout: 'private'
@@ -369,7 +386,6 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-
     let attachment;
 
     if (req.body.attachment) {
@@ -390,13 +406,13 @@ router.post('/post', async (req, res) => {
     }
 
     let post;
-    if (req.body.names.length > 0) {
+    if (req.body.names && req.body.names.length > 0) {
         // send multiple notes, one for each choice made in poll
         for (const name of req.body.names) {
-            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to, null, attachment);
+            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to, null, attachment, req.body.editOf);
         }
     } else {
-        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to, req.body.polldata, attachment);
+        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to, req.body.polldata, attachment, req.body.editOf);
     }
 
     if (post.directMessage === true) {

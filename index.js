@@ -67,6 +67,7 @@ const hbs = create({
       return ActivityPub.getUsername(user)
     },
     stripProtocol: (str) => str.replace(/^https\:\/\//, ''),
+    stripHTML: (str) => str.replace(/(<([^>]+)>)/gi, "")
   }
 });
 

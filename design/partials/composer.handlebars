@@ -6,8 +6,12 @@
             {{{originalPost.content}}}
         </div>
     {{else}}
-        <Header>Compose</Header>
+        {{#if prev}}
+        <Header>Edit</Header>
+        {{else}}
+        {{/if}}
     {{/if}}
+
     <form onsubmit="return validatePoll() && app.post()" id="composer">
         {{#if names}} <!-- When voting, show the user's choice before posting -->
             Vote for:
@@ -19,20 +23,41 @@
             <textarea id="post" hidden></textarea> <!-- no post content on poll vote -->
             <input type="text" id="cw" hidden /> <!-- no cw on poll vote -->
         {{else}}
-            <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}</textarea>
-            <input type="text" id="cw" placeholder="content warning" />
+            <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}{{#if prev}}{{stripHTML prev.content}}{{/if}}</textarea>
+            <input type="text" id="cw" placeholder="content warning"
+            {{#if prev}}value="{{{prev.summary}}}"{{/if}}
+            />
+            <input id="inReplyTo" placeholder="in reply to" hidden
+            {{#if prev}}
+            value="{{{prev.inReplyTo}}}"
+            {{else}}
+            value="{{inReplyTo}}"
+            {{/if}}
+            />
+            <input id="to" placeholder="to" hidden value="{{to}}"
+            {{#if prev}}
+            value="{{{prev.to}}}"
+            {{else}}
+            value="{{to}}"
+            {{/if}}
+            />
             <input id="attachment" type="file" />
             <input id="description" type="text" placeholder="alt text" />
             <div id="polldesigner" style="display:none"></div> <!-- The interactive poll designer -->
             <input id="polldata" type="text" hidden> <!-- JSON data for the designed poll -->
             <button id="togglepoll" type="button">📊</button>
+            {{#if prev}}
+            <input id="editOf" value="{{{prev.id}}}" hidden/>
+            {{/if}}
         {{/if}}
+
         <input id="inReplyTo" placeholder="in reply to" value="{{inReplyTo}}" hidden />
         <input id="to" placeholder="to" value="{{to}}" hidden />
 
         {{#each names}} <!-- replying to a post containing a poll, embed user's choice in field so it can be posted -->
             <input class="pollchoice" value="{{{this}}}" hidden />
         {{/each}}
+
         <button id="submit" type="submit">Post</button>
     </form>
 </div>
