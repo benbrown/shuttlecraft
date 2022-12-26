@@ -144,7 +144,7 @@ router.post('/', async (req, res) => {
                                 addNotification({
                                     type: 'Vote',
                                     actor: incomingRequest.object.attributedTo,
-                                    object: incomingRequest.object.id
+                                    object: incomingRequest.object.inReplyTo
                                 });
 
                             } else {

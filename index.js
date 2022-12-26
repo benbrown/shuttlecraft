@@ -48,7 +48,11 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      return a === b
+      if (typeof options.fn === 'function') {
+        if (a === b) return options.fn(this);
+      } else {
+        return a === b;
+      }
     },
     or: (a, b, options) => {
       return a || b

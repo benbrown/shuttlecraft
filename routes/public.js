@@ -152,7 +152,7 @@ router.get('/notes/:guid', async (req, res) => {
     if (note === undefined) {
       return res.status(404).send(`No record found for ${guid}.`);
     } else {
-      if (req.accepts('application/activity+json')) {
+      if (req.accepts('application/activity+json') && !req.accepts('*/*')) {    // non-browser client
         res.setHeader('Content-Type', 'application/activity+json');
         res.status(200).send(note);
       } else {

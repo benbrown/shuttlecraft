@@ -231,7 +231,7 @@ router.get('/notifications', async (req, res) => {
         // TODO: check if user is in following list
         actor.isFollowing = isFollowing(actor.id);
 
-        if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
+        if (notification.notification.type === 'Like' || notification.notification.type === 'Announce' || notification.notification.type === 'Vote') {
             note = await getNote(notification.notification.object);
         }
         if (notification.notification.type === 'Reply') {
