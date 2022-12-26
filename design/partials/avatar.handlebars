@@ -1,7 +1,15 @@
 <a href="{{#if public}}{{or actor.url actor.id}}{{else}}/private/profile/{{getUsername actor.id}}{{/if}}">
     {{#if actor.icon.url}}
-    <img src="{{actor.icon.url}}" class="avatar">
+        {{#if mini}}
+            <img src="{{actor.icon.url}}" class="mini-avatar">
+        {{else}}
+            <img src="{{actor.icon.url}}" class="avatar">
+        {{/if}}
     {{else}}
-    <img src="/images/avatar-unknown.png" class="avatar">
+        {{#if mini}}
+            <img src="/images/avatar-unknown.png" class="mini-avatar">
+        {{else}}
+            <img src="/images/avatar-unknown.png" class="avatar">
+        {{/if}}
     {{/if}}
 </a>

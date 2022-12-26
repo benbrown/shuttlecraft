@@ -1,9 +1,11 @@
 <div class="feeds {{#if recipient}}inbox_visible{{/if}}">
     <header>Messages</header>
-    {{#if inboxes}}
-        {{#each inboxes}}
+    {{#if inboxesWithAccounts}}
+        {{#each inboxesWithAccounts}}
             <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
-                <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
+                <a href="/private/dms/{{getUsername this.id}}">
+                {{> avatar actor=this.actor mini=true}}
+                {{getUsername this.id}}</a>
             </div>
         {{/each}}
     {{else}}
