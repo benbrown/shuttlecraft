@@ -172,6 +172,11 @@ router.post('/', async (req, res) => {
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
                         await createActivity(incomingRequest.object);
+                        addNotification({
+                            type: 'NewPost',
+                            actor: incomingRequest.object.attributedTo,
+                            object: incomingRequest.object.id
+                        });
                     } else {
                         // this is a reply
                         // from a following
