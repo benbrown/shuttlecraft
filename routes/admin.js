@@ -341,6 +341,7 @@ router.get('/post', async(req, res) => {
 
     const to = req.query.to;
     const inReplyTo = req.query.inReplyTo;
+    let names = [];
     let op;
     let actor;
     if (inReplyTo) {
@@ -349,12 +350,17 @@ router.get('/post', async(req, res) => {
         actor = account.actor;
     }
 
+    if (req.query.names) {
+        names = JSON.parse(req.query.names);
+    }
+
     res.status(200).render('partials/composer', {
         to,
         inReplyTo,
         actor,
         originalPost: op,
         me: req.app.get('account').actor,
+        names: names,
         layout: 'private'
     });
 
@@ -383,7 +389,16 @@ router.post('/post', async (req, res) => {
         writeMedia(attachment);
     }
 
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, attachment);
+    let post;
+    if (req.body.names.length > 0) {
+        // send multiple notes, one for each choice made in poll
+        for (const name of req.body.names) {
+            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to, null, attachment);
+        }
+    } else {
+        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to, req.body.polldata, attachment);
+    }
+
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {
@@ -588,8 +603,6 @@ router.post('/boost', async (req, res) => {
     }
     writeBoosts(boosts);
 });
-
-
 
 router.get('/settings', async (req, res) => {
     res.render('settings', {

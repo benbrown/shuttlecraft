@@ -14,6 +14,28 @@
             <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
             {{/if}}
 
+            {{#if (isEq note.type 'Question')}}
+                <form id="{{note.id}}">
+                    <fieldset>
+                        {{#each note.oneOf}}
+                            <input type="radio" id="poll_option{{@index}}" name="pollchoice" value="{{name}}">
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                        {{#each note.anyOf}}
+                            <input type="checkbox" id="poll_option{{@index}}" name="pollchoice" value="{{name}}">
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                    </fieldset>
+                </form>
+                {{#if (expired note.endTime)}}
+                Ended {{timesince note.endTime}}
+                {{else}}
+                Ends {{timesince note.endTime}}
+                {{/if}}
+                <br>
+                Votes cast: {{note.votersCount}}<br>
+            {{/if}}
+
             {{#each note.attachment}}
                 <div class="attachment">
                     {{#isImage mediaType}}

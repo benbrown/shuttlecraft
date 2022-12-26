@@ -48,10 +48,13 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      if (a === b) return options.fn(this);
+      return a === b
     },
     or: (a, b, options) => {
       return a || b
+    },
+    expired: (date) => {
+      return moment(date).isBefore(moment())
     },
     timesince: (date) => {
       return moment(date).fromNow();

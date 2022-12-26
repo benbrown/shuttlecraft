@@ -16,7 +16,9 @@ import {
     isMyPost,
     isBlocked,
     addressedOnlyToMe,
-    isMention
+    getNote,
+    isMention,
+    recordVote,
 } from '../lib/account.js';
 import {
     createActivity,
@@ -126,17 +128,33 @@ router.post('/', async (req, res) => {
                     // - a post that is from someone you follow, but is a reply to a post from someone you do not follow (should be ignored?)
                     // - a mention from a following (notification and feed)
                     // - a mention from a stranger (notification only)
+                    if (!incomingRequest.object.published) {    // If published datestamp is missing, add one
+                        incomingRequest.object.published = (new Date()).toISOString();
+                    }
+
                     if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
                         await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo)
                     } else if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
                         if (!isIndexed(incomingRequest.object.id)) {
-                            await createActivity(incomingRequest.object);
-                            addNotification({
-                                type: 'Reply',
-                                actor: incomingRequest.object.attributedTo,
-                                object: incomingRequest.object.id
-                            });
+                            // check if this is a vote on a Question we asked
+                            let originalPost = await getNote(incomingRequest.object.inReplyTo);
+                            if (originalPost.type === 'Question') {
+                                await recordVote(incomingRequest.object.inReplyTo, incomingRequest.object.name, incomingRequest.actor);
+                                addNotification({
+                                    type: 'Vote',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.id
+                                });
+
+                            } else {
+                                await createActivity(incomingRequest.object);
+                                addNotification({
+                                    type: 'Reply',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.id
+                                });
+                            }
                         } else {
                             logger('already created reply');
                         }

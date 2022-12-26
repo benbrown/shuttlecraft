@@ -204,25 +204,29 @@ const app = {
     },
     readAttachment: async (id) => {
         // read the file into base64, return mimetype and data
-        const files = document.getElementById(id).files;
-        return new Promise((resolve, reject) => {
-            if (files && files[0]) {
-                let f = files[0];   // only read the first file
-                let reader = new FileReader();
-                reader.onload = (function(theFile) {
-                    return function(e) {
-                        let base64 = btoa(
-                            new Uint8Array(e.target.result)
-                                .reduce((data, byte) => data + String.fromCharCode(byte), '')
-                            );
-                        resolve({type: f.type, data: base64});
-                    };
-                })(f);
-                reader.readAsArrayBuffer(f);
-            } else {
-                resolve(null);
-            }
-        });
+        if (document.getElementById(id)) {
+            const files = document.getElementById(id).files;
+            return new Promise((resolve, reject) => {
+                if (files && files[0]) {
+                    let f = files[0];   // only read the first file
+                    let reader = new FileReader();
+                    reader.onload = (function(theFile) {
+                        return function(e) {
+                            let base64 = btoa(
+                                new Uint8Array(e.target.result)
+                                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                                );
+                            resolve({type: f.type, data: base64});
+                        };
+                    })(f);
+                    reader.readAsArrayBuffer(f);
+                } else {
+                    resolve(null);
+                }
+            });
+        } else {
+            return Promise.resolve(null);
+        }
     },
     post: () => {
         const post = document.getElementById('post');
@@ -230,6 +234,17 @@ const app = {
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
         const description = document.getElementById('description');
+
+        // get hidden elements for poll choices (replying to poll)
+        const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
+        // get hidden element for poll designer (sending a new poll)
+        let polldata;
+        if (document.getElementById('polldata') && document.getElementById('polldata').value) {
+            polldata = JSON.parse(document.getElementById('polldata').value);
+            if (polldata.choices.includes(null)) {
+                polldata = null;    // invalid options
+            }
+        }
 
         app.readAttachment('attachment').then((attachment) => {
             const Http = new XMLHttpRequest();
@@ -242,7 +257,9 @@ const app = {
                 inReplyTo: inReplyTo.value,
                 to: to.value,
                 attachment: attachment,
-                description: description.value
+                description: description ? description.value : '',
+                names: names,   // list of things being voted for
+                polldata: polldata // poll being created by user
             }));
 
             Http.onreadystatechange = () => {
@@ -271,8 +288,18 @@ const app = {
         return false;
     },
     replyTo: (activityId, mention) => {
-
-        window.location = '/private/post?inReplyTo=' + activityId;
+        // get poll form response
+        let pollChoices = [];
+        Array.from(document.getElementById(activityId).getElementsByTagName('input')).forEach((inp) => {
+            if (inp.checked) {
+                pollChoices.push(inp.value);
+            }
+        });
+        if (pollChoices.length > 0) {
+            window.location = '/private/post?inReplyTo=' + activityId + '&names=' + encodeURIComponent(JSON.stringify(pollChoices));;
+        } else {
+            window.location = '/private/post?inReplyTo=' + activityId;
+        }
         return;
 
         const inReplyTo = document.getElementById('inReplyTo');
