@@ -582,7 +582,8 @@ router.post('/boost', async (req, res) => {
 router.get('/settings', async (req, res) => {
     res.render('settings', {
         layout: 'private',
-        actor: ActivityPub.actor
+        actor: ActivityPub.actor,
+        me: ActivityPub.actor
     });
 });
 
