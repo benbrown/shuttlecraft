@@ -303,12 +303,21 @@ router.get('/dms/:handle?', async (req, res) => {
         }
     });
 
+    const inboxesWithAccounts = await Promise.all(inboxes.map(async (inbox) => {
+        return {
+            id: inbox.id,
+            unread: inbox.unread,
+            lastRead: inbox.lastRead,
+            latest: inbox.latest,
+            ... await fetchUser(inbox.id)
+        };
+    }));
 
     res.render('dms', {
         layout: 'private',
         me: ActivityPub.actor,
         lastIncoming: lastIncoming ? lastIncoming.id : null,
-        inboxes,
+        inboxesWithAccounts,
         inbox,
         recipient,
         error
