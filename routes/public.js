@@ -176,3 +176,12 @@ router.get('/notes/:guid', async (req, res) => {
     }
   }
 });
+
+router.get('/tags/:tag', async (req, res) => {
+  res.render('public/tag', {
+    tag: req.params.tag,
+    layout: 'public',
+    domain: DOMAIN,
+    user: USERNAME
+  });
+});
