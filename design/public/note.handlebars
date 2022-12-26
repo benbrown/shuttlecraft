@@ -37,6 +37,27 @@
                     {{/isVideo}}
                 </div>
             {{/each}}
+            {{#if (isEq note.type 'Question')}}
+                <form id="{{note.id}}">
+                    <fieldset>
+                        {{#each note.oneOf}}
+                            <input type="radio" id="poll_option{{@index}}" name="pollchoice" value="{{name}}" disabled>
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                        {{#each note.anyOf}}
+                            <input type="checkbox" id="poll_option{{@index}}" name="pollchoice" value="{{name}}" disabled>
+                            <label for="{{@index}}">{{name}}</label> ({{replies.totalItems}})<br>
+                        {{/each}}
+                    </fieldset>
+                </form>
+                {{#if (expired note.endTime)}}
+                Ended {{timesince note.endTime}}
+                {{else}}
+                Ends {{timesince note.endTime}}
+                {{/if}}
+                <br>
+                Votes cast: {{note.votersCount}}<br>
+            {{/if}}
             <footer>
                 <div class="tools">
                     {{#if stats}}
