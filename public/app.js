@@ -110,6 +110,7 @@ const app = {
             setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         }).catch((err) => {
             console.error(err);
+            setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         });
     },
     toggleBoost: (el, postId) => {
