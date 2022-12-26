@@ -6,6 +6,7 @@ import {
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
+import { createHash } from 'crypto';
 import {
     getFollowers,
     getFollowing,
@@ -20,7 +21,8 @@ import {
     isFollowing,
     getInboxIndex,
     getInbox,
-    writeInboxIndex
+    writeInboxIndex,
+    writeMedia,
 } from '../lib/account.js';
 import {
     fetchUser
@@ -34,6 +36,9 @@ import {
 import {
     UserEvent
 } from '../lib/UserEvent.js';
+import { encode as blurhashEncode } from 'blurhash';
+import { getSync as imageDataGetSync } from '@andreekeberg/imagedata'
+
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -353,7 +358,33 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
+
+    let attachment;
+
+    if (req.body.attachment) {
+        // convert attachment.data to raw buffer
+        attachment = {
+            type: req.body.attachment.type,
+            data: Buffer.from(req.body.attachment.data, 'base64'),
+            description: req.body.description || '',
+        };
+
+        // used as filename/id
+        attachment.hash = createHash('md5').update(attachment.data).digest("hex");
+
+        if (attachment.type.split('/')[0] == 'image') {
+            // calculate dimensions and blurhash
+            let imageData = imageDataGetSync(attachment.data);
+            attachment.focalPoint = '0.0,0.0';
+            attachment.width = imageData.width;
+            attachment.height = imageData.height;
+            attachment.blurhash = blurhashEncode(imageData.data, imageData.width, imageData.height, 4, 4);
+        }
+
+        writeMedia(attachment);
+    }
+
+    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, attachment);
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {

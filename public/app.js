@@ -164,45 +164,72 @@ const app = {
         }
         return false;
     },
+    readAttachment: async () => {
+        // read the file into base64, return mimetype and data
+        const files = document.getElementById('attachment').files;
+        return new Promise((resolve, reject) => {
+            if (files && files[0]) {
+                let f = files[0];   // only read the first file
+                let reader = new FileReader();
+                reader.onload = (function(theFile) {
+                    return function(e) {
+                        let base64 = btoa(
+                            new Uint8Array(e.target.result)
+                                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                            );
+                        resolve({type: f.type, data: base64});
+                    };
+                })(f);
+                reader.readAsArrayBuffer(f);
+            } else {
+                resolve(null);
+            }
+        });
+    },
     post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const description = document.getElementById('description');
 
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/post';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: post.value,
-            cw: cw.value,
-            inReplyTo: inReplyTo.value,
-            to: to.value,
-        }));
+        app.readAttachment().then((attachment) => {
+            const Http = new XMLHttpRequest();
+            const proxyUrl ='/private/post';
+            Http.open("POST", proxyUrl);
+            Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            Http.send(JSON.stringify({
+                post: post.value,
+                cw: cw.value,
+                inReplyTo: inReplyTo.value,
+                to: to.value,
+                attachment: attachment,
+                description: description.value
+            }));
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                console.log('posted!');
+            Http.onreadystatechange = () => {
+                if (Http.readyState == 4 && Http.status == 200) {
+                    console.log('posted!');
 
-                // prepend the new post
-                const newHtml = Http.responseText;
-                const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
+                    // prepend the new post
+                    const newHtml = Http.responseText;
+                    const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
 
-                if (!el) {
-                    window.location = '/private/';
+                    if (!el) {
+                        window.location = '/private/';
+                    }
+
+                    // todo: ideally this would come back with all the html it needs
+                    el.innerHTML = newHtml + el.innerHTML;
+
+                    // reset the inputs to blank
+                    post.value = '';
+                    cw.value = '';
+                } else {
+                    console.error('HTTP PROXY CHANGE', Http);
                 }
-
-                // todo: ideally this would come back with all the html it needs
-                el.innerHTML = newHtml + el.innerHTML;
-
-                // reset the inputs to blank
-                post.value = '';
-                cw.value = '';
-            } else {
-                console.error('HTTP PROXY CHANGE', Http);
             }
-        }
+        });
         return false;
     },
     replyTo: (activityId, mention) => {

@@ -9,7 +9,8 @@ import {
   getNote,
   isMyPost,
   getAccount,
-  getOutboxPosts
+  getOutboxPosts,
+  readMedia
 } from '../lib/account.js';
 import {
   getActivity,
@@ -185,3 +186,15 @@ router.get('/tags/:tag', async (req, res) => {
     user: USERNAME
   });
 });
+
+router.get('/media/:id', async (req, res) => {
+    let attachment = readMedia(req.params.id);
+    if (attachment) {
+        res.setHeader('Content-Type', attachment.type);
+        let data = Buffer.from(attachment.data, 'base64');
+        res.status(200).send(data);
+    } else {
+        res.status(404).send();
+    }
+});
+
