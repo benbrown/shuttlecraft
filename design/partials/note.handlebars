@@ -47,6 +47,7 @@
                 </div>
             {{/each}}
             <footer>
+                {{#if note}}
                 <div class="tools">
                     <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>↩️</button>
                     <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "{{note.id}}")'>
@@ -63,6 +64,7 @@
                     </button>
                     {{/if}}
                 </div>
+                {{/if}}
                 <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
             </footer>
         </div>
