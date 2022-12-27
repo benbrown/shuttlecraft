@@ -38,6 +38,7 @@ const getCookie = (name) => {
 }
 
 const app = {
+    firstPoll: true,
     newPosts: 0,
     newNotifications: 0,
     latestPost: (date) => {
@@ -102,12 +103,14 @@ const app = {
 
     },
     pollForPosts: () => {
-        fetch('/private/poll','get').then((json) => {
+        fetch('/private/poll' + (app.firstPoll ? '?nowait=1' : ''),'get').then((json) => {
+            app.firstPoll = false;
             const res = JSON.parse(json);
             app.alertNewPosts(res);
-            setTimeout(() => app.pollForPosts(), 30000); // poll every 5 seconds
+            setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         }).catch((err) => {
             console.error(err);
+            setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         });
     },
     toggleBoost: (el, postId) => {

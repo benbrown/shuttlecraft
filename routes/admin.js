@@ -31,6 +31,9 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -38,15 +41,25 @@ router.get('/index', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
-
+    if (!req.query.nowait) {
+        req.on('close', function (err){
+            UserEvent.abort();
+            return;
+        });
+        try {
+            await UserEvent.waitForEvent();
+        } catch(e) {
+            // we got aborted
+        }
+    }
     const sincePosts = new Date(req.cookies.latestPost).getTime();
-    const sinceNotifications = parseInt(req.cookies.latestNotification);
+    const sinceNotifications = parseInt(req.cookies.latestNotification);//.filter((n) => {n.});
+    // notification mechanism used to indicate there are unread posts, but they shouldn't appear in notifications tab
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
     const inboxIndex = getInboxIndex();
     const unreadDM = Object.keys(inboxIndex).filter((k) => {
             return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
     })?.length || 0;
-
 
     const {
         activitystream
