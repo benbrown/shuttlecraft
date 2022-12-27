@@ -254,18 +254,6 @@ const app = {
             }
         }
 
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/post';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: post.value,
-            cw: cw.value,
-            inReplyTo: inReplyTo.value,
-            to: to.value,
-            editOf: editOf ? editOf.value : null
-        }));
-
         app.readAttachment('attachment').then((attachment) => {
             const Http = new XMLHttpRequest();
             const proxyUrl ='/private/post';
@@ -279,7 +267,8 @@ const app = {
                 attachment: attachment,
                 description: description ? description.value : '',
                 names: names,   // list of things being voted for
-                polldata: polldata // poll being created by user
+                polldata: polldata, // poll being created by user
+                editOf: editOf ? editOf.value : null
             }));
 
             Http.onreadystatechange = () => {
