@@ -4,7 +4,7 @@
         {{#each inboxesWithAccounts}}
             <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
                 <a href="/private/dms/{{getUsername this.id}}">
-                {{> avatar actor=this.actor mini=true}}
+                {{> avatar actor=this.actor mini=true nolink=true}}
                 {{getUsername this.id}}</a>
             </div>
         {{/each}}
