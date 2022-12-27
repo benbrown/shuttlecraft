@@ -20,10 +20,6 @@
             <div class="notification">💬 <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> mentioned you {{timesince ../time}}</div>
             {{> note actor=../actor note=../note}}
         {{/isEq}}
-        {{#isEq notification.type "DM"}}
-            <div class="notification">💬 <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> <a href="/private/dms/{{getUsername ../actor.id}}">direct messaged you {{timesince ../time}}</a></div>
-            {{> note actor=../actor note=../note}}
-        {{/isEq}}
         {{#isEq notification.type "Like"}}
             <div class="notification">⭐️ <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> liked <a href="{{../note.id}}">your post</a>  {{timesince ../time}}</div>
             <div class="preview">
