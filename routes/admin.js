@@ -44,6 +44,7 @@ const {
   DOMAIN
 } = process.env;
 import archiver from 'archiver';
+import { parse as csvparse } from 'csv-parse';
 
 const logger = debug('ono:admin');
 
@@ -740,5 +741,56 @@ router.get('/exportfollowing', async(req, res) => {
     }).join('\n');
 
     res.status(200).send(csv);
+});
+
+router.post('/importfollowing', async (req, res) => {
+    if (req.body.attachment_following) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_following);
+        console.log(att);
+        console.log(att.data.toString());
+
+        const records = [];
+        const parser = csvparse({
+            delimiter: ','
+        });
+        parser.on('readable', function() {
+            let record;
+            while ((record = parser.read()) !== null) {
+                records.push(record);
+            }
+        });
+        parser.on('error', function(err) {
+            console.error(err.message);
+            res.status(400).send(err);
+        });
+        parser.on('end', function() {
+            Promise.all(records.map(async (rec) => {
+                let id = rec[0];
+                if (!isFollowing(id)) {
+                    const {
+                        actor
+                    } = await fetchUser(id);
+                    if (actor) {
+                        console.log('following ' + id + ' ...');
+                        return ActivityPub.sendFollow(actor);
+                    } else {
+                        console.log('failed to fetchUser for ' + id);
+                        return Promise.resolve();
+                    }
+                } else {
+                    console.log('already following ' + id);
+                    return Promise.resolve();
+                }
+            })).then(() => {
+                res.status(200).send();
+            }).catch((err) => {
+                res.status(500).send(err);
+            });
+        });
+        parser.write(att.data.toString());
+        parser.end();
+    } else {
+        res.status(400).send();
+    }
 });
 

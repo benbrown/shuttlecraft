@@ -170,6 +170,27 @@ const app = {
         }
         return false;
     },
+    followuploaded: () => {
+        app.readAttachment('followingupload').then((att) => {
+            const Http = new XMLHttpRequest();
+            const proxyUrl ='/private/importfollowing';
+            Http.open("POST", proxyUrl);
+            Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            Http.send(JSON.stringify({
+                attachment_following: att,
+            }));
+
+            Http.onreadystatechange = () => {
+                if (Http.readyState == 4 && Http.status == 200) {
+                    console.log('posted!');
+                    window.location = '/private/settings';
+                } else {
+                    console.error('HTTP PROXY CHANGE', Http);
+                }
+            }
+        });
+        return false;
+    },
     settings: () => {
         const summary = document.getElementById('summary');
         let attachment_header;
