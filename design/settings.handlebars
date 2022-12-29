@@ -52,6 +52,12 @@
                 <button id="exportfollowing" type="submit">Export all following (CSV)</button>
             </form>
         </p>
+        <p>
+            <form onsubmit="return app.followuploaded()">
+                Upload following list (CSV) <input id="followingupload" type="file" />
+                <button type="submit">Follow all</button>
+            </form>
+        </p>
     </div>
 
 <script>
