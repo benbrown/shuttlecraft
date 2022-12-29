@@ -32,9 +32,10 @@ import debug from 'debug';
 import {
     isIndexed
 } from '../lib/storage.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
 const logger = debug('ono:inbox');
-
-
 
 router.post('/', async (req, res) => {
 
@@ -172,11 +173,7 @@ router.post('/', async (req, res) => {
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
                         await createActivity(incomingRequest.object);
-                        addNotification({
-                            type: 'NewPost',
-                            actor: incomingRequest.object.attributedTo,
-                            object: incomingRequest.object.id
-                        });
+                        UserEvent.sendEvent('msg');
                     } else {
                         // this is a reply
                         // from a following

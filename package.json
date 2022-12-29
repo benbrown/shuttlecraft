@@ -27,7 +27,8 @@
     "node-fetch": "^3.3.0",
     "rss-generator": "^0.0.3",
     "blurhash": "^2.0.4",
-    "@andreekeberg/imagedata": "^1.0.2"
+    "@andreekeberg/imagedata": "^1.0.2",
+    "archiver": "^5.3.1"
   },
   "keywords": [
     "fediverse",
