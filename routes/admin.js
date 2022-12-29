@@ -726,3 +726,19 @@ router.get('/exportdata', async(req, res) => {
     archive.finalize();
 });
 
+router.get('/exportfollowing', async(req, res) => {
+    res.set('Content-Type', 'text/csv');
+    res.attachment('following_' + (new Date().toJSON().slice(0,10)) + '.csv');
+
+    let following = await Promise.all(getFollowing().map(async (f) => {
+        return f.actorId;
+    }));
+
+    console.log(following);
+    let csv = following.map((f) => {
+        return JSON.stringify(f) + ',true';   // escape it
+    }).join('\n');
+
+    res.status(200).send(csv);
+});
+
