@@ -43,6 +43,7 @@ const {
   USERNAME,
   DOMAIN
 } = process.env;
+import archiver from 'archiver';
 
 const logger = debug('ono:admin');
 
@@ -704,5 +705,24 @@ router.post('/settings', async (req, res) => {
         await updateAccountActor(req.body.account.actor);
     }
     res.status(200).send();
+});
+
+router.get('/exportdata', async(req, res) => {
+    res.set('Content-Type', 'application/zip');
+    res.attachment(new Date().toJSON().slice(0,10) + '.zip');
+
+    const archive = archiver('zip', {
+        zlib: { level: 9 }
+    });
+    archive.on('warning', function(err) {
+        console.log(err);
+    });
+    archive.on('error', function(err) {
+        res.status(500).send(err);
+    });
+    archive.pipe(res);
+
+    archive.directory('.data', 'data');
+    archive.finalize();
 });
 
