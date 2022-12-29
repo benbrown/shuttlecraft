@@ -9,5 +9,27 @@
     <a  href="#" onclick="history.back(); return false;"><img src="{{actor.icon.url}}" class="avatar"></a>
     <a href="#" onclick="history.back(); return false;">Back to {{actor.preferredUsername}}</a>
 </header>
-#{{tag}}
+
+<header>
+Posts containing #{{tag}}
+</header>
+
+{{#each notes}}
+<div class="activity">
+    {{#with this}}
+        {{#if summary}}
+        <div class="content_warning">
+            content warning: {{summary}}
+        </div>
+        {{/if}}
+        <div class="content">
+            {{{content}}}
+
+            <a href="{{url}}" class="permalink">{{timesince published}}</a>
+        </div>
+    {{/with}}
+</div>
+{{/each}}
+
+
 </div>

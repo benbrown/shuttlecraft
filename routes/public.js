@@ -182,11 +182,21 @@ router.get('/notes/:guid', async (req, res) => {
 });
 
 router.get('/tags/:tag', async (req, res) => {
+  // all posts referencing tag by the owner user
+  const noteIds = INDEX.filter((i) => (i.actor === ActivityPub.actor.id) && i.hashtags.includes('#' + req.params.tag));
+  // get full posts
+  const posts = await Promise.all(noteIds.map(async (p) => {
+    return await getNote(p.id);
+  }));
+
   res.render('public/tag', {
     tag: req.params.tag,
     layout: 'public',
+    me: ActivityPub.actor,
+    actor: ActivityPub.actor,
     domain: DOMAIN,
-    user: USERNAME
+    user: USERNAME,
+    notes: posts
   });
 });
 
