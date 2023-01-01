@@ -208,12 +208,17 @@ router.get('/', async (req, res) => {
     // de-dupe notes by id, else will get two on edits
     const uniqueIds = new Set();
     const uniqueNotes = notes.filter(element => {
-      const isDuplicate = uniqueIds.has(element.note.id);
-      uniqueIds.add(element.note.id);
-      if (!isDuplicate) {
+      try {
+        const isDuplicate = uniqueIds.has(element.note.id);
+        uniqueIds.add(element.note.id);
+        if (!isDuplicate) {
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.log(err);
         return true;
       }
-      return false;
     });
 
     if (req.query.json) {
