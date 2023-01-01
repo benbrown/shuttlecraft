@@ -55,8 +55,11 @@ router.post('/', async (req, res) => {
             switch (incomingRequest.type) {
                 case 'Delete':
                     logger('Delete request');
-                    await deleteObject(actor, incomingRequest);
-                    ActivityPub.sendAccept(actor, incomingRequest);
+                    try {
+                        await deleteObject(actor, incomingRequest);
+                        ActivityPub.sendAccept(actor, incomingRequest);
+                    } catch(err) {
+                    }
                     break;
                 case 'Follow':
                     logger('Incoming follow request');
