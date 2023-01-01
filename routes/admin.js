@@ -6,6 +6,7 @@ import {
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
+import { createHash } from 'crypto';
 import {
     getFollowers,
     getFollowing,
@@ -20,7 +21,9 @@ import {
     isFollowing,
     getInboxIndex,
     getInbox,
-    writeInboxIndex
+    writeInboxIndex,
+    writeMedia,
+    updateAccountActor
 } from '../lib/account.js';
 import {
     fetchUser
@@ -31,6 +34,13 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import { encode as blurhashEncode } from 'blurhash';
+import { getSync as imageDataGetSync } from '@andreekeberg/imagedata'
+const {
+  USERNAME,
+  DOMAIN
+} = process.env;
+
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -341,7 +351,27 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
+
+    let attachment;
+
+    if (req.body.attachment) {
+        // convert attachment.data to raw buffer
+        attachment = calculateAttachmentHashAndData(req.body.attachment);
+        attachment.description = req.body.description || '';
+
+        if (attachment.type.split('/')[0] == 'image') {
+            // calculate dimensions and blurhash
+            let imageData = imageDataGetSync(attachment.data);
+            attachment.focalPoint = '0.0,0.0';
+            attachment.width = imageData.width;
+            attachment.height = imageData.height;
+            attachment.blurhash = blurhashEncode(imageData.data, imageData.width, imageData.height, 4, 4);
+        }
+
+        writeMedia(attachment);
+    }
+
+    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, attachment);
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {
@@ -546,3 +576,56 @@ router.post('/boost', async (req, res) => {
     }
     writeBoosts(boosts);
 });
+
+
+
+router.get('/settings', async (req, res) => {
+    res.render('settings', {
+        layout: 'private',
+        actor: ActivityPub.actor,
+        me: ActivityPub.actor
+    });
+});
+
+function calculateAttachmentHashAndData(att) {
+    let attachment = {
+        type: att.type,
+        data: Buffer.from(att.data, 'base64'),
+    };
+    attachment.hash = createHash('md5').update(att.data).digest("hex");
+    return attachment;
+}
+
+router.post('/settings', async (req, res) => {
+    if (req.body.attachment_avatar || req.body.attachment_header) {
+        if (!req.body.account) {    // ensure account gets updated as we're changing the urls
+            req.body.account = {};
+        }
+        if (!req.body.account.actor) {
+            req.body.account.actor = {};
+        }
+    }
+    if (req.body.attachment_avatar) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_avatar);
+        writeMedia(att);
+        req.body.account.actor.icon = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.attachment_header) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_header);
+        writeMedia(att);
+        req.body.account.actor.image = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.account && req.body.account.actor) {
+        await updateAccountActor(req.body.account.actor);
+    }
+    res.status(200).send();
+});
+

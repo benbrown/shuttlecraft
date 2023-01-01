@@ -1,0 +1,52 @@
+<div class="settings">
+    <header>Settings</header>
+
+    <div class="profileHeader">
+        {{#if actor.image}}
+            <img src="{{actor.image.url}}">
+            <input id="headerupload" type="file" class="settingsbutton"/>
+        {{/if}}
+    </div>
+    <div class="profileToolbar">
+        <img src="{{actor.icon.url}}" class="avatar"></a>
+        <input id="avatarupload" type="file" class="settingsbutton" />
+        <div class="tools">
+        </div>
+    </div>
+    <div class="profileBody">
+        <div class="profile">
+            <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
+            <span class="handle">{{getUsername actor.id}}</span>
+            <p>
+                <label for="summary">Summary</label>
+                <textarea rows="4" cols="80" id="summary">{{actor.summary}}</textarea>
+            </p>
+
+            <form onsubmit="return app.settings()" id="settings">
+                <button id="save" type="submit">Save</button>
+                <button onclick="reload();">Cancel</button>
+            </form>
+
+            {{#if actor.attachment}}
+                <dl>
+                {{#each actor.attachment}}
+                    <dt>
+                        {{this.name}}
+                    </dt>
+                    <dd>
+                        {{{this.value}}}
+                    </dd>
+                {{/each}}
+                </dl>
+            {{/if}}
+        </div>
+    </div>
+
+<script>
+function reload() {
+    window.location = '/private/settings';
+    return false;
+}
+</script>
+
+
