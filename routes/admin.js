@@ -662,7 +662,6 @@ router.post('/boost', async (req, res) => {
     }
     writeBoosts(boosts);
 });
-<<<<<<< HEAD
 
 router.get('/settings', async (req, res) => {
     res.render('settings', {
