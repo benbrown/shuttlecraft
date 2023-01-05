@@ -37,7 +37,14 @@ const getCookie = (name) => {
     return null;
 }
 
+const beep = () => {
+    console.log("BEEP!");
+    var snd = new Audio('/audio/beep.wav');
+    snd.play();
+}
+
 const app = {
+    firstPoll: true,
     newPosts: 0,
     newNotifications: 0,
     latestPost: (date) => {
@@ -58,8 +65,7 @@ const app = {
         if (newPosts) {
             if (meta.newPosts > 0) {
                 if (meta.newPosts > app.newPosts) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newPosts = meta.newPosts;
                 newPosts.innerHTML = `${meta.newPosts}<span> unread</span>`;
@@ -73,8 +79,7 @@ const app = {
         if (newNotifications) {
             if (meta.newNotifications > 0) {
                 if (meta.newNotifications > app.newNotifications) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newNotifications = meta.newNotifications;
                 newNotifications.innerHTML = `${meta.newNotifications}<span> new</span>`;
@@ -88,8 +93,7 @@ const app = {
         if (newDMs) {
             if (meta.newDMs > 0) {
                 if (meta.newDMs > app.newDMs) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newDMs = meta.newDMs;
                 newDMs.innerHTML = `${meta.newDMs}<span> new</span>`;
@@ -102,12 +106,14 @@ const app = {
 
     },
     pollForPosts: () => {
-        fetch('/private/poll','get').then((json) => {
+        fetch('/private/poll' + (app.firstPoll ? '?nowait=1' : ''),'get').then((json) => {
+            app.firstPoll = false;
             const res = JSON.parse(json);
             app.alertNewPosts(res);
-            setTimeout(() => app.pollForPosts(), 30000); // poll every 5 seconds
+            setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         }).catch((err) => {
             console.error(err);
+            setTimeout(() => app.pollForPosts(), 1000); // poll every 1 seconds, endpoint will stall until event occurs
         });
     },
     toggleBoost: (el, postId) => {
@@ -162,50 +168,166 @@ const app = {
         }
         return false;
     },
+    followuploaded: () => {
+        app.readAttachment('followingupload').then((att) => {
+            const Http = new XMLHttpRequest();
+            const proxyUrl ='/private/importfollowing';
+            Http.open("POST", proxyUrl);
+            Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            Http.send(JSON.stringify({
+                attachment_following: att,
+            }));
+
+            Http.onreadystatechange = () => {
+                if (Http.readyState == 4 && Http.status == 200) {
+                    console.log('posted!');
+                    window.location = '/private/settings';
+                } else {
+                    console.error('HTTP PROXY CHANGE', Http);
+                }
+            }
+        });
+        return false;
+    },
+    settings: () => {
+        const summary = document.getElementById('summary');
+        let attachment_header;
+        let attachment_avatar;
+
+        app.readAttachment('avatarupload').then((att) => {
+            attachment_avatar = att;
+            return app.readAttachment('headerupload').then((att) => {
+                attachment_header = att;
+
+                const Http = new XMLHttpRequest();
+                const proxyUrl ='/private/settings';
+                Http.open("POST", proxyUrl);
+                Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                Http.send(JSON.stringify({
+                    attachment_avatar: attachment_avatar,
+                    attachment_header: attachment_header,
+                    account: {
+                        actor: {
+                            summary: summary.value
+                        }
+                    }
+                }));
+
+                Http.onreadystatechange = () => {
+                    if (Http.readyState == 4 && Http.status == 200) {
+                        console.log('posted!');
+                        window.location = '/private/settings';
+                    } else {
+                        console.error('HTTP PROXY CHANGE', Http);
+                    }
+                }
+            });
+        });
+        return false;
+    },
+    readAttachment: async (id) => {
+        // read the file into base64, return mimetype and data
+        if (document.getElementById(id)) {
+            const files = document.getElementById(id).files;
+            return new Promise((resolve, reject) => {
+                if (files && files[0]) {
+                    let f = files[0];   // only read the first file
+                    let reader = new FileReader();
+                    reader.onload = (function(theFile) {
+                        return function(e) {
+                            let base64 = btoa(
+                                new Uint8Array(e.target.result)
+                                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                                );
+                            resolve({type: f.type, data: base64});
+                        };
+                    })(f);
+                    reader.readAsArrayBuffer(f);
+                } else {
+                    resolve(null);
+                }
+            });
+        } else {
+            return Promise.resolve(null);
+        }
+    },
+    editPost: (postId) => {
+        window.location = '/private/post?edit=' + encodeURIComponent(postId);
+    },
     post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const editOf = document.getElementById('editOf');
+        const description = document.getElementById('description');
 
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/post';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: post.value,
-            cw: cw.value,
-            inReplyTo: inReplyTo.value,
-            to: to.value,
-        }));
-
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                console.log('posted!');
-
-                // prepend the new post
-                const newHtml = Http.responseText;
-                const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
-
-                if (!el) {
-                    window.location = '/private/';
-                }
-
-                // todo: ideally this would come back with all the html it needs
-                el.innerHTML = newHtml + el.innerHTML;
-
-                // reset the inputs to blank
-                post.value = '';
-                cw.value = '';
-            } else {
-                console.error('HTTP PROXY CHANGE', Http);
+        // get hidden elements for poll choices (replying to poll)
+        const names = Array.from(document.querySelectorAll('input[class="pollchoice"]')).map((item) => {return item.value});
+        // get hidden element for poll designer (sending a new poll)
+        let polldata;
+        if (document.getElementById('polldata') && document.getElementById('polldata').value) {
+            polldata = JSON.parse(document.getElementById('polldata').value);
+            if (polldata.choices.includes(null)) {
+                polldata = null;    // invalid options
             }
         }
+
+        app.readAttachment('attachment').then((attachment) => {
+            const Http = new XMLHttpRequest();
+            const proxyUrl ='/private/post';
+            Http.open("POST", proxyUrl);
+            Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            Http.send(JSON.stringify({
+                post: post.value,
+                cw: cw.value,
+                inReplyTo: inReplyTo.value,
+                to: to.value,
+                attachment: attachment,
+                description: description ? description.value : '',
+                names: names,   // list of things being voted for
+                polldata: polldata, // poll being created by user
+                editOf: editOf ? editOf.value : null
+            }));
+
+            Http.onreadystatechange = () => {
+                if (Http.readyState == 4 && Http.status == 200) {
+                    console.log('posted!');
+
+                    // prepend the new post
+                    const newHtml = Http.responseText;
+                    const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
+
+                    if (!el) {
+                        window.location = '/private/';
+                    }
+
+                    // todo: ideally this would come back with all the html it needs
+                    el.innerHTML = newHtml + el.innerHTML;
+
+                    // reset the inputs to blank
+                    post.value = '';
+                    cw.value = '';
+                } else {
+                    console.error('HTTP PROXY CHANGE', Http);
+                }
+            }
+        });
         return false;
     },
     replyTo: (activityId, mention) => {
-
-        window.location = '/private/post?inReplyTo=' + activityId;
+        // get poll form response
+        let pollChoices = [];
+        Array.from(document.getElementById(activityId).getElementsByTagName('input')).forEach((inp) => {
+            if (inp.checked) {
+                pollChoices.push(inp.value);
+            }
+        });
+        if (pollChoices.length > 0) {
+            window.location = '/private/post?inReplyTo=' + activityId + '&names=' + encodeURIComponent(JSON.stringify(pollChoices));;
+        } else {
+            window.location = '/private/post?inReplyTo=' + activityId;
+        }
         return;
 
         const inReplyTo = document.getElementById('inReplyTo');

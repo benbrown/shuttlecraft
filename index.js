@@ -48,10 +48,17 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      if (a === b) return options.fn(this);
+      if (typeof options.fn === 'function') {
+        if (a === b) return options.fn(this);
+      } else {
+        return a === b;
+      }
     },
     or: (a, b, options) => {
       return a || b
+    },
+    expired: (date) => {
+      return moment(date).isBefore(moment())
     },
     timesince: (date) => {
       return moment(date).fromNow();
@@ -60,6 +67,7 @@ const hbs = create({
       return ActivityPub.getUsername(user)
     },
     stripProtocol: (str) => str.replace(/^https\:\/\//, ''),
+    stripHTML: (str) => str.replace(/(<([^>]+)>)/gi, "")
   }
 });
 
@@ -73,7 +81,8 @@ app.use(bodyParser.json({
   type: 'application/activity+json'
 })); // support json encoded bodies
 app.use(bodyParser.json({
-  type: 'application/json'
+  type: 'application/json',
+  limit: '32mb' // allow large bodies as attachments are base64 in JSON
 })); // support json encoded bodies
 app.use(cookieParser())
 

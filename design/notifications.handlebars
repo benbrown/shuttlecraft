@@ -26,6 +26,9 @@
                 {{{...note.content}}}
             </div>
         {{/isEq}}
+        {{#isEq notification.type "Vote"}}
+            <div class="notification">🗳 <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> voted on <a href="{{../note.id}}">your poll</a>  {{timesince ../time}}</div>
+        {{/isEq}}
         {{#isEq notification.type "Follow"}}
             <div class="notification">🤷🏽‍♂️ <a href="/private/profile/{{getUsername ../actor.id}}">{{../actor.name}}</a> followed you {{timesince ../time}}</div>
             {{> byline actor=../actor}}

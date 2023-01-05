@@ -16,7 +16,10 @@ import {
     isMyPost,
     isBlocked,
     addressedOnlyToMe,
-    isMention
+    getNote,
+    isMention,
+    recordVote,
+    deleteObject
 } from '../lib/account.js';
 import {
     createActivity,
@@ -29,21 +32,16 @@ import debug from 'debug';
 import {
     isIndexed
 } from '../lib/storage.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
 const logger = debug('ono:inbox');
-
-
 
 router.post('/', async (req, res) => {
 
     const incomingRequest = req.body;
 
     if (incomingRequest) {
-        // TODO: handle this better
-        // should remove post/user if found
-        if (incomingRequest.type === 'Delete') {
-            return res.status(200).send();
-        }
-
         if (isBlocked(incomingRequest.actor)) {
             return res.status(403).send('');
         }
@@ -55,6 +53,14 @@ router.post('/', async (req, res) => {
         // FIRST, validate the actor
         if (ActivityPub.validateSignature(actor, req)) {
             switch (incomingRequest.type) {
+                case 'Delete':
+                    logger('Delete request');
+                    try {
+                        await deleteObject(actor, incomingRequest);
+                        ActivityPub.sendAccept(actor, incomingRequest);
+                    } catch(err) {
+                    }
+                    break;
                 case 'Follow':
                     logger('Incoming follow request');
                     addFollower(incomingRequest);
@@ -126,17 +132,33 @@ router.post('/', async (req, res) => {
                     // - a post that is from someone you follow, but is a reply to a post from someone you do not follow (should be ignored?)
                     // - a mention from a following (notification and feed)
                     // - a mention from a stranger (notification only)
+                    if (!incomingRequest.object.published) {    // If published datestamp is missing, add one
+                        incomingRequest.object.published = (new Date()).toISOString();
+                    }
+
                     if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
                         await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo)
                     } else if (isReplyToMyPost(incomingRequest.object)) {
                         // TODO: What about replies to replies? should we traverse up a bit?
                         if (!isIndexed(incomingRequest.object.id)) {
-                            await createActivity(incomingRequest.object);
-                            addNotification({
-                                type: 'Reply',
-                                actor: incomingRequest.object.attributedTo,
-                                object: incomingRequest.object.id
-                            });
+                            // check if this is a vote on a Question we asked
+                            let originalPost = await getNote(incomingRequest.object.inReplyTo);
+                            if (originalPost.type === 'Question') {
+                                await recordVote(incomingRequest.object.inReplyTo, incomingRequest.object.name, incomingRequest.actor);
+                                addNotification({
+                                    type: 'Vote',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.inReplyTo
+                                });
+
+                            } else {
+                                await createActivity(incomingRequest.object);
+                                addNotification({
+                                    type: 'Reply',
+                                    actor: incomingRequest.object.attributedTo,
+                                    object: incomingRequest.object.id
+                                });
+                            }
                         } else {
                             logger('already created reply');
                         }
@@ -154,6 +176,7 @@ router.post('/', async (req, res) => {
                     } else if (!incomingRequest.object.inReplyTo) {
                         // this is a NEW post - most likely from a follower
                         await createActivity(incomingRequest.object);
+                        UserEvent.sendEvent('msg');
                     } else {
                         // this is a reply
                         // from a following

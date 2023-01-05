@@ -6,6 +6,7 @@ import {
 import express from 'express';
 export const router = express.Router();
 import debug from 'debug';
+import { createHash } from 'crypto';
 import {
     getFollowers,
     getFollowing,
@@ -20,7 +21,9 @@ import {
     isFollowing,
     getInboxIndex,
     getInbox,
-    writeInboxIndex
+    writeInboxIndex,
+    writeMedia,
+    updateAccountActor
 } from '../lib/account.js';
 import {
     fetchUser
@@ -31,6 +34,18 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+import {
+    UserEvent
+} from '../lib/UserEvent.js';
+import { encode as blurhashEncode } from 'blurhash';
+import { getSync as imageDataGetSync } from '@andreekeberg/imagedata'
+const {
+  USERNAME,
+  DOMAIN
+} = process.env;
+import archiver from 'archiver';
+import { parse as csvparse } from 'csv-parse';
+
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -38,15 +53,25 @@ router.get('/index', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
-
+    if (!req.query.nowait) {
+        req.on('close', function (err){
+            UserEvent.abort();
+            return;
+        });
+        try {
+            await UserEvent.waitForEvent();
+        } catch(e) {
+            // we got aborted
+        }
+    }
     const sincePosts = new Date(req.cookies.latestPost).getTime();
-    const sinceNotifications = parseInt(req.cookies.latestNotification);
+    const sinceNotifications = parseInt(req.cookies.latestNotification);//.filter((n) => {n.});
+    // notification mechanism used to indicate there are unread posts, but they shouldn't appear in notifications tab
     const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
     const inboxIndex = getInboxIndex();
     const unreadDM = Object.keys(inboxIndex).filter((k) => {
             return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
     })?.length || 0;
-
 
     const {
         activitystream
@@ -120,7 +145,6 @@ router.get('/following', async (req, res) => {
 
     followers = followers.filter((f) => f !== undefined);
 
-
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -149,6 +173,8 @@ router.get('/', async (req, res) => {
         activitystream,
         next
     } = await getActivityStream(10, offset);
+
+
 
     const notes = await Promise.all(activitystream.map(async (n) => {
         // handle boosted posts
@@ -179,10 +205,25 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    if (req.query.json) {
-        res.json(notes);
-    } else {
+    // de-dupe notes by id, else will get two on edits
+    const uniqueIds = new Set();
+    const uniqueNotes = notes.filter(element => {
+      try {
+        const isDuplicate = uniqueIds.has(element.note.id);
+        uniqueIds.add(element.note.id);
+        if (!isDuplicate) {
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.log(err);
+        return true;
+      }
+    });
 
+    if (req.query.json) {
+        res.json(uniqueNotes);
+    } else {
         // set auth cookie
         res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
 
@@ -190,7 +231,7 @@ router.get('/', async (req, res) => {
             layout: 'private',
             me: ActivityPub.actor,
             next: next,
-            activitystream: notes,
+            activitystream: uniqueNotes,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -209,7 +250,7 @@ router.get('/notifications', async (req, res) => {
         // TODO: check if user is in following list
         actor.isFollowing = isFollowing(actor.id);
 
-        if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
+        if (notification.notification.type === 'Like' || notification.notification.type === 'Announce' || notification.notification.type === 'Vote') {
             note = await getNote(notification.notification.object);
         }
         if (notification.notification.type === 'Reply') {
@@ -240,10 +281,36 @@ router.get('/notifications', async (req, res) => {
         }
     }));
 
+    let following = await Promise.all(getFollowing().map(async (f) => {
+        const acct = await fetchUser(f.actorId);
+        if (acct ?.actor?.id) {
+            acct.actor.isFollowing = true; // duh
+            return acct.actor;
+        }
+        return undefined;
+    }));
+
+    following = following.filter((f) => f !== undefined);
+
+    let followers = await Promise.all(getFollowers().map(async (f) => {
+        const acct = await fetchUser(f);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.some((p) => p.id === f);
+            return acct.actor;
+        }
+        return undefined;
+    }));
+
+    followers = followers.filter((f) => f !== undefined);
+
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
-        notifications: notifications.filter((n)=>n!==null).reverse()
+        notifications: notifications.filter((n)=>n!==null).reverse(),
+        followers: followers,
+        following: following,
+        followersCount: followers.length,
+        followingCount: following.length
     });
 });
 
@@ -303,12 +370,21 @@ router.get('/dms/:handle?', async (req, res) => {
         }
     });
 
+    const inboxesWithAccounts = await Promise.all(inboxes.map(async (inbox) => {
+        return {
+            id: inbox.id,
+            unread: inbox.unread,
+            lastRead: inbox.lastRead,
+            latest: inbox.latest,
+            ... await fetchUser(inbox.id)
+        };
+    }));
 
     res.render('dms', {
         layout: 'private',
         me: ActivityPub.actor,
         lastIncoming: lastIncoming ? lastIncoming.id : null,
-        inboxes,
+        inboxesWithAccounts,
         inbox,
         recipient,
         error
@@ -319,20 +395,32 @@ router.get('/post', async(req, res) => {
 
     const to = req.query.to;
     const inReplyTo = req.query.inReplyTo;
+    let names = [];
     let op;
     let actor;
+    let prev;
     if (inReplyTo) {
         op = await getActivity(inReplyTo);
         const account = await fetchUser(op.attributedTo);
         actor = account.actor;
     }
 
+    if (req.query.names) {
+        names = JSON.parse(req.query.names);
+    }
+
+    if (req.query.edit) {
+        prev = await getNote(req.query.edit);
+    }
+
     res.status(200).render('partials/composer', {
         to,
         inReplyTo,
         actor,
-        originalPost: op,
+        originalPost: op,   // original post being replied to
+        prev: prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
+        names: names,
         layout: 'private'
     });
 
@@ -341,7 +429,35 @@ router.get('/post', async(req, res) => {
 
 router.post('/post', async (req, res) => {
     // TODO: this is probably supposed to be a post to /api/outbox
-    const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to);
+    let attachment;
+
+    if (req.body.attachment) {
+        // convert attachment.data to raw buffer
+        attachment = calculateAttachmentHashAndData(req.body.attachment);
+        attachment.description = req.body.description || '';
+
+        if (attachment.type.split('/')[0] == 'image') {
+            // calculate dimensions and blurhash
+            let imageData = imageDataGetSync(attachment.data);
+            attachment.focalPoint = '0.0,0.0';
+            attachment.width = imageData.width;
+            attachment.height = imageData.height;
+            attachment.blurhash = blurhashEncode(imageData.data, imageData.width, imageData.height, 4, 4);
+        }
+
+        writeMedia(attachment);
+    }
+
+    let post;
+    if (req.body.names && req.body.names.length > 0) {
+        // send multiple notes, one for each choice made in poll
+        for (const name of req.body.names) {
+            post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, name, req.body.to, null, attachment, req.body.editOf);
+        }
+    } else {
+        post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, null, req.body.to, req.body.polldata, attachment, req.body.editOf);
+    }
+
     if (post.directMessage === true) {
         // return html partial of the new post for insertion in the feed
         res.status(200).render('partials/dm', {
@@ -546,3 +662,140 @@ router.post('/boost', async (req, res) => {
     }
     writeBoosts(boosts);
 });
+
+router.get('/settings', async (req, res) => {
+    res.render('settings', {
+        layout: 'private',
+        actor: ActivityPub.actor,
+        me: ActivityPub.actor
+    });
+});
+
+function calculateAttachmentHashAndData(att) {
+    let attachment = {
+        type: att.type,
+        data: Buffer.from(att.data, 'base64'),
+    };
+    attachment.hash = createHash('md5').update(att.data).digest("hex");
+    return attachment;
+}
+
+router.post('/settings', async (req, res) => {
+    if (req.body.attachment_avatar || req.body.attachment_header) {
+        if (!req.body.account) {    // ensure account gets updated as we're changing the urls
+            req.body.account = {};
+        }
+        if (!req.body.account.actor) {
+            req.body.account.actor = {};
+        }
+    }
+    if (req.body.attachment_avatar) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_avatar);
+        writeMedia(att);
+        req.body.account.actor.icon = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.attachment_header) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_header);
+        writeMedia(att);
+        req.body.account.actor.image = {
+            type: 'Image',
+            mediaType: att.type,
+            url: `https://${ DOMAIN }/media/${att.hash}.${att.type.split('/')[1]}`
+        };
+    }
+    if (req.body.account && req.body.account.actor) {
+        await updateAccountActor(req.body.account.actor);
+    }
+    res.status(200).send();
+});
+
+router.get('/exportdata', async(req, res) => {
+    res.set('Content-Type', 'application/zip');
+    res.attachment(new Date().toJSON().slice(0,10) + '.zip');
+
+    const archive = archiver('zip', {
+        zlib: { level: 9 }
+    });
+    archive.on('warning', function(err) {
+        console.log(err);
+    });
+    archive.on('error', function(err) {
+        res.status(500).send(err);
+    });
+    archive.pipe(res);
+
+    archive.directory('.data', 'data');
+    archive.finalize();
+});
+
+router.get('/exportfollowing', async(req, res) => {
+    res.set('Content-Type', 'text/csv');
+    res.attachment('following_' + (new Date().toJSON().slice(0,10)) + '.csv');
+
+    let following = await Promise.all(getFollowing().map(async (f) => {
+        return f.actorId;
+    }));
+
+    console.log(following);
+    let csv = following.map((f) => {
+        return JSON.stringify(f) + ',true';   // escape it
+    }).join('\n');
+
+    res.status(200).send(csv);
+});
+
+router.post('/importfollowing', async (req, res) => {
+    if (req.body.attachment_following) {
+        let att = calculateAttachmentHashAndData(req.body.attachment_following);
+        console.log(att);
+        console.log(att.data.toString());
+
+        const records = [];
+        const parser = csvparse({
+            delimiter: ','
+        });
+        parser.on('readable', function() {
+            let record;
+            while ((record = parser.read()) !== null) {
+                records.push(record);
+            }
+        });
+        parser.on('error', function(err) {
+            console.error(err.message);
+            res.status(400).send(err);
+        });
+        parser.on('end', function() {
+            Promise.all(records.map(async (rec) => {
+                let id = rec[0];
+                if (!isFollowing(id)) {
+                    const {
+                        actor
+                    } = await fetchUser(id);
+                    if (actor) {
+                        console.log('following ' + id + ' ...');
+                        return ActivityPub.sendFollow(actor);
+                    } else {
+                        console.log('failed to fetchUser for ' + id);
+                        return Promise.resolve();
+                    }
+                } else {
+                    console.log('already following ' + id);
+                    return Promise.resolve();
+                }
+            })).then(() => {
+                res.status(200).send();
+            }).catch((err) => {
+                res.status(500).send(err);
+            });
+        });
+        parser.write(att.data.toString());
+        parser.end();
+    } else {
+        res.status(400).send();
+    }
+});
+
