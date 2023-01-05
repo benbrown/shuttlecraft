@@ -17,6 +17,7 @@ import {
     writeLikes,
     getBoosts,
     writeBoosts,
+    isFollower,
     isFollowing,
     getInboxIndex,
     getInbox,
@@ -240,34 +241,13 @@ router.get('/notifications', async (req, res) => {
         }
     }));
 
-    let following = await Promise.all(getFollowing().map(async (f) => {
-        const acct = await fetchUser(f.actorId);
-        if (acct ?.actor?.id) {
-            acct.actor.isFollowing = true; // duh
-            return acct.actor;
-        }
-        return undefined;
-    }));
-
-    following = following.filter((f) => f !== undefined);
-
-    let followers = await Promise.all(getFollowers().map(async (f) => {
-        const acct = await fetchUser(f);
-        if (acct?.actor?.id) {
-            acct.actor.isFollowing = following.some((p) => p.id === f);
-            return acct.actor;
-        }
-        return undefined;
-    }));
-
-    followers = followers.filter((f) => f !== undefined);
+    const following = getFollowing();
+    const followers = getFollowers();
 
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
         notifications: notifications.filter((n)=>n!==null).reverse(),
-        followers: followers,
-        following: following,
         followersCount: followers.length,
         followingCount: following.length
     });
@@ -395,6 +375,8 @@ router.get('/profile/:handle', async (req, res) => {
 
     if (actor) {
         actor.isFollowing = isFollowing(actor.id);
+        actor.isFollower = isFollower(actor.id);
+
         const {
             items
         } = await ActivityPub.fetchOutbox(actor);
