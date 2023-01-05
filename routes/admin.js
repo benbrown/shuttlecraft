@@ -256,8 +256,6 @@ router.get('/notifications', async (req, res) => {
         offset: offset,
         next: notifications.length == pageSize ? offset + notifications.length : null,
         notifications: notifications.filter((n)=>n!==null),
-        followers: followers,
-        following: following,
         followersCount: followers.length,
         followingCount: following.length
     });
