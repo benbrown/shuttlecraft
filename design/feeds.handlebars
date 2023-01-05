@@ -1,0 +1,44 @@
+<div class="feeds {{#if recipient}}inbox_visible{{/if}}">
+    <header>Feeds</header>
+    {{#if feeds}}
+        {{#each feeds}}
+            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
+                <a href="/private/feeds/{{getUsername this.actorId}}">{{getUsername this.actorId}}</a>
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="empty">
+            No messages.
+        </div>
+    {{/if}}
+</div>
+{{#if error}}
+<div class="error">
+    {{error.message}}
+</div>
+{{else}}
+    <div class="stream">
+        {{#if activitystream}}
+            {{#each activitystream}}
+                {{#with this}}
+                    <div class="activity">
+                        {{#if boost}}
+                            <div class="boost">
+                            🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                            </div>
+                        {{/if}}
+                        {{> note note=note}}
+                    </div>
+                {{/with}}
+            {{/each}}
+        {{else}}
+            <!-- TODO: empty state? -->
+            <div class="empty">
+                Select a conversation. To create a new one, navigate to a profile.
+            </div>
+        {{/if}}
+    </div>
+{{/if}}
+<script>
+    app.pollForPosts();
+</script>
