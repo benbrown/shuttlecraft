@@ -248,6 +248,7 @@ router.get('/notifications', async (req, res) => {
     }));
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const following = getFollowing();
     const followers = getFollowers();
 =======
@@ -272,7 +273,8 @@ router.get('/notifications', async (req, res) => {
     }));
 
     followers = followers.filter((f) => f !== undefined);
->>>>>>> 6d3bfc1 (Provide follower/following counts for notifications page)
+    const following = getFollowing();
+    const followers = getFollowers();
 
     res.render('notifications', {
         layout: 'private',
