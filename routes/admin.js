@@ -17,6 +17,7 @@ import {
     writeLikes,
     getBoosts,
     writeBoosts,
+    isFollower,
     isFollowing,
     getInboxIndex,
     getInbox,
@@ -393,6 +394,8 @@ router.get('/profile/:handle', async (req, res) => {
 
     if (actor) {
         actor.isFollowing = isFollowing(actor.id);
+        actor.isFollower = isFollower(actor.id);
+
         const {
             items
         } = await ActivityPub.fetchOutbox(actor);
