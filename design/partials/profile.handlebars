@@ -19,7 +19,10 @@
     <div class="profileBody">
         <div class="profile">
             <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
-            <span class="handle">{{getUsername actor.id}}</span>
+            <span class="handle">{{getUsername actor.id}}</span>      
+            {{#if actor.isFollower}}
+            <span class="meta_tag">Follows you</span>
+            {{/if}}
 
             {{{actor.summary}}}
 
