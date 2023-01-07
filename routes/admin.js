@@ -152,8 +152,6 @@ router.get('/', async (req, res) => {
         next
     } = await getActivityStream(pageSize, offset);
 
-
-
     const notes = await Promise.all(activitystream.map(async (n) => {
         // handle boosted posts
         if (n.note.type === 'Announce') {
