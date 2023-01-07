@@ -37,6 +37,11 @@
                 Select a conversation. To create a new one, navigate to a profile.
             </div>
         {{/if}}
+
+        {{#if next}}
+        <a href="?offset={{next}}" class="moreLink">More</a>
+        {{/if}}
+
     </div>
 {{/if}}
 <script>

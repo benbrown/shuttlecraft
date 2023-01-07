@@ -270,6 +270,8 @@ router.get('/feeds/:handle?', async (req, res) => {
     const following = getFollowing();
     const likes = await getLikes();
     const boosts = await getBoosts();
+    const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
 
 
     const feeds = following.map((follower) => {
@@ -320,7 +322,7 @@ router.get('/feeds/:handle?', async (req, res) => {
             } else {
                 return 0;
             }
-        }).map(async (p) => {
+        }).slice(offset, offset+pageSize).map(async (p) => {
             try {
                 let boost, booster;
                 const mainacct = await fetchUser(p.actor);
@@ -369,7 +371,9 @@ router.get('/feeds/:handle?', async (req, res) => {
         layout: 'private',
         me: ActivityPub.actor,
         feeds,
-        activitystream
+        activitystream,
+        offset,
+        next: activitystream.length == pageSize ? offset + activitystream.length : null,
         // inboxes,
         // inbox,
         // error
