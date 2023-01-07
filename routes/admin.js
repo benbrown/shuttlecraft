@@ -379,7 +379,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         feed,
         activitystream,
         offset,
-        next: activitystream.length == pageSize ? offset + activitystream.length : null,
+        next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null,
         // inboxes,
         // inbox,
         // error
