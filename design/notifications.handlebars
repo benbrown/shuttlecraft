@@ -3,7 +3,6 @@
     <span>🔔 Notifications</span>
     <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
 </header>
-
 {{#each notifications}}
     <div class="activity">
     {{#with this}}
@@ -33,13 +32,20 @@
     {{/with}}
     </div>
 {{/each}}
+
+{{#if next}}
+<a href="/private/notifications?offset={{next}}" class="moreLink">More</a>
+{{/if}}
+
 </div>
 {{> peopleTools}}
 <script>
     // take note of the most recent post date
-    {{#each notifications}} {{#if @first}} 
+    {{#isEq offset "0"}}
+    {{#each ../notifications}} {{#if @first}} 
     app.latestNotification("{{this.time}}");
      {{/if}}{{/each}}
+     {{/isEq}}
    
     app.pollForPosts();
 </script>
