@@ -145,10 +145,12 @@ router.get('/', async (req, res) => {
     const likes = await getLikes();
     const boosts = await getBoosts();
     const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
+
     const {
         activitystream,
         next
-    } = await getActivityStream(10, offset);
+    } = await getActivityStream(pageSize, offset);
 
 
 
@@ -181,19 +183,8 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    // de-dupe notes by id, else will get two on edits
-    const uniqueIds = new Set();
-    const uniqueNotes = notes.filter(element => {
-      const isDuplicate = uniqueIds.has(element.note.id);
-      uniqueIds.add(element.note.id);
-      if (!isDuplicate) {
-        return true;
-      }
-      return false;
-    });
-
     if (req.query.json) {
-        res.json(uniqueNotes);
+        res.json(notes);
     } else {
         // set auth cookie
         res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
@@ -201,8 +192,9 @@ router.get('/', async (req, res) => {
         res.render('dashboard', {
             layout: 'private',
             me: ActivityPub.actor,
-            next: next,
-            activitystream: uniqueNotes,
+            offset: offset, 
+            next: notes.length == pageSize ? next : null,
+            activitystream: notes,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -213,7 +205,10 @@ router.get('/', async (req, res) => {
 
 router.get('/notifications', async (req, res) => {
     const likes = await getLikes();
-    const notifications = await Promise.all(getNotifications().map(async (notification) => {
+    const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
+    const notes = getNotifications().slice().reverse().slice(offset, offset+pageSize);
+    const notifications = await Promise.all(notes.map(async (notification) => {
         const {
             actor
         } = await fetchUser(notification.notification.actor);
@@ -258,7 +253,9 @@ router.get('/notifications', async (req, res) => {
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
-        notifications: notifications.filter((n)=>n!==null).reverse(),
+        offset: offset,
+        next: notifications.length == pageSize ? offset + notifications.length : null,
+        notifications: notifications.filter((n)=>n!==null),
         followersCount: followers.length,
         followingCount: following.length
     });
