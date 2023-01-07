@@ -272,9 +272,10 @@ router.get('/feeds/:handle?', async (req, res) => {
     const boosts = await getBoosts();
     const offset = parseInt(req.query.offset) || 0;
     const pageSize = 20;
+    let feed;
 
 
-    const feeds = following.map((follower) => {
+    const feeds = await Promise.all(following.map(async (follower) => {
         // posts in index by this author
         // this is probably expensive.
         // what we really need to do is look from this person by date
@@ -293,12 +294,15 @@ router.get('/feeds/:handle?', async (req, res) => {
             }
         })[0]?.published || null;
 
+        const account = await fetchUser(follower.actorId);
+
         return {
             actorId: follower.actorId,
+            actor: account.actor,
             postCount: posts.length,
             mostRecent: mostRecent,
         }
-    })
+    }));
 
     feeds.sort((a,b) => {
         if (a.mostRecent > b.mostRecent) {
@@ -314,6 +318,7 @@ router.get('/feeds/:handle?', async (req, res) => {
 
     if (req.params.handle) {
         const account = await fetchUser(req.params.handle);
+        feed = account.actor;
         activitystream = await Promise.all(INDEX.filter((p) => p.actor == account.actor.id).sort((a,b) => {
             if (a.published > b.published) {
                 return -1;
@@ -371,6 +376,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         layout: 'private',
         me: ActivityPub.actor,
         feeds,
+        feed,
         activitystream,
         offset,
         next: activitystream.length == pageSize ? offset + activitystream.length : null,

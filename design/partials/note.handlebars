@@ -1,4 +1,6 @@
+        {{#unless hidebyline}}
         {{> byline actor=actor}}
+        {{/unless}}
         {{#if note.summary}}
         <div class="content content_warning">
             <span>⚠️ {{note.summary}}</span>

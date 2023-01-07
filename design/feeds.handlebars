@@ -2,8 +2,9 @@
     <header>Feeds</header>
     {{#if feeds}}
         {{#each feeds}}
-            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
-                <a href="/private/feeds/{{getUsername this.actorId}}">{{getUsername this.actorId}}</a>
+            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq ../feed.id this.actorId}}current{{/isEq}}">
+                {{> avatar actor=actor}}
+                <a href="/private/feeds/{{getUsername this.actorId}}" title="{{getUsername this.actorId}}">{{or actor.preferredName actor.name}}</a>
             </div>
         {{/each}}
     {{else}}
@@ -18,6 +19,11 @@
 </div>
 {{else}}
     <div class="stream">
+        {{#if feed}} 
+        <header>
+            {{> personCard actor=feed}}
+        </header>
+        {{/if}}
         {{#if activitystream}}
             {{#each activitystream}}
                 {{#with this}}
@@ -27,7 +33,7 @@
                             🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
                             </div>
                         {{/if}}
-                        {{> note note=note}}
+                        {{> note note=note hidebyline=true}}
                     </div>
                 {{/with}}
             {{/each}}
