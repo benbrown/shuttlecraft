@@ -273,7 +273,6 @@ router.get('/feeds/:handle?', async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
     const pageSize = 20;
 
-
     const feeds = following.map((follower) => {
         // posts in index by this author
         // this is probably expensive.
@@ -373,7 +372,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         feeds,
         activitystream,
         offset,
-        next: activitystream.length == pageSize ? offset + activitystream.length : null,
+        next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null,
         // inboxes,
         // inbox,
         // error
