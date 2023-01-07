@@ -146,10 +146,12 @@ router.get('/', async (req, res) => {
     const likes = await getLikes();
     const boosts = await getBoosts();
     const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
+
     const {
         activitystream,
         next
-    } = await getActivityStream(10, offset);
+    } = await getActivityStream(pageSize, offset);
 
     const notes = await Promise.all(activitystream.map(async (n) => {
         // handle boosted posts
@@ -190,7 +192,8 @@ router.get('/', async (req, res) => {
         res.render('dashboard', {
             layout: 'private',
             me: ActivityPub.actor,
-            next: next,
+            offset: offset, 
+            next: notes.length == pageSize ? next : null,
             activitystream: notes,
             followers: followers,
             following: following,
@@ -202,7 +205,10 @@ router.get('/', async (req, res) => {
 
 router.get('/notifications', async (req, res) => {
     const likes = await getLikes();
-    const notifications = await Promise.all(getNotifications().map(async (notification) => {
+    const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
+    const notes = getNotifications().slice().reverse().slice(offset, offset+pageSize);
+    const notifications = await Promise.all(notes.map(async (notification) => {
         const {
             actor
         } = await fetchUser(notification.notification.actor);
@@ -247,7 +253,9 @@ router.get('/notifications', async (req, res) => {
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
-        notifications: notifications.filter((n)=>n!==null).reverse(),
+        offset: offset,
+        next: notifications.length == pageSize ? offset + notifications.length : null,
+        notifications: notifications.filter((n)=>n!==null),
         followersCount: followers.length,
         followingCount: following.length
     });
