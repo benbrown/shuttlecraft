@@ -27,14 +27,18 @@
     {{/if}}
 </div>
 
+
+{{#if next}}
 <a href="/private?offset={{next}}" class="moreLink">More</a>
+{{/if}}
 </div>
 {{> peopleTools}}
 <script>
     // take note of the most recent post date
-    {{#each activitystream}} {{#if @first}} 
+    {{#isEq offset "0"}}
+    {{#each ../activitystream}} {{#if @first}} 
     app.latestPost("{{or this.boost.published this.note.published}}");
-     {{/if}}{{/each}}
-   
+    {{/if}}{{/each}}
+    {{/isEq}}
     app.pollForPosts();
 </script>
