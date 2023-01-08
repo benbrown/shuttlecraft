@@ -37,6 +37,12 @@ const getCookie = (name) => {
     return null;
 }
 
+const beep = () => {
+    console.log("BEEP!");
+    var snd = new Audio('/audio/beep.wav');
+    snd.play();
+}
+
 const app = {
     newPosts: 0,
     newNotifications: 0,
@@ -58,8 +64,7 @@ const app = {
         if (newPosts) {
             if (meta.newPosts > 0) {
                 if (meta.newPosts > app.newPosts) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newPosts = meta.newPosts;
                 newPosts.innerHTML = `${meta.newPosts}<span> unread</span>`;
@@ -73,8 +78,7 @@ const app = {
         if (newNotifications) {
             if (meta.newNotifications > 0) {
                 if (meta.newNotifications > app.newNotifications) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newNotifications = meta.newNotifications;
                 newNotifications.innerHTML = `${meta.newNotifications}<span> new</span>`;
@@ -88,8 +92,7 @@ const app = {
         if (newDMs) {
             if (meta.newDMs > 0) {
                 if (meta.newDMs > app.newDMs) {
-                    // BEEP!
-                    console.log('BEEP!');
+                    beep();
                 }
                 app.newDMs = meta.newDMs;
                 newDMs.innerHTML = `${meta.newDMs}<span> new</span>`;
