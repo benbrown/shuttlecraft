@@ -40,37 +40,57 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
   if (isMyPost({
       id: noteId
     })) {
-    post = await getNote(noteId);
-    actor = ActivityPub.actor;
-    const likes = getLikesForNote(post.id)
-    stats = {
-      likes: likes.likes.length,
-      boosts: likes.boosts.length,
-      replies: getReplyCountForNote(post.id),
+    try {
+      post = await getNote(noteId);
+      actor = ActivityPub.actor;
+      const likes = getLikesForNote(post.id)
+      stats = {
+        likes: likes.likes.length,
+        boosts: likes.boosts.length,
+        replies: getReplyCountForNote(post.id),
+      }
+    } catch(err) {
+      logger('could not fetch own post in thread', err);
     }
   } else {
-    post = await getActivity(noteId);
-    let account = await fetchUser(post.attributedTo);
-    actor = account.actor;
+    try {
+      post = await getActivity(noteId);
+      let account = await fetchUser(post.attributedTo);
+      actor = account.actor;
+    } catch (err) {
+      logger('Could not load a post in a thread. Possibly deleted.', err)
+    }
   }
 
-  results.push({
-    stats: stats,
-    note: post,
-    actor: actor,
-  });
+  // can only check up stream if you can look at the post itself.
+  // if it has been deleted, that info is lost.
+  if (post) {
+    results.push({
+      stats: stats,
+      note: post,
+      actor: actor,
+    });
 
-  // if this is a reply, get the parent and any other parents straight up the chain
-  // this does NOT get replies to those parents that are not part of the active thread right now.
-  if (ascend && post.inReplyTo) {
-    await unrollThread(post.inReplyTo, results, true, false);
+    // if this is a reply, get the parent and any other parents straight up the chain
+    // this does NOT get replies to those parents that are not part of the active thread right now.
+    if (ascend && post.inReplyTo) {
+      try {
+        await unrollThread(post.inReplyTo, results, true, false);
+      } catch (err) {
+        logger('Failed to unroll thread parents.', err)
+      }
+    }
   }
 
   // now, find all posts that are below this one...
   if (descend) {
     const replies = INDEX.filter((p) => p.inReplyTo === noteId);
     for (let r = 0; r < replies.length; r++) {
-      await unrollThread(replies[r].id, results, false, true);
+      try {
+        await unrollThread(replies[r].id, results, false, true);
+      } catch(err) {
+        logger('Failed to unroll thread children', err);
+      }
     }
   }
 

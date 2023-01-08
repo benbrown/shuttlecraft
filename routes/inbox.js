@@ -16,7 +16,8 @@ import {
     isMyPost,
     isBlocked,
     addressedOnlyToMe,
-    isMention
+    isMention,
+    deleteObject
 } from '../lib/account.js';
 import {
     createActivity,
@@ -38,12 +39,6 @@ router.post('/', async (req, res) => {
     const incomingRequest = req.body;
 
     if (incomingRequest) {
-        // TODO: handle this better
-        // should remove post/user if found
-        if (incomingRequest.type === 'Delete') {
-            return res.status(200).send();
-        }
-
         if (isBlocked(incomingRequest.actor)) {
             return res.status(403).send('');
         }
@@ -55,6 +50,10 @@ router.post('/', async (req, res) => {
         // FIRST, validate the actor
         if (ActivityPub.validateSignature(actor, req)) {
             switch (incomingRequest.type) {
+                case 'Delete':
+                    logger('Delete request');
+                    await deleteObject(actor, incomingRequest);
+                    break;
                 case 'Follow':
                     logger('Incoming follow request');
                     addFollower(incomingRequest);
@@ -174,7 +173,7 @@ router.post('/', async (req, res) => {
             }
         } else {
             logger('Signature failed:', incomingRequest);
-            return res.status(501).send('Invalid signature');
+            return res.status(403).send('Invalid signature');
         }
     } else {
         logger('Unknown request format:', incomingRequest);
