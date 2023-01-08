@@ -53,7 +53,6 @@ router.post('/', async (req, res) => {
                 case 'Delete':
                     logger('Delete request');
                     await deleteObject(actor, incomingRequest);
-                    ActivityPub.sendAccept(actor, incomingRequest);
                     break;
                 case 'Follow':
                     logger('Incoming follow request');
@@ -174,7 +173,7 @@ router.post('/', async (req, res) => {
             }
         } else {
             logger('Signature failed:', incomingRequest);
-            return res.status(501).send('Invalid signature');
+            return res.status(403).send('Invalid signature');
         }
     } else {
         logger('Unknown request format:', incomingRequest);
