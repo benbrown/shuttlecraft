@@ -183,19 +183,8 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    // de-dupe notes by id, else will get two on edits
-    const uniqueIds = new Set();
-    const uniqueNotes = notes.filter(element => {
-      const isDuplicate = uniqueIds.has(element.note.id);
-      uniqueIds.add(element.note.id);
-      if (!isDuplicate) {
-        return true;
-      }
-      return false;
-    });
-
     if (req.query.json) {
-        res.json(uniqueNotes);
+        res.json(notes);
     } else {
         // set auth cookie
         res.cookie('token', ActivityPub.account.apikey, {maxAge: (7*24*60*60*1000)});
