@@ -48,7 +48,11 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
+<<<<<<< HEAD
       if (a == b) return options.fn(this);
+=======
+      return (a === b);
+>>>>>>> 8afa147 (Add edit button and composer changes to allow editing of sent posts.)
     },
     or: (a, b, options) => {
       return a || b
@@ -60,6 +64,7 @@ const hbs = create({
       return ActivityPub.getUsername(user)
     },
     stripProtocol: (str) => str.replace(/^https\:\/\//, ''),
+    stripHTML: (str) => str.replace(/(<([^>]+)>)/gi, "")
   }
 });
 
