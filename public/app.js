@@ -162,11 +162,16 @@ const app = {
         }
         return false;
     },
+    editPost: (postId) => {
+        console.log("EDIT POST", postId);
+        window.location = '/private/post?edit=' + encodeURIComponent(postId);
+    },
     post: () => {
         const post = document.getElementById('post');
         const cw = document.getElementById('cw');
         const inReplyTo = document.getElementById('inReplyTo');
         const to = document.getElementById('to');
+        const editOf = document.getElementById('editOf');
 
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
@@ -177,6 +182,7 @@ const app = {
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
+            editOf: editOf ? editOf.value : null
         }));
 
         Http.onreadystatechange = () => {
