@@ -18,7 +18,6 @@ Including features:
 - Block people or instances
 
 Not yet supported:
-- Incoming updates and deletes
 - Media uploads
 
 ## Warning: Experimental Software! 
