@@ -1,0 +1,26 @@
+---
+version: '3'
+
+services:
+    shuttlecraft:
+        build: .
+        image: shuttlecraft
+        container_name: shuttlecraft
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        volumes:
+            - ./.data:/build/.data
+
+    nginx-alpine-ssl:
+        build: nginx-alpine-ssl
+        image: nginx-alpine-ssl
+        container_name: nginx-alpine-ssl
+        depends_on:
+            - shuttlecraft
+        restart: always
+        security_opt:
+            - no-new-privileges:true
+        ports:
+            - "443:443"
+
