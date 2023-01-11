@@ -223,6 +223,8 @@ router.get('/', async (req, res) => {
         }
     });
 
+    feeds.slice(0,20);
+
     if (req.query.json) {
         res.json(notes);
     } else {
