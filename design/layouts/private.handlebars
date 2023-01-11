@@ -12,28 +12,44 @@
     <script src="/app.js"></script>
   </head>
   <body>
-    <div id="wrapper">
-      <nav class="toolbar">
-        <ul>
-          <li><a href="{{rootUrl}}/private">🏠 <span class="label">Home</span></a><span class="badge" id="newPostsBadge" hidden></span></li>
-          <li><a href="{{rootUrl}}/private/notifications">🔔 <span class="label">Notifications</span></a><span class="badge" id="newNotificationsBadge" hidden></span></li>
-          <li><a href="{{rootUrl}}/private/dms">💬 <span class="label">Messages</span></a><span class="badge" id="newDMsBadge" hidden></span></li>
-          <li><a href="{{rootUrl}}/private/post">➕ <span class="label">Compose</span></a></li>
-
-        </ul>
-      </nav>
-      <div id="main">
-        <header id="header">
-          shuttlecraft - pre-release v0.0.1
-          <nav>
-            <a href="https://github.com/benbrown/shuttlecraft/issues" title="Report a bug">🪲</a>
-            <a href="https://github.com/benbrown/shuttlecraft" title="Shuttlecraft on Github">🚀</a>
-          </nav>
-        </header>
-        <div id="content">
-          {{{body}}}
+        <div id="wrapper">
+            <div id="nav">
+                <nav>
+                    <ul><li><a href="">🚀</a></li></ul>
+                </nav>
+            </div>
+            <div id="menu">
+                <nav>
+                    <ul id="top_nav">
+                        <li><a href="/private">Latest</a></li>
+                        <li><a href="/private/notifications">Notifications</a></li>
+                        <li><a href="/private/dms">Messages</a></li>
+                        <li><a href="/private/post">Compose</a></li>
+                        <li><a href="/private/feeds/{{getUsername me.id}}">My Posts</a></li>
+                    </ul>
+                    <ul id="top_feeds">
+                        <li><form><input type="search" placeholder="find someone" /></form></li>
+                        {{#if feeds}}
+                            {{#each feeds}}
+                                <li class="{{#if this.unread}}unread{{/if}} {{#isEq ../feed.id this.actorId}}current{{/isEq}}">
+                                    <a href="/private/feeds/{{getUsername this.actorId}}" title="{{getUsername this.actorId}}">
+                                        {{> avatar actor=actor nolink=true}}
+                                        {{or actor.preferredName actor.name}}
+                                    </a>
+                                </li>
+                            {{/each}}
+                        {{else}}
+                            <div class="empty">
+                                No feeds.
+                            </div>
+                        {{/if}}
+                        <li><a href="" title="Next 100">...</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div id="content">
+            {{{body}}}
+           </div>
         </div>
-      </div>
-    </div>
-  </body>
+    </body>
 </html>

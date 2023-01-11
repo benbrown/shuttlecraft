@@ -184,6 +184,45 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
+    const feeds = await Promise.all(following.map(async (follower) => {
+        // posts in index by this author
+        // this is probably expensive.
+        // what we really need to do is look from this person by date
+        // and if we sort right it should be reasonable?
+        // and we just return unread counts for everything?
+        const posts = INDEX.filter((p) => p.actor == follower.actorId);
+        
+        // find most recent post
+        const mostRecent = posts.sort((a,b) => {
+            if (a.published > b.published) {
+                return -1;
+            } else if (a.published < b.published) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })[0]?.published || null;
+
+        const account = await fetchUser(follower.actorId);
+
+        return {
+            actorId: follower.actorId,
+            actor: account.actor,
+            postCount: posts.length,
+            mostRecent: mostRecent,
+        }
+    }));
+
+    feeds.sort((a,b) => {
+        if (a.mostRecent > b.mostRecent) {
+            return -1;
+        } else if (a.mostRecent < b.mostRecent) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -196,6 +235,7 @@ router.get('/', async (req, res) => {
             offset: offset, 
             next: notes.length == pageSize ? next : null,
             activitystream: notes,
+            feeds,
             followers: followers,
             following: following,
             followersCount: followers.length,

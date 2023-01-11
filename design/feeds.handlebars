@@ -1,18 +1,3 @@
-<div class="feeds {{#if recipient}}inbox_visible{{/if}}">
-    <header>Feeds</header>
-    {{#if feeds}}
-        {{#each feeds}}
-            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq ../feed.id this.actorId}}current{{/isEq}}">
-                {{> avatar actor=actor}}
-                <a href="/private/feeds/{{getUsername this.actorId}}" title="{{getUsername this.actorId}}">{{or actor.preferredName actor.name}}</a>
-            </div>
-        {{/each}}
-    {{else}}
-        <div class="empty">
-            No messages.
-        </div>
-    {{/if}}
-</div>
 {{#if error}}
 <div class="error">
     {{error.message}}
