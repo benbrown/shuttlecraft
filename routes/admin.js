@@ -223,8 +223,6 @@ router.get('/', async (req, res) => {
         }
     });
 
-    feeds.slice(0,20);
-
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -237,7 +235,7 @@ router.get('/', async (req, res) => {
             offset: offset, 
             next: notes.length == pageSize ? next : null,
             activitystream: notes,
-            feeds,
+            feeds: feeds.slice(0,20),
             followers: followers,
             following: following,
             followersCount: followers.length,
