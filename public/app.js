@@ -54,7 +54,7 @@ const app = {
         }
     },
     alertNewPosts: (meta) => {
-        const newPosts = document.getElementById('newPosts') || document.getElementById('newPostsBadge');
+        const newPosts = document.getElementById('newPosts') ?  [document.getElementById('newPosts')] : Array.from(document.getElementsByClassName('newPostsBadge'));
         if (newPosts) {
             if (meta.newPosts > 0) {
                 if (meta.newPosts > app.newPosts) {
@@ -62,14 +62,18 @@ const app = {
                     console.log('BEEP!');
                 }
                 app.newPosts = meta.newPosts;
-                newPosts.innerHTML = `${meta.newPosts}<span> unread</span>`;
-                newPosts.hidden = false;
+                newPosts.forEach((badge) => {
+                    badge.innerHTML = `${meta.newPosts}<span> unread</span>`;
+                    badge.hidden = false;
+                });
             } else {
-                newPosts.innerHTML = '';
-                newPosts.hidden = true;
+                newPosts.forEach((badge) => {
+                    badge.innerHTML = '';
+                    badge.hidden = true;
+                });
             }
         }
-        const newNotifications = document.getElementById('newNotifications') || document.getElementById('newNotificationsBadge');
+        const newNotifications = document.getElementById('newNotifications') ? [document.getElementById('newNotifications')] : Array.from(document.getElementsByClassName('newNotificationsBadge'));
         if (newNotifications) {
             if (meta.newNotifications > 0) {
                 if (meta.newNotifications > app.newNotifications) {
@@ -77,14 +81,18 @@ const app = {
                     console.log('BEEP!');
                 }
                 app.newNotifications = meta.newNotifications;
-                newNotifications.innerHTML = `${meta.newNotifications}<span> new</span>`;
-                newNotifications.hidden = false;
+                newNotifications.forEach((badge) => {
+                    badge.innerHTML = `${meta.newNotifications}<span> unread</span>`;
+                    badge.hidden = false;
+                });
             } else {
-                newNotifications.innerHTML = '';
-                newNotifications.hidden = true;
+                newNotifications.forEach((badge) => {
+                    badge.innerHTML = '';
+                    badge.hidden = true;
+                });
             }
         }
-        const newDMs = document.getElementById('newDMs') || document.getElementById('newDMsBadge');
+        const newDMs = document.getElementById('newDMs') ? [document.getElementById('newDMs')] : Array.from(document.getElementsByClassName('newDMsBadge'));
         if (newDMs) {
             if (meta.newDMs > 0) {
                 if (meta.newDMs > app.newDMs) {
@@ -92,11 +100,16 @@ const app = {
                     console.log('BEEP!');
                 }
                 app.newDMs = meta.newDMs;
-                newDMs.innerHTML = `${meta.newDMs}<span> new</span>`;
-                newDMs.hidden = false;
+                newDMs.forEach((badge) => {
+                    badge.innerHTML = `${meta.newNotifications}<span> unread</span>`;
+                    badge.hidden = false;
+                });
             } else {
-                newDMs.innerHTML = '';
-                newDMs.hidden = true;
+                newDMs.forEach((badge) => {
+                    badge.innerHTML = '';
+                    badge.hidden = true;
+                });
+
             }
         }
 
