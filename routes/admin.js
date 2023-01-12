@@ -139,6 +139,52 @@ router.get('/following', async (req, res) => {
 });
 
 
+const getFeedList = async (num = 20) => {
+
+    const following = await getFollowing();
+
+    const feeds = await Promise.all(following.map(async (follower) => {
+        // posts in index by this author
+        // this is probably expensive.
+        // what we really need to do is look from this person by date
+        // and if we sort right it should be reasonable?
+        // and we just return unread counts for everything?
+        const posts = INDEX.filter((p) => p.actor == follower.actorId);
+        
+        // find most recent post
+        const mostRecent = posts.sort((a,b) => {
+            if (a.published > b.published) {
+                return -1;
+            } else if (a.published < b.published) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })[0]?.published || null;
+
+        const account = await fetchUser(follower.actorId);
+
+        return {
+            actorId: follower.actorId,
+            actor: account.actor,
+            postCount: posts.length,
+            mostRecent: mostRecent,
+        }
+    }));
+
+    feeds.sort((a,b) => {
+        if (a.mostRecent > b.mostRecent) {
+            return -1;
+        } else if (a.mostRecent < b.mostRecent) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    return feeds.slice(0, num);
+}
+
 
 
 router.get('/', async (req, res) => {
@@ -184,44 +230,7 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
-    const feeds = await Promise.all(following.map(async (follower) => {
-        // posts in index by this author
-        // this is probably expensive.
-        // what we really need to do is look from this person by date
-        // and if we sort right it should be reasonable?
-        // and we just return unread counts for everything?
-        const posts = INDEX.filter((p) => p.actor == follower.actorId);
-        
-        // find most recent post
-        const mostRecent = posts.sort((a,b) => {
-            if (a.published > b.published) {
-                return -1;
-            } else if (a.published < b.published) {
-                return 1;
-            } else {
-                return 0;
-            }
-        })[0]?.published || null;
-
-        const account = await fetchUser(follower.actorId);
-
-        return {
-            actorId: follower.actorId,
-            actor: account.actor,
-            postCount: posts.length,
-            mostRecent: mostRecent,
-        }
-    }));
-
-    feeds.sort((a,b) => {
-        if (a.mostRecent > b.mostRecent) {
-            return -1;
-        } else if (a.mostRecent < b.mostRecent) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
+    const feeds = await getFeedList(20);
 
     if (req.query.json) {
         res.json(notes);
@@ -235,7 +244,7 @@ router.get('/', async (req, res) => {
             offset: offset, 
             next: notes.length == pageSize ? next : null,
             activitystream: notes,
-            feeds: feeds.slice(0,20),
+            feeds: feeds,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -291,10 +300,13 @@ router.get('/notifications', async (req, res) => {
     const following = getFollowing();
     const followers = getFollowers();
 
+    const feeds = await getFeedList(20);
+
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
         offset: offset,
+        feeds,
         next: notifications.length == pageSize ? offset + notifications.length : null,
         notifications: notifications.filter((n)=>n!==null),
         followersCount: followers.length,
@@ -312,45 +324,7 @@ router.get('/feeds/:handle?', async (req, res) => {
     const pageSize = 20;
     let feed;
 
-
-    const feeds = await Promise.all(following.map(async (follower) => {
-        // posts in index by this author
-        // this is probably expensive.
-        // what we really need to do is look from this person by date
-        // and if we sort right it should be reasonable?
-        // and we just return unread counts for everything?
-        const posts = INDEX.filter((p) => p.actor == follower.actorId);
-        
-        // find most recent post
-        const mostRecent = posts.sort((a,b) => {
-            if (a.published > b.published) {
-                return -1;
-            } else if (a.published < b.published) {
-                return 1;
-            } else {
-                return 0;
-            }
-        })[0]?.published || null;
-
-        const account = await fetchUser(follower.actorId);
-
-        return {
-            actorId: follower.actorId,
-            actor: account.actor,
-            postCount: posts.length,
-            mostRecent: mostRecent,
-        }
-    }));
-
-    feeds.sort((a,b) => {
-        if (a.mostRecent > b.mostRecent) {
-            return -1;
-        } else if (a.mostRecent < b.mostRecent) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
+    const feeds = await getFeedList(20);
 
     let activitystream;
 
