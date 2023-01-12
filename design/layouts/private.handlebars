@@ -16,11 +16,11 @@
             <div id="nav">
                 <nav>
                     <ul>
-                      <li id="logo"><a href="/private">🚀</a></li>
-                      <li><a href="/private">🏠</a></li>
-                      <li><a href="/private/notifications">🔔</a></li>
-                      <li><a href="/private/dms">💬</a></li>
-                      <li><a href="/private/post">➕</a></li>
+                      <li id="logo"><a href="{{rootUrl}}/private">🚀</a></li>
+                      <li><a href="{{rootUrl}}/private">🏠</a><span class="badge" id="newPostsBadge" hidden></span></li>
+                      <li><a href="{{rootUrl}}/private/notifications">🔔</a><span class="badge" id="newNotificationsBadge" hidden></span></li>
+                      <li><a href="{{rootUrl}}/private/dms">💬</a><span class="badge" id="newDMsBadge" hidden></span></li>
+                      <li><a href={{rootUrl}}"/private/post">➕</a></li>
                     </ul>
                 </nav>
             </div>
@@ -50,12 +50,12 @@
                                     </a>
                                 </li>
                             {{/each}}
+                            <li><a href="/private/following" title="Next 100">...</a></li>
                         {{else}}
-                            <div class="empty">
+                            {{!-- <div class="empty">
                                 No feeds.
-                            </div>
+                            </div> --}}
                         {{/if}}
-                        <li><a href="/private/following" title="Next 100">...</a></li>
                     </ul>
                 </nav>
             </div>
