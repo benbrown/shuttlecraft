@@ -13,6 +13,7 @@
     {{/if}}
 
     <form onsubmit="return app.post()" id="composer">
+        <fieldset id="composer_form">
         <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}{{#if prev}}{{stripHTML prev.content}}{{/if}}</textarea>
         <input type="text" id="cw" placeholder="content warning"
         {{#if prev}}value="{{{prev.summary}}}"{{/if}}
@@ -35,6 +36,7 @@
         <input id="editOf" value="{{{prev.id}}}" hidden/>
         {{/if}}
         <button id="submit" type="submit">Post</button>
+        </fieldset>
     </form>
 </div>
 <script>
