@@ -129,6 +129,7 @@ ensureAccount(USERNAME, DOMAIN).then((myaccount) => {
   // set the server to use the main account as its primary actor
   ActivityPub.account = myaccount;
   console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
+  console.log(`ACCESS DASHBOARD: https://${ DOMAIN }/private`);
 
   // set up globals
   app.set('domain', DOMAIN);
