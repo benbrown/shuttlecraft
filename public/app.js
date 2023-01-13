@@ -12,7 +12,6 @@ const fetch = (url, type, payload = undefined) => {
             } else if (Http.readyState == 4 && Http.status >= 300) {
                 reject(Http.statusText);
             }
-
         }
     });
 }
@@ -111,55 +110,48 @@ const app = {
         });
     },
     toggleBoost: (el, postId) => {
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/boost';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: postId,
-        }));
+        if (el.classList.contains('busy')) return;
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                const resRaw = Http.responseText;
-                const res = JSON.parse(resRaw);
-                if (res.isBoosted) {
-                    console.log('boosted!');
-                    el.classList.add("active");
-                } else {
-                    console.log('unboosted');
-                    el.classList.remove("active");
-                }
+        el.classList.add('busy');
+        fetch('/private/boost', 'POST', JSON.stringify({
+            post: postId,
+        })).then((resRaw) => {
+            el.classList.remove('busy');
+            const res = JSON.parse(resRaw);
+            if (res.isBoosted) {
+                console.log('boosted!');
+                el.classList.add("active");
             } else {
-                console.error('HTTP PROXY CHANGE', Http);
+                console.log('unboosted');
+                el.classList.remove("active");
             }
-        }
+        }).catch((err) => {
+            console.error(err);
+            el.classList.remove('busy');
+        });
         return false;
     },
     toggleLike: (el, postId) => {
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/like';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
-            post: postId,
-        }));
+        if (el.classList.contains('busy')) return;
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                const resRaw = Http.responseText;
-                const res = JSON.parse(resRaw);
-                if (res.isLiked) {
-                    console.log('liked!');
-                    el.classList.add("active");
-                } else {
-                    console.log('unliked');
-                    el.classList.remove("active");
-                }
+        el.classList.add('busy');
+
+        fetch('/private/like', 'POST', JSON.stringify({
+            post: postId,
+        })).then((resRaw) => {
+            el.classList.remove('busy');
+            const res = JSON.parse(resRaw);
+            if (res.isLiked) {
+                console.log('liked!');
+                el.classList.add("active");
             } else {
-                console.error('HTTP PROXY CHANGE', Http);
+                console.log('unliked');
+                el.classList.remove("active");
             }
-        }
+        }).catch((err) => {
+            console.error(err);
+            el.classList.remove('busy');
+        });
         return false;
     },
     editPost: (postId) => {
@@ -173,79 +165,62 @@ const app = {
         const to = document.getElementById('to');
         const editOf = document.getElementById('editOf');
 
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/post';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
+        const form = document.getElementById('composer_form');
+        
+        form.disabled = true;
+
+        fetch('/private/post', 'POST', JSON.stringify({
             post: post.value,
             cw: cw.value,
             inReplyTo: inReplyTo.value,
             to: to.value,
             editOf: editOf ? editOf.value : null
-        }));
+        })).then((newHtml) => {
+            // prepend the new post
+            const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                console.log('posted!');
-
-                // prepend the new post
-                const newHtml = Http.responseText;
-                const el = document.getElementById('home_stream') || document.getElementById('inbox_stream');
-
-                if (!el) {
-                    window.location = '/private/';
-                }
-
-                // todo: ideally this would come back with all the html it needs
-                el.innerHTML = newHtml + el.innerHTML;
-
-                // reset the inputs to blank
-                post.value = '';
-                cw.value = '';
+            if (!el) {
+                window.location = '/private/';
             } else {
-                console.error('HTTP PROXY CHANGE', Http);
+                form.disabled = false;
             }
-        }
+
+            el.innerHTML = newHtml + el.innerHTML;
+
+            // reset the inputs to blank
+            post.value = '';
+            cw.value = '';
+        }).catch((err) => {
+            console.error(err);
+        });
         return false;
     },
     replyTo: (activityId, mention) => {
-
         window.location = '/private/post?inReplyTo=' + activityId;
-        return;
-
-        const inReplyTo = document.getElementById('inReplyTo');
-        const post = document.getElementById('post');
-        post.value = `@${ mention } `;
-        inReplyTo.value = activityId;
-        post.focus();
     },
     toggleFollow: (el, userId) => {
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/follow';
-        Http.open("POST", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send(JSON.stringify({
+        if (el.classList.contains('busy')) return;
+
+        el.classList.add('busy');
+        fetch('/private/follow','POST',JSON.stringify({
             handle: userId,
-        }));
+        })).then((resRaw) => {
+            el.classList.remove('busy');
 
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
+            console.log('followed!');
+            const res = JSON.parse(resRaw);
+
+            if (res.isFollowed) {
                 console.log('followed!');
-                const resRaw = Http.responseText;
-                const res = JSON.parse(resRaw);
-
-                if (res.isFollowed) {
-                    console.log('followed!');
-                    el.classList.add("active");
-                } else {
-                    console.log('unfollowed');
-                    el.classList.remove("active");
-                }
+                el.classList.add("active");
             } else {
-                console.error('HTTP PROXY CHANGE', Http);
+                console.log('unfollowed');
+                el.classList.remove("active");
             }
-        }
+        }).catch((err) => {
+            console.error(err);
+            el.classList.remove('busy');
+        });
         return false;
     },    
     lookup: () => {
@@ -253,22 +228,10 @@ const app = {
         const lookup_results = document.getElementById('lookup_results');
 
         console.log('Lookup user', follow.value);
-
-        const Http = new XMLHttpRequest();
-        const proxyUrl ='/private/lookup?handle=' + encodeURIComponent(follow.value);
-        console.log(proxyUrl);
-
-        Http.open("GET", proxyUrl);
-        Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        Http.send();
-
-        Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
-                lookup_results.innerHTML = Http.responseText;
-            } else {
-                console.error('HTTP PROXY CHANGE', Http);
-            }
-        }
+        fetch('/private/lookup?handle=' + encodeURIComponent(follow.value), 'GET', null)
+            .then((newHTML) => {
+                lookup_results.innerHTML = newHTML;
+            });
         return false;
     }    
 }
