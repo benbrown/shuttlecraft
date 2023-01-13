@@ -10,6 +10,7 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 ## 2023-01-12
 - Prevent buttons from being double-clicked resulting in accidentally undoing something or double posting
+- Prevent the account.json file from being created with a faulty domain name. Thanks @patrickmcurry!
 
 
 ## 2023-01-09
