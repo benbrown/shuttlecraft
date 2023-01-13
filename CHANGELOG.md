@@ -8,6 +8,10 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-12
+- Prevent buttons from being double-clicked resulting in accidentally undoing something or double posting
+
+
 ## 2023-01-09
 - Fixed a bug causing new posts not to show up til the server restarts. Oops!
 
