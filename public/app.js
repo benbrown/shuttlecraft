@@ -39,6 +39,7 @@ const getCookie = (name) => {
 const app = {
     newPosts: 0,
     newNotifications: 0,
+    newDMs: 0,
     latestPost: (date) => {
         setCookie('latestPost', date, 7);
     },
