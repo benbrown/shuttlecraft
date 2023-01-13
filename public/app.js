@@ -101,7 +101,7 @@ const app = {
                 }
                 app.newDMs = meta.newDMs;
                 newDMs.forEach((badge) => {
-                    badge.innerHTML = `${meta.newNotifications}<span> unread</span>`;
+                    badge.innerHTML = `${meta.newDMs}<span> unread</span>`;
                     badge.hidden = false;
                 });
             } else {
