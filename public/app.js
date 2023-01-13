@@ -185,7 +185,6 @@ const app = {
                 form.disabled = false;
             }
 
-            // todo: ideally this would come back with all the html it needs
             el.innerHTML = newHtml + el.innerHTML;
 
             // reset the inputs to blank
