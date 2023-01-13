@@ -163,36 +163,44 @@ router.get('/feed', async (req, res) => {
 
 router.get('/notes/:guid', async (req, res) => {
   let guid = req.params.guid;
-
   if (!guid) {
     return res.status(400).send('Bad request.');
   } else {
     const actor = ActivityPub.actor;
-    const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
-    if (note === undefined) {
-      return res.status(404).send(`No record found for ${guid}.`);
-    } else {
-
-      const notes = await unrollThread(note.id);
-      notes.sort((a, b) => {
-        const ad = new Date(a.note.published).getTime();
-        const bd = new Date(b.note.published).getTime();
-        if (ad > bd) {
-          return 1;
-        } else if (ad < bd) {
-          return -1;
+    try {
+        const note = await getNote(`https://${ DOMAIN }/m/${ guid }`);
+        if (note === undefined) {
+          return res.status(404).send(`No record found for ${guid}.`);
         } else {
-          return 0;
+          if (req.accepts('application/activity+json') && !req.accepts('*/*')) {    // non-browser client
+            res.setHeader('Content-Type', 'application/activity+json');
+            res.status(200).send(note);
+          } else {
+            const notes = await unrollThread(note.id);
+            notes.sort((a, b) => {
+              const ad = new Date(a.note.published).getTime();
+              const bd = new Date(b.note.published).getTime();
+              if (ad > bd) {
+                return 1;
+              } else if (ad < bd) {
+                return -1;
+              } else {
+                return 0;
+              }
+            });
+            res.render('public/note', {
+              me: ActivityPub.actor,
+              actor: actor,
+              activitystream: notes,
+              layout: 'public',
+              domain: DOMAIN,
+              user: USERNAME
+            });
+          }
         }
-      });
-      res.render('public/note', {
-        me: ActivityPub.actor,
-        actor: actor,
-        activitystream: notes,
-        layout: 'public',
-        domain: DOMAIN,
-        user: USERNAME
-      });
+    } catch(err) {
+        res.status(404).send();
     }
   }
 });
+
