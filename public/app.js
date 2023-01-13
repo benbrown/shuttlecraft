@@ -111,6 +111,8 @@ const app = {
         });
     },
     toggleBoost: (el, postId) => {
+        if (el.classList.contains('busy')) return;
+
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/boost';
         Http.open("POST", proxyUrl);
@@ -119,8 +121,11 @@ const app = {
             post: postId,
         }));
 
+        el.classList.add('busy');
+
         Http.onreadystatechange = () => {
             if (Http.readyState == 4 && Http.status == 200) {
+                el.classList.remove('busy');
                 const resRaw = Http.responseText;
                 const res = JSON.parse(resRaw);
                 if (res.isBoosted) {
@@ -137,6 +142,8 @@ const app = {
         return false;
     },
     toggleLike: (el, postId) => {
+        if (el.classList.contains('busy')) return;
+
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/like';
         Http.open("POST", proxyUrl);
@@ -145,8 +152,11 @@ const app = {
             post: postId,
         }));
 
+        el.classList.add('busy');
+
         Http.onreadystatechange = () => {
             if (Http.readyState == 4 && Http.status == 200) {
+                el.classList.remove('busy');
                 const resRaw = Http.responseText;
                 const res = JSON.parse(resRaw);
                 if (res.isLiked) {
@@ -173,6 +183,10 @@ const app = {
         const to = document.getElementById('to');
         const editOf = document.getElementById('editOf');
 
+        const form = document.getElementById('composer_form');
+        
+        form.disabled = true;
+
         const Http = new XMLHttpRequest();
         const proxyUrl ='/private/post';
         Http.open("POST", proxyUrl);
@@ -195,6 +209,8 @@ const app = {
 
                 if (!el) {
                     window.location = '/private/';
+                } else {
+                    form.disabled = false;
                 }
 
                 // todo: ideally this would come back with all the html it needs
