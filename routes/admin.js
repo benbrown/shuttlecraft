@@ -92,6 +92,7 @@ router.get('/followers', async (req, res) => {
     } else {
         res.render('followers', {
             layout: 'private',
+            url: '/followers',
             me: ActivityPub.actor,
             followers: followers,
             following: following,
@@ -129,6 +130,7 @@ router.get('/following', async (req, res) => {
     } else {
         res.render('following', {
             layout: 'private',
+            url: '/followers',
             me: ActivityPub.actor,
             followers: followers,
             following: following,
@@ -240,6 +242,7 @@ router.get('/', async (req, res) => {
 
         res.render('dashboard', {
             layout: 'private',
+            url: '/',
             me: ActivityPub.actor,
             offset: offset, 
             next: notes.length == pageSize ? next : null,
@@ -305,6 +308,7 @@ router.get('/notifications', async (req, res) => {
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
+        url: '/notifications',
         offset: offset,
         feeds,
         next: notifications.length == pageSize ? offset + notifications.length : null,
@@ -387,6 +391,7 @@ router.get('/feeds/:handle?', async (req, res) => {
     res.render('feeds', {
         layout: 'private',
         me: ActivityPub.actor,
+        url: '/feeds',
         feeds,
         feed,
         activitystream,
@@ -458,6 +463,7 @@ router.get('/dms/:handle?', async (req, res) => {
     res.render('dms', {
         layout: 'private',
         me: ActivityPub.actor,
+        url: '/dms',
         lastIncoming: lastIncoming ? lastIncoming.id : null,
         inboxes,
         inbox,
@@ -486,6 +492,7 @@ router.get('/post', async(req, res) => {
     }
 
     res.status(200).render('partials/composer', {
+        url: '/post',
         to,
         inReplyTo,
         actor,
