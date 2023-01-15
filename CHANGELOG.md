@@ -8,6 +8,12 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-15
+- Added a prefs page
+- Added the ability to change all the emojis in the UI 👹
+- Added the ability to change what it says on the "post" button
+
+
 ## 2023-01-14
 - All new nav! There is now a list of the 20 most recently updated feeds in the nav. Click "..." to see up to 100.
 - Lots of CSS improvements!
