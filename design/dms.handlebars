@@ -19,7 +19,7 @@
 {{else}}
     <div class="stream">
         {{#if recipient}}
-        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/profile/{{getUsername recipient.id}}">{{recipient.preferredUsername}}</a></header>
+        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/feeds/{{getUsername recipient.id}}">{{recipient.preferredUsername}}</a></header>
         <div class="inbox">
             <div class="messages" id="inbox_stream">
                 {{#each inbox}}

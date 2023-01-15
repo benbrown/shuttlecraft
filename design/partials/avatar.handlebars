@@ -1,4 +1,4 @@
-{{#unless nolink}}<a href="{{#if public}}{{or actor.url actor.id}}{{else}}/private/profile/{{getUsername actor.id}}{{/if}}" class="avatar_link">{{/unless}}
+{{#unless nolink}}<a href="{{#if public}}{{or actor.url actor.id}}{{else}}/private/feeds/{{getUsername actor.id}}{{/if}}" class="avatar_link">{{/unless}}
     {{#if actor.icon.url}}
     <img src="{{actor.icon.url}}" class="avatar">
     {{else}}

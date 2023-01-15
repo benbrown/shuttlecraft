@@ -22,22 +22,23 @@
             {{#if actor.isFollower}}
             <span class="meta_tag">Follows you</span>
             {{/if}}
-            {{#unless nobio}}
 
-            {{{actor.summary}}}
+            <details id="bio">
+                <summary>Details</summary>
+                {{{actor.summary}}}
 
-            {{#if actor.attachment}}
-                <dl>
-                {{#each actor.attachment}}
-                    <dt>
-                        {{this.name}}
-                    </dt>
-                    <dd>
-                        {{{this.value}}}
-                    </dd>
-                {{/each}}
-                </dl>
-            {{/if}}
-            {{/unless}}
+                {{#if actor.attachment}}
+                    <dl>
+                    {{#each actor.attachment}}
+                        <dt>
+                            {{this.name}}
+                        </dt>
+                        <dd>
+                            {{{this.value}}}
+                        </dd>
+                    {{/each}}
+                    </dl>
+                {{/if}}
+            </details>
         </div>
     </div>

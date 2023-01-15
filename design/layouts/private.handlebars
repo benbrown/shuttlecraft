@@ -42,22 +42,8 @@
                               <div id="lookup_results"></div>
                           </form>
                         </li>
-                        {{#if feeds}}
-                            {{#each feeds}}
-                                <li class="{{#if this.unread}}unread{{/if}} {{#isEq ../feed.id this.actorId}}current{{/isEq}}">
-                                    <a href="/private/feeds/{{getUsername this.actorId}}" title="{{getUsername this.actorId}}">
-                                        {{> avatar actor=actor nolink=true}}
-                                        {{or actor.preferredName actor.name}}
-                                    </a>
-                                </li>
-                            {{/each}}
-                            <li><a href="/private/following" title="Next 100">...</a></li>
-                        {{else}}
-                            {{!-- <div class="empty">
-                                No feeds.
-                            </div> --}}
-                        {{/if}}
-                    </ul>
+                        {{> feeds feeds=feeds currentFeed=feed}}
+                        <li><a href="/private/following" title="Next 100" onclick="return app.loadMoreFeeds();">...</a></li></ul>
                 </nav>
             </div>
             <div id="content">

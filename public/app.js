@@ -237,6 +237,16 @@ const app = {
         });
         return false;
     },    
+    loadMoreFeeds: () => {
+        const el = document.getElementById('top_feeds');
+        fetch('/private/morefeeds', 'GET', null)
+            .then((newHTML) => {
+                const morelink = el.childNodes[el.childNodes.length-1];
+                morelink.remove();
+                el.innerHTML = el.innerHTML + newHTML;
+            });
+        return false;
+    },
     lookup: () => {
         const follow = document.getElementById('lookup');
         const lookup_results = document.getElementById('lookup_results');
