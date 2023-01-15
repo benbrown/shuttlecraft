@@ -1,3 +1,4 @@
+{{> peopleTools}}
 <div class="box">
     <header>Preferences</header>
     <form method="post" action="/private/prefs">
@@ -39,6 +40,10 @@
             <p>
                 <label for="post">My Posts</label>
                 <input type="string" size="2" maxlength="2" name="icons.myPosts" value="{{prefs.icons.myPosts}}" required />
+            </p>
+            <p>
+                <label for="post">Prefs</label>
+                <input type="string" size="2" maxlength="2" name="icons.prefs" value="{{prefs.icons.prefs}}" required />
             </p>
             <p>
                 <label for="post">Fave (off)</label>

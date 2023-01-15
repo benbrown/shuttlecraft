@@ -35,6 +35,7 @@
                         {{#unless nonav}}
                         <li {{#isEq url "/post"}}class="current"{{/isEq}}><a href="/private/post" title="Post something new">{{prefs.icons.post}} Compose</a></li>
                         <li {{#isEq feed.id me.id}}class="current"{{/isEq}}><a href="/private/feeds/{{getUsername me.id}}" title="View my posts">{{prefs.icons.myPosts}} My Posts</a></li>
+                        <li {{#isEq url "/prefs"}}class="current"{{/isEq}}><a href="/private/prefs" title="Preferences">{{prefs.icons.prefs}} Prefs</a></li>
                         <li><a href="https://github.com/benbrown/shuttlecraft/issues" title="Report a bug">Bugs & Issues 🐛</a></li>
                         {{/unless}}
                     </ul>
