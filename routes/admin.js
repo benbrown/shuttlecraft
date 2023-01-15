@@ -28,6 +28,7 @@ import {
     fetchUser
 } from '../lib/users.js';
 import {
+    getPrefs,
     INDEX,
     searchKnownUsers,
 } from '../lib/storage.js';
@@ -59,7 +60,6 @@ router.get('/poll', async (req, res) => {
         newNotifications: notifications.length,
         newDMs: unreadDM,
     });
-
 });
 
 
@@ -92,14 +92,14 @@ router.get('/followers', async (req, res) => {
         res.render('followers', {
             layout: 'private',
             url: '/followers',
+            prefs: getPrefs(),
             me: ActivityPub.actor,
             followers: followers,
             following: following,
             followersCount: followers.length,
-            followingCount: following.length
+            followingCount: following.length,
         });
     }
-
 });
 
 router.get('/following', async (req, res) => {
@@ -130,6 +130,7 @@ router.get('/following', async (req, res) => {
         res.render('following', {
             layout: 'private',
             url: '/followers',
+            prefs: getPrefs(),
             me: ActivityPub.actor,
             followers: followers,
             following: following,
@@ -187,6 +188,15 @@ const getFeedList = async (offset = 0, num = 20) => {
 }
 
 
+/** 
+  _____           _____ _    _ ____   ____          _____  _____  
+ |  __ \   /\    / ____| |  | |  _ \ / __ \   /\   |  __ \|  __ \ 
+ | |  | | /  \  | (___ | |__| | |_) | |  | | /  \  | |__) | |  | |
+ | |  | |/ /\ \  \___ \|  __  |  _ <| |  | |/ /\ \ |  _  /| |  | |
+ | |__| / ____ \ ____) | |  | | |_) | |__| / ____ \| | \ \| |__| |
+ |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/                                                              
+
+ */
 router.get('/', async (req, res) => {
 
     const followers = await getFollowers();
@@ -249,11 +259,21 @@ router.get('/', async (req, res) => {
             followers: followers,
             following: following,
             followersCount: followers.length,
-            followingCount: following.length
+            followingCount: following.length,
+            prefs: getPrefs(),
         });
     }
 });
 
+/**
+  _   _  ____ _______ _____ ______ _____ _____       _______ _____ ____  _   _  _____ 
+ | \ | |/ __ \__   __|_   _|  ____|_   _/ ____|   /\|__   __|_   _/ __ \| \ | |/ ____|
+ |  \| | |  | | | |    | | | |__    | || |       /  \  | |    | || |  | |  \| | (___  
+ | . ` | |  | | | |    | | |  __|   | || |      / /\ \ | |    | || |  | | . ` |\___ \ 
+ | |\  | |__| | | |   _| |_| |     _| || |____ / ____ \| |   _| || |__| | |\  |____) |
+ |_| \_|\____/  |_|  |_____|_|    |_____\_____/_/    \_\_|  |_____\____/|_| \_|_____/ 
+
+ */
 router.get('/notifications', async (req, res) => {
     const likes = await getLikes();
     const offset = parseInt(req.query.offset) || 0;
@@ -305,6 +325,7 @@ router.get('/notifications', async (req, res) => {
 
     res.render('notifications', {
         layout: 'private',
+        prefs: getPrefs(),
         me: ActivityPub.actor,
         url: '/notifications',
         offset: offset,
@@ -435,6 +456,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         layout: 'private',
         me: ActivityPub.actor,
         url: '/feeds',
+        prefs: getPrefs(),
         feeds,
         feed,
         expandfeeds: req.query.expandfeeds,
@@ -510,6 +532,7 @@ router.get('/dms/:handle?', async (req, res) => {
         layout: 'private',
         nonav: true,
         me: ActivityPub.actor,
+        prefs: getPrefs(),
         url: '/dms',
         lastIncoming: lastIncoming ? lastIncoming.id : null,
         feeds: inboxes,
@@ -546,6 +569,7 @@ router.get('/post', async(req, res) => {
         originalPost: op,   // original post being replied to
         prev: prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
+        prefs: getPrefs(),
         layout: 'private'
     });
 
@@ -601,6 +625,7 @@ router.get('/find', async (req, res) => {
         url: '/find',
         query: req.query.handle,
         me: ActivityPub.actor,
+        prefs: getPrefs(),
         results,
     });
 
