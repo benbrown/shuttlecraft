@@ -1,6 +1,6 @@
 <div class="stream">
 <header>
-    <span>🏠 Latest</span>
+    <span>{{prefs.icons.latest}} Latest</span>
     <a href="/private" id="newPosts" class="unread" hidden></a>
 </header>
 <div id="home_stream">
@@ -32,7 +32,6 @@
 <a href="/private?offset={{next}}" class="moreLink">More</a>
 {{/if}}
 </div>
-{{> peopleTools}}
 <script>
     // take note of the most recent post date
     {{#isEq offset "0"}}

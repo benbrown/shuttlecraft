@@ -28,8 +28,10 @@ import {
     fetchUser
 } from '../lib/users.js';
 import {
+    getPrefs,
     INDEX,
     searchKnownUsers,
+    updatePrefs,
 } from '../lib/storage.js';
 import {
     ActivityPub
@@ -40,153 +42,16 @@ router.get('/index', async (req, res) => {
     res.json(INDEX);
 });
 
-router.get('/poll', async (req, res) => {
 
-    const sincePosts = new Date(req.cookies.latestPost).getTime();
-    const sinceNotifications = parseInt(req.cookies.latestNotification);
-    const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
-    const inboxIndex = getInboxIndex();
-    const unreadDM = Object.keys(inboxIndex).filter((k) => {
-            return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
-    })?.length || 0;
+/** 
+  _____           _____ _    _ ____   ____          _____  _____  
+ |  __ \   /\    / ____| |  | |  _ \ / __ \   /\   |  __ \|  __ \ 
+ | |  | | /  \  | (___ | |__| | |_) | |  | | /  \  | |__) | |  | |
+ | |  | |/ /\ \  \___ \|  __  |  _ <| |  | |/ /\ \ |  _  /| |  | |
+ | |__| / ____ \ ____) | |  | | |_) | |__| / ____ \| | \ \| |__| |
+ |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/                                                              
 
-
-    const {
-        activitystream
-    } = await getActivitySince(sincePosts, true);
-    res.json({
-        newPosts: activitystream.length,
-        newNotifications: notifications.length,
-        newDMs: unreadDM,
-    });
-
-});
-
-
-router.get('/followers', async (req, res) => {
-    let following = await Promise.all(getFollowing().map(async (f) => {
-        const acct = await fetchUser(f.actorId);
-        if (acct ?.actor?.id) {
-            acct.actor.isFollowing = true; // duh
-            return acct.actor;
-        }
-        return undefined;
-    }));
-
-    following = following.filter((f) => f !== undefined);
-
-    let followers = await Promise.all(getFollowers().map(async (f) => {
-        const acct = await fetchUser(f);
-        if (acct?.actor?.id) {
-            acct.actor.isFollowing = following.some((p) => p.id === f);
-            return acct.actor;
-        }
-        return undefined;
-    }));
-
-    followers = followers.filter((f) => f !== undefined);
-
-    if (req.query.json) {
-        res.json(notes);
-    } else {
-        res.render('followers', {
-            layout: 'private',
-            url: '/followers',
-            me: ActivityPub.actor,
-            followers: followers,
-            following: following,
-            followersCount: followers.length,
-            followingCount: following.length
-        });
-    }
-
-});
-
-router.get('/following', async (req, res) => {
-    let following = await Promise.all(getFollowing().map(async (f) => {
-        const acct = await fetchUser(f.actorId);
-        if (acct?.actor?.id) {
-            acct.actor.isFollowing = true; // duh
-            return acct.actor;
-        }
-        return undefined;
-    }));
-    following = following.filter((f) => f !== undefined);
-
-    let followers = await Promise.all(getFollowers().map(async (f) => {
-        const acct = await fetchUser(f);
-        if (acct?.actor?.id) {
-            acct.actor.isFollowing = following.some((p) => p.id === f);
-            return acct.actor;
-        }
-        return undefined;
-    }));
-
-    followers = followers.filter((f) => f !== undefined);
-
-    if (req.query.json) {
-        res.json(notes);
-    } else {
-        res.render('following', {
-            layout: 'private',
-            url: '/followers',
-            me: ActivityPub.actor,
-            followers: followers,
-            following: following,
-            followersCount: followers.length,
-            followingCount: following.length
-        });
-    }
-});
-
-
-const getFeedList = async (offset = 0, num = 20) => {
-
-    const following = await getFollowing();
-
-    const feeds = await Promise.all(following.map(async (follower) => {
-        // posts in index by this author
-        // this is probably expensive.
-        // what we really need to do is look from this person by date
-        // and if we sort right it should be reasonable?
-        // and we just return unread counts for everything?
-        const posts = INDEX.filter((p) => p.actor == follower.actorId);
-        
-        // find most recent post
-        const mostRecent = posts.sort((a,b) => {
-            if (a.published > b.published) {
-                return -1;
-            } else if (a.published < b.published) {
-                return 1;
-            } else {
-                return 0;
-            }
-        })[0]?.published || null;
-
-        const account = await fetchUser(follower.actorId);
-
-        return {
-            actorId: follower.actorId,
-            actor: account.actor,
-            postCount: posts.length,
-            mostRecent: mostRecent,
-        }
-    }));
-
-    feeds.sort((a,b) => {
-        if (a.mostRecent > b.mostRecent) {
-            return -1;
-        } else if (a.mostRecent < b.mostRecent) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
-
-    return feeds.slice(offset, offset + num);
-}
-
-
+ */
 router.get('/', async (req, res) => {
 
     const followers = await getFollowers();
@@ -249,11 +114,21 @@ router.get('/', async (req, res) => {
             followers: followers,
             following: following,
             followersCount: followers.length,
-            followingCount: following.length
+            followingCount: following.length,
+            prefs: getPrefs(),
         });
     }
 });
 
+/**
+  _   _  ____ _______ _____ ______ _____ _____       _______ _____ ____  _   _  _____ 
+ | \ | |/ __ \__   __|_   _|  ____|_   _/ ____|   /\|__   __|_   _/ __ \| \ | |/ ____|
+ |  \| | |  | | | |    | | | |__    | || |       /  \  | |    | || |  | |  \| | (___  
+ | . ` | |  | | | |    | | |  __|   | || |      / /\ \ | |    | || |  | | . ` |\___ \ 
+ | |\  | |__| | | |   _| |_| |     _| || |____ / ____ \| |   _| || |__| | |\  |____) |
+ |_| \_|\____/  |_|  |_____|_|    |_____\_____/_/    \_\_|  |_____\____/|_| \_|_____/ 
+
+ */
 router.get('/notifications', async (req, res) => {
     const likes = await getLikes();
     const offset = parseInt(req.query.offset) || 0;
@@ -305,6 +180,7 @@ router.get('/notifications', async (req, res) => {
 
     res.render('notifications', {
         layout: 'private',
+        prefs: getPrefs(),
         me: ActivityPub.actor,
         url: '/notifications',
         offset: offset,
@@ -314,19 +190,6 @@ router.get('/notifications', async (req, res) => {
         followersCount: followers.length,
         followingCount: following.length
     });
-});
-
-
-router.get('/morefeeds', async(req, res) => {
-
-    const feeds = await getFeedList(20, 100);
-
-    res.render('partials/feeds',{
-        layout: null,
-        feeds: feeds,
-        expandfeeds: true,
-    });
-
 });
 
 router.get('/feeds/:handle?', async (req, res) => {
@@ -435,6 +298,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         layout: 'private',
         me: ActivityPub.actor,
         url: '/feeds',
+        prefs: getPrefs(),
         feeds,
         feed,
         expandfeeds: req.query.expandfeeds,
@@ -510,6 +374,7 @@ router.get('/dms/:handle?', async (req, res) => {
         layout: 'private',
         nonav: true,
         me: ActivityPub.actor,
+        prefs: getPrefs(),
         url: '/dms',
         lastIncoming: lastIncoming ? lastIncoming.id : null,
         feeds: inboxes,
@@ -546,6 +411,7 @@ router.get('/post', async(req, res) => {
         originalPost: op,   // original post being replied to
         prev: prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
+        prefs: getPrefs(),
         layout: 'private'
     });
 
@@ -572,6 +438,201 @@ router.post('/post', async (req, res) => {
         });
     }
 });
+
+router.get('/poll', async (req, res) => {
+
+    const sincePosts = new Date(req.cookies.latestPost).getTime();
+    const sinceNotifications = parseInt(req.cookies.latestNotification);
+    const notifications = getNotifications().filter((n) => n.time > sinceNotifications);
+    const inboxIndex = getInboxIndex();
+    const unreadDM = Object.keys(inboxIndex).filter((k) => {
+            return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
+    })?.length || 0;
+
+
+    const {
+        activitystream
+    } = await getActivitySince(sincePosts, true);
+    res.json({
+        newPosts: activitystream.length,
+        newNotifications: notifications.length,
+        newDMs: unreadDM,
+    });
+});
+
+
+router.get('/followers', async (req, res) => {
+    let following = await Promise.all(getFollowing().map(async (f) => {
+        const acct = await fetchUser(f.actorId);
+        if (acct ?.actor?.id) {
+            acct.actor.isFollowing = true; // duh
+            return acct.actor;
+        }
+        return undefined;
+    }));
+
+    following = following.filter((f) => f !== undefined);
+
+    let followers = await Promise.all(getFollowers().map(async (f) => {
+        const acct = await fetchUser(f);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.some((p) => p.id === f);
+            return acct.actor;
+        }
+        return undefined;
+    }));
+
+    followers = followers.filter((f) => f !== undefined);
+
+    if (req.query.json) {
+        res.json(notes);
+    } else {
+        res.render('followers', {
+            layout: 'private',
+            url: '/followers',
+            prefs: getPrefs(),
+            me: ActivityPub.actor,
+            followers: followers,
+            following: following,
+            followersCount: followers.length,
+            followingCount: following.length,
+        });
+    }
+});
+
+router.get('/following', async (req, res) => {
+    let following = await Promise.all(getFollowing().map(async (f) => {
+        const acct = await fetchUser(f.actorId);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = true; // duh
+            return acct.actor;
+        }
+        return undefined;
+    }));
+    following = following.filter((f) => f !== undefined);
+
+    let followers = await Promise.all(getFollowers().map(async (f) => {
+        const acct = await fetchUser(f);
+        if (acct?.actor?.id) {
+            acct.actor.isFollowing = following.some((p) => p.id === f);
+            return acct.actor;
+        }
+        return undefined;
+    }));
+
+    followers = followers.filter((f) => f !== undefined);
+
+    if (req.query.json) {
+        res.json(notes);
+    } else {
+        res.render('following', {
+            layout: 'private',
+            url: '/followers',
+            prefs: getPrefs(),
+            me: ActivityPub.actor,
+            followers: followers,
+            following: following,
+            followersCount: followers.length,
+            followingCount: following.length
+        });
+    }
+});
+
+/**
+  _____  _____  ______ ______ _____ 
+ |  __ \|  __ \|  ____|  ____/ ____|
+ | |__) | |__) | |__  | |__ | (___  
+ |  ___/|  _  /|  __| |  __| \___ \ 
+ | |    | | \ \| |____| |    ____) |
+ |_|    |_|  \_\______|_|   |_____/ 
+                                                                    
+ */
+router.get('/prefs', (req, res) => {
+
+    const following = getFollowing();
+    const followers = getFollowers();
+
+    res.render('prefs', {
+        layout: 'private',
+        url: '/prefs',
+        prefs: getPrefs(),
+        me: ActivityPub.actor,
+        followersCount: followers.length,
+        followingCount: following.length
+    });
+
+});
+
+router.post('/prefs', (req, res) => {
+
+    // lget current prefs.
+    let prefs = getPrefs();
+
+    // incoming prefs
+    const updates = req.body;
+    
+    console.log('GOT UPDATES', updates);
+    res.redirect('/private/prefs');
+    Object.keys(updates).forEach((key) => {
+        // split the fieldname into parts
+        const [type, keyname] = key.split(/\./);
+        
+        // update the pref in place
+        prefs[type][keyname] = updates[key];    
+    });
+
+    updatePrefs(prefs);
+
+});
+
+
+
+const getFeedList = async (offset = 0, num = 20) => {
+
+    const following = await getFollowing();
+
+    const feeds = await Promise.all(following.map(async (follower) => {
+        // posts in index by this author
+        // this is probably expensive.
+        // what we really need to do is look from this person by date
+        // and if we sort right it should be reasonable?
+        // and we just return unread counts for everything?
+        const posts = INDEX.filter((p) => p.actor == follower.actorId);
+        
+        // find most recent post
+        const mostRecent = posts.sort((a,b) => {
+            if (a.published > b.published) {
+                return -1;
+            } else if (a.published < b.published) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })[0]?.published || null;
+
+        const account = await fetchUser(follower.actorId);
+
+        return {
+            actorId: follower.actorId,
+            actor: account.actor,
+            postCount: posts.length,
+            mostRecent: mostRecent,
+        }
+    }));
+
+    feeds.sort((a,b) => {
+        if (a.mostRecent > b.mostRecent) {
+            return -1;
+        } else if (a.mostRecent < b.mostRecent) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    return feeds.slice(offset, offset + num);
+}
+
 
 router.get('/find', async (req, res) => {
     let results = [];
@@ -601,12 +662,26 @@ router.get('/find', async (req, res) => {
         url: '/find',
         query: req.query.handle,
         me: ActivityPub.actor,
+        prefs: getPrefs(),
         results,
     });
 
 
 });
 
+
+
+router.get('/morefeeds', async(req, res) => {
+
+    const feeds = await getFeedList(20, 100);
+
+    res.render('partials/feeds',{
+        layout: null,
+        feeds: feeds,
+        expandfeeds: true,
+    });
+
+});
 
 router.get('/lookup', async (req, res) => {
     const {
