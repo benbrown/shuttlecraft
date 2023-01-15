@@ -10,7 +10,7 @@
                 <div class="activity">
                     {{#if boost}}
                         <div class="boost">
-                        🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                        🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
                         </div>
                     {{/if}}
                     {{> note note=note me=../me}}
@@ -21,7 +21,7 @@
         <div class="empty">
             <p>Follow some people to fill your feed with posts.</p>
             <p>I suggest following me! 
-                I'm <a href="/private/profile/benbrown@hackers.town">benbrown@hackers.town</a>
+                I'm <a href="/private/feeds/benbrown@hackers.town">benbrown@hackers.town</a>
             </p>
         </div>
     {{/if}}

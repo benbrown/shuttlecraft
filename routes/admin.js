@@ -21,13 +21,15 @@ import {
     isFollowing,
     getInboxIndex,
     getInbox,
-    writeInboxIndex
+    writeInboxIndex,
+
 } from '../lib/account.js';
 import {
     fetchUser
 } from '../lib/users.js';
 import {
-    INDEX
+    INDEX,
+    searchKnownUsers,
 } from '../lib/storage.js';
 import {
     ActivityPub
@@ -89,6 +91,7 @@ router.get('/followers', async (req, res) => {
     } else {
         res.render('followers', {
             layout: 'private',
+            url: '/followers',
             me: ActivityPub.actor,
             followers: followers,
             following: following,
@@ -126,6 +129,7 @@ router.get('/following', async (req, res) => {
     } else {
         res.render('following', {
             layout: 'private',
+            url: '/followers',
             me: ActivityPub.actor,
             followers: followers,
             following: following,
@@ -136,6 +140,51 @@ router.get('/following', async (req, res) => {
 });
 
 
+const getFeedList = async (offset = 0, num = 20) => {
+
+    const following = await getFollowing();
+
+    const feeds = await Promise.all(following.map(async (follower) => {
+        // posts in index by this author
+        // this is probably expensive.
+        // what we really need to do is look from this person by date
+        // and if we sort right it should be reasonable?
+        // and we just return unread counts for everything?
+        const posts = INDEX.filter((p) => p.actor == follower.actorId);
+        
+        // find most recent post
+        const mostRecent = posts.sort((a,b) => {
+            if (a.published > b.published) {
+                return -1;
+            } else if (a.published < b.published) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })[0]?.published || null;
+
+        const account = await fetchUser(follower.actorId);
+
+        return {
+            actorId: follower.actorId,
+            actor: account.actor,
+            postCount: posts.length,
+            mostRecent: mostRecent,
+        }
+    }));
+
+    feeds.sort((a,b) => {
+        if (a.mostRecent > b.mostRecent) {
+            return -1;
+        } else if (a.mostRecent < b.mostRecent) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    return feeds.slice(offset, offset + num);
+}
 
 
 router.get('/', async (req, res) => {
@@ -181,6 +230,8 @@ router.get('/', async (req, res) => {
         return n;
     }));
 
+    const feeds = await getFeedList();
+
     if (req.query.json) {
         res.json(notes);
     } else {
@@ -189,10 +240,12 @@ router.get('/', async (req, res) => {
 
         res.render('dashboard', {
             layout: 'private',
+            url: '/',
             me: ActivityPub.actor,
             offset: offset, 
             next: notes.length == pageSize ? next : null,
             activitystream: notes,
+            feeds: feeds,
             followers: followers,
             following: following,
             followersCount: followers.length,
@@ -248,10 +301,14 @@ router.get('/notifications', async (req, res) => {
     const following = getFollowing();
     const followers = getFollowers();
 
+    const feeds = await getFeedList();
+
     res.render('notifications', {
         layout: 'private',
         me: ActivityPub.actor,
+        url: '/notifications',
         offset: offset,
+        feeds,
         next: notifications.length == pageSize ? offset + notifications.length : null,
         notifications: notifications.filter((n)=>n!==null),
         followersCount: followers.length,
@@ -259,6 +316,134 @@ router.get('/notifications', async (req, res) => {
     });
 });
 
+
+router.get('/morefeeds', async(req, res) => {
+
+    const feeds = await getFeedList(20, 100);
+
+    res.render('partials/feeds',{
+        layout: null,
+        feeds: feeds,
+        expandfeeds: true,
+    });
+
+});
+
+router.get('/feeds/:handle?', async (req, res) => {
+
+    const following = getFollowing();
+    const likes = await getLikes();
+    const boosts = await getBoosts();
+    const offset = parseInt(req.query.offset) || 0;
+    const pageSize = 20;
+    let feed;
+
+    const getFullPostDetails = async (activityOrId) => {
+        let note, actor, boost, booster;
+        try {
+            if (typeof activityOrId === 'string') {
+                note = await getActivity(activityOrId);
+            } else {
+                note = activityOrId;
+            }
+        } catch(err) {
+            console.error(err);
+            console.error('Could not load post in feed');
+            return;
+        }
+    
+        const account = await fetchUser(note.attributedTo || note.actor);
+        actor = account.actor;
+
+        if (note.type === 'Announce') {
+            boost = note;
+            booster = actor;
+            try {
+                note = await getActivity(boost.object);
+                const op = await fetchUser(note.attributedTo);
+                actor = op.actor;
+            } catch (err) {
+                console.error(err);
+                console.error('Could not fetch boosted post...', boost.object);
+                // return;
+            }
+        }
+
+        note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+        note.isBoosted = (boosts.some((l) => l.activityId === note.id)) ? true : false;
+    
+        return {
+            note, actor, boost, booster
+        }
+    
+    }
+
+    let feedcount = 20;
+    if (req.query.expandfeeds) {
+        feedcount = 120;
+    }
+    const feeds = await getFeedList(0,  feedcount);
+
+    let activitystream;
+
+    if (req.params.handle) {
+        const account = await fetchUser(req.params.handle);
+        feed = account.actor;
+        feed.isFollowing = isFollowing(feed.id);
+        feed.isFollower = isFollower(feed.id);
+
+        if (feed.id === req.app.get('account').actor.id || isFollowing(feed.id)) {
+            logger('Loading posts from index for', feed.id);
+            activitystream = await Promise.all(INDEX.filter((p) => p.actor == account.actor.id).sort((a,b) => {
+                if (a.published > b.published) {
+                    return -1;
+                } else if (a.published < b.published) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }).slice(offset, offset+pageSize).map(async (p) => {
+                try {
+                    return getFullPostDetails(p.id);
+                } catch (err) {
+                    console.error('error while loading post from index',err);
+                }
+            }));
+        } else {
+            logger('Loading remote posts for', feed.id);
+            const {
+                items
+            } = await ActivityPub.fetchOutbox(feed);
+    
+            activitystream = !items ? [] : await Promise.all(items.filter((post) => {
+                // filter to only include posts and boosts 
+                return post.type === 'Create' || post.type === 'Announce';
+            }).map(async (post) => {
+                try {
+                    return getFullPostDetails(post.object);
+                } catch (err) {
+                    console.error('error while loading post from remote outbox',err);
+                }          
+            }));
+        }
+
+    }
+
+    // res.json(activitystream);
+    // return;
+    res.render('feeds', {
+        layout: 'private',
+        me: ActivityPub.actor,
+        url: '/feeds',
+        feeds,
+        feed,
+        expandfeeds: req.query.expandfeeds,
+        activitystream,
+        offset,
+        next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null,
+    });
+
+});
 
 router.get('/dms/:handle?', async (req, res) => {
     const inboxIndex = getInboxIndex();
@@ -299,13 +484,18 @@ router.get('/dms/:handle?', async (req, res) => {
         }
     }
 
-    const inboxes = Object.keys(inboxIndex).map((k) => {
+    const inboxes = await Promise.all(Object.keys(inboxIndex).map(async (k) => {
+        const acct = await fetchUser(k);
         return {
             id: k,
+            actorId: k,
+            actor: acct.actor,
             unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
-            ...inboxIndex[k]
+            ...inboxIndex[k],
         }
-    }).sort((a, b) => {
+    }));
+    
+    inboxes.sort((a, b) => {
         if (a.latest > b.latest) {
             return -1;
         } else if (a.latest < b.latest) {
@@ -313,16 +503,18 @@ router.get('/dms/:handle?', async (req, res) => {
         } else {
             return 0;
         }
-    });
+    })
 
 
     res.render('dms', {
         layout: 'private',
+        nonav: true,
         me: ActivityPub.actor,
+        url: '/dms',
         lastIncoming: lastIncoming ? lastIncoming.id : null,
-        inboxes,
+        feeds: inboxes,
         inbox,
-        recipient,
+        feed: recipient,
         error
     });
 });
@@ -347,6 +539,7 @@ router.get('/post', async(req, res) => {
     }
 
     res.status(200).render('partials/composer', {
+        url: '/post',
         to,
         inReplyTo,
         actor,
@@ -380,49 +573,38 @@ router.post('/post', async (req, res) => {
     }
 });
 
-router.get('/profile/:handle', async (req, res) => {
+router.get('/find', async (req, res) => {
+    let results = [];
+
+    // can we find an exact match
+    try {
     const {
         actor
-    } = await fetchUser(req.params.handle);
-    const likes = await getLikes();
-    const boosts = await getBoosts();
-
-    if (actor) {
-        actor.isFollowing = isFollowing(actor.id);
-        actor.isFollower = isFollower(actor.id);
-
-        const {
-            items
-        } = await ActivityPub.fetchOutbox(actor);
-
-        const posts = !items ? [] : items.filter((post) => {
-            // filter to only include my posts
-            // not boosts or other activity
-            // TODO: support boosts
-            return post.type === 'Create';
-        }).map((post) => {
-            // TODO: this should fetch in case the outbox only has ids
-            // let note = (typeof post.object==="string") ? await getActivity(post.object) : post.object;
-
-            let note = post.object;
-            // determine if this post has already been liked
-            note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
-            note.isBoosted = (boosts.some((l) => l.activityId === note.id)) ? true : false;
-
-            return {
-                actor: actor,
-                note: note,
-            };
-        });
-        res.status(200).render('partials/profile', {
-            actor,
-            activitystream: posts,
-            me: ActivityPub.actor,
-            layout: 'private'
-        });
-    } else {
-        res.status(200).send('No user found');
+    } = await fetchUser(req.query.handle);
+        if (actor && actor.id) {
+            actor.isFollowing = isFollowing(actor.id);
+            results.push(actor);
+        }
+    } catch(err) {
+        // not found
     }
+
+    if (results.length === 0) {
+        const search = await searchKnownUsers(req.query.handle.toLowerCase());
+        if (search.length) {
+            results = results.concat(search);
+        }
+    }
+
+    res.status(200).render('findresults', {
+        layout: 'private',
+        url: '/find',
+        query: req.query.handle,
+        me: ActivityPub.actor,
+        results,
+    });
+
+
 });
 
 

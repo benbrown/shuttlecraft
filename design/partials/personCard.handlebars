@@ -1,8 +1,10 @@
 <div class="personCard">
     {{> avatar actor=actor}}
     <div class="profile">
-        <a href="/private/profile/{{getUsername actor.id}}" class="author">{{actor.name}}</a>
+        <a href="/private/feeds/{{getUsername actor.id}}" class="author">{{actor.name}}</a>
         <span class="handle">{{getUsername actor.id}}</span>
+        {{#unless nobio}}
         {{{summary}}}
+        {{/unless}}
     </div>
 </div>

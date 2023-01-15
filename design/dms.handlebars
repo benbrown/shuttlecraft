@@ -1,32 +1,18 @@
-<div class="feeds {{#if recipient}}inbox_visible{{/if}}">
-    <header>Messages</header>
-    {{#if inboxes}}
-        {{#each inboxes}}
-            <div class="feed {{#if this.unread}}unread{{/if}} {{#isEq this.id ../recipient.id}}current{{/isEq}}">
-                <a href="/private/dms/{{getUsername this.id}}">{{getUsername this.id}}</a>
-            </div>
-        {{/each}}
-    {{else}}
-        <div class="empty">
-            No messages.
-        </div>
-    {{/if}}
-</div>
 {{#if error}}
 <div class="error">
     {{error.message}}
 </div>
 {{else}}
     <div class="stream">
-        {{#if recipient}}
-        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/profile/{{getUsername recipient.id}}">{{recipient.preferredUsername}}</a></header>
+        {{#if feed}}
+        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a></header>
         <div class="inbox">
             <div class="messages" id="inbox_stream">
                 {{#each inbox}}
                     {{> dm message=this me=../me}}
                 {{/each}}
             </div>
-        {{> minicomposer inReplyTo=lastIncoming to=recipient.id}}
+        {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
         </div>
         {{else}}
             <!-- TODO: empty state? -->

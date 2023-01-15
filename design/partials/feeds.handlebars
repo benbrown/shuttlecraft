@@ -1,0 +1,10 @@
+{{#if feeds}}
+    {{#each feeds}}
+        <li class="{{#if this.unread}}unread{{/if}} {{#isEq ../currentFeed.id this.actorId}}current{{/isEq}}">
+            <a href="/private/{{#if ../dms}}dms{{else}}feeds{{/if}}/{{getUsername this.actorId}}{{#if ../expandfeeds}}?expandfeeds=true{{/if}}" title="{{getUsername this.actorId}}">
+                {{> avatar actor=actor nolink=true}}
+                {{or actor.preferredName actor.name}}
+            </a>
+        </li>
+    {{/each}}
+{{/if}}

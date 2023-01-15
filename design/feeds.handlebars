@@ -1,0 +1,40 @@
+{{#if error}}
+<div class="error">
+    {{error.message}}
+</div>
+{{else}}
+    <div class="stream">
+        {{#if feed}} 
+        {{> profileHeader actor=feed nobio=true}}
+        {{/if}}
+        {{#if activitystream}}
+            {{#each activitystream}}
+                {{#with this}}
+                    <div class="activity">
+                        {{#if boost}}
+                            <div class="boost">
+                            🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
+                            </div>
+                            {{> note note=note}}
+                        {{else}}
+                            {{> note note=note hidebyline=true}}
+                        {{/if}}
+                    </div>
+                {{/with}}
+            {{/each}}
+        {{else}}
+            <!-- TODO: empty state? -->
+            <div class="empty">
+                No posts. <a href="/private/feeds/{{getUsername feed.id}}">Reload</a>
+            </div>
+        {{/if}}
+
+        {{#if next}}
+        <a href="?offset={{next}}" class="moreLink">More</a>
+        {{/if}}
+
+    </div>
+{{/if}}
+<script>
+    app.pollForPosts();
+</script>
