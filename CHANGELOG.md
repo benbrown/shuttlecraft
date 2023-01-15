@@ -8,6 +8,12 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-14
+- All new nav! There is now a list of the 20 most recently updated feeds in the nav. Click "..." to see up to 100.
+- Lots of CSS improvements!
+- When you search for a user, Shuttlecraft will now also search all known users
+
+
 ## 2023-01-12
 - Prevent buttons from being double-clicked resulting in accidentally undoing something or double posting
 - Prevent the account.json file from being created with a faulty domain name. Thanks @patrickmcurry!
