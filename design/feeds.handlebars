@@ -13,7 +13,7 @@
                     <div class="activity">
                         {{#if boost}}
                             <div class="boost">
-                            🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                            🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
                             </div>
                             {{> note note=note}}
                         {{else}}
@@ -25,7 +25,7 @@
         {{else}}
             <!-- TODO: empty state? -->
             <div class="empty">
-                Select a feed.
+                No posts. <a href="/private/feeds/{{getUsername feed.id}}">Reload</a>
             </div>
         {{/if}}
 

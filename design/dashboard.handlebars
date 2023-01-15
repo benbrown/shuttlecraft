@@ -10,7 +10,7 @@
                 <div class="activity">
                     {{#if boost}}
                         <div class="boost">
-                        🚀 boosted by <a href="{{booster.url}}">{{booster.name}}</a>
+                        🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
                         </div>
                     {{/if}}
                     {{> note note=note me=../me}}
