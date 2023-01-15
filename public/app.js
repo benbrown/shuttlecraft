@@ -247,6 +247,10 @@ const app = {
             });
         return false;
     },
+    showMenu: () => {
+        document.getElementById('menu').classList.toggle('active');
+        return false;
+    },
     lookup: () => {
         const follow = document.getElementById('lookup');
         const lookup_results = document.getElementById('lookup_results');

@@ -17,7 +17,7 @@
                 <nav>
                     <ul>
                       <li id="logo"><a href="{{rootUrl}}/private">🚀</a></li>
-                      <li {{#isEq url "/"}}class="current"{{/isEq}}><a href="{{rootUrl}}/private">🏠</a><span class="badge newPostsBadge" hidden></span></li>
+                      <li {{#isEq url "/"}}class="current"{{/isEq}}><a href="{{rootUrl}}/private" {{#isEq url "/"}}onclick="return app.showMenu();"{{/isEq}}>🏠</a><span class="badge newPostsBadge" hidden></span></li>
                       <li {{#isEq url "/notifications"}}class="current"{{/isEq}}><a href="{{rootUrl}}/private/notifications">🔔</a><span class="badge newNotificationsBadge" hidden></span></li>
                       <li {{#isEq url "/dms"}}class="current"{{/isEq}}><a href="{{rootUrl}}/private/dms">💬</a><span class="badge newDMsBadge" hidden></span></li>
                       <li {{#isEq url "/post"}}class="current"{{/isEq}}><a href={{rootUrl}}"/private/post">➕</a></li>
