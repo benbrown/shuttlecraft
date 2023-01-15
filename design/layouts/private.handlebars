@@ -43,7 +43,9 @@
                           </form>
                         </li>
                         {{> feeds feeds=feeds currentFeed=feed}}
+                        {{#unless expandfeeds}}
                         <li><a href="/private/following" title="Next 100" onclick="return app.loadMoreFeeds();">...</a></li></ul>
+                        {{/unless}}
                 </nav>
             </div>
             <div id="content">
