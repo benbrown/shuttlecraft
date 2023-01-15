@@ -484,11 +484,14 @@ router.get('/dms/:handle?', async (req, res) => {
         }
     }
 
-    const inboxes = Object.keys(inboxIndex).map((k) => {
+    const inboxes = await Promise.all(Object.keys(inboxIndex).map(async (k) => {
+        const acct = await fetchUser(k);
         return {
             id: k,
+            actorId: k,
+            actor: acct.actor,
             unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
-            ...inboxIndex[k]
+            ...inboxIndex[k],
         }
     }).sort((a, b) => {
         if (a.latest > b.latest) {
@@ -498,17 +501,18 @@ router.get('/dms/:handle?', async (req, res) => {
         } else {
             return 0;
         }
-    });
+    }));
 
 
     res.render('dms', {
         layout: 'private',
+        nonav: true,
         me: ActivityPub.actor,
         url: '/dms',
         lastIncoming: lastIncoming ? lastIncoming.id : null,
-        inboxes,
+        feeds: inboxes,
         inbox,
-        recipient,
+        feed: recipient,
         error
     });
 });
