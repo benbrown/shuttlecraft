@@ -31,6 +31,7 @@
                         <li {{#isEq feed.id me.id}}class="current"{{/isEq}}><a href="/private/feeds/{{getUsername me.id}}" title="View my posts">🐐 My Posts</a></li>
                         <li><a href="https://github.com/benbrown/shuttlecraft/issues" title="Report a bug">Bugs & Issues 🐛</a></li>
                     </ul>
+                    <button onclick="app.showMenu()" id="close_menu">❌</button>
                     <ul id="top_feeds">
                         <li>
                           <form method="get" action="/private/find">
