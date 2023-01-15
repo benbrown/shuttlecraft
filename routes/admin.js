@@ -583,9 +583,11 @@ router.get('/find', async (req, res) => {
         // not found
     }
 
-    const search = await searchKnownUsers(req.query.handle.toLowerCase());
-    if (search.length) {
-        results = results.concat(search);
+    if (results.length === 0) {
+        const search = await searchKnownUsers(req.query.handle.toLowerCase());
+        if (search.length) {
+            results = results.concat(search);
+        }
     }
 
     res.status(200).render('findresults', {
