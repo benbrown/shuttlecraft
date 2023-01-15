@@ -438,6 +438,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         url: '/feeds',
         feeds,
         feed,
+        expandfeeds: req.query.expandfeeds,
         activitystream,
         offset,
         next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null,
