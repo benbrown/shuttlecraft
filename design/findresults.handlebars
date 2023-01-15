@@ -1,0 +1,23 @@
+<div class="stream">
+    <header>
+        <form method="get" action="/private/find">
+        <label for="lookup">Find People</label>
+        <input type="search" placeholder="user@instance.town" id="lookup" name="handle" value="{{query}}" />
+        </form>
+
+    </header>
+    {{#if results}}
+        {{#each results}}
+            <div class="activity">
+                {{> personCard actor=this nobio=true}}
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="activity">
+            Nobody results
+        </div>
+    {{/if}}
+</div>
+<script>
+    app.pollForPosts();
+</script>

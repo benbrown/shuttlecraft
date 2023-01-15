@@ -36,9 +36,9 @@
                     </ul>
                     <ul id="top_feeds">
                         <li>
-                          <form onsubmit="return app.lookup()">
+                          <form method="get" action="/private/find">
                               <label for="lookup">find a person</label>
-                              <input type="search" placeholder="user@instance.town" id="lookup" />
+                              <input type="search" placeholder="user@instance.town" id="lookup" name="handle" />
                               <div id="lookup_results"></div>
                           </form>
                         </li>

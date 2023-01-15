@@ -22,15 +22,14 @@ import {
     getInboxIndex,
     getInbox,
     writeInboxIndex,
-    isReplyToMyPost,    
-    isReplyToFollowing
 
 } from '../lib/account.js';
 import {
     fetchUser
 } from '../lib/users.js';
 import {
-    INDEX
+    INDEX,
+    searchKnownUsers,
 } from '../lib/storage.js';
 import {
     ActivityPub
@@ -567,6 +566,39 @@ router.post('/post', async (req, res) => {
         });
     }
 });
+
+router.get('/find', async (req, res) => {
+    let results = [];
+
+    // can we find an exact match
+    try {
+    const {
+        actor
+    } = await fetchUser(req.query.handle);
+        if (actor && actor.id) {
+            actor.isFollowing = isFollowing(actor.id);
+            results.push(actor);
+        }
+    } catch(err) {
+        // not found
+    }
+
+    const search = await searchKnownUsers(req.query.handle);
+    if (search.length) {
+        results = results.concat(search);
+    }
+
+    res.status(200).render('findresults', {
+        layout: 'private',
+        url: '/find',
+        query: req.query.handle,
+        me: ActivityPub.actor,
+        results,
+    });
+
+
+});
+
 
 router.get('/lookup', async (req, res) => {
     const {
