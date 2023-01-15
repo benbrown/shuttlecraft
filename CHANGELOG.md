@@ -12,6 +12,7 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 - Added a prefs page
 - Added the ability to change all the emojis in the UI 👹
 - Added the ability to change what it says on the "post" button
+See a video of these features in action here: https://www.loom.com/share/c8fbe3b099f644d596cd2db26e86bc8a
 
 
 ## 2023-01-14
