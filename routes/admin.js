@@ -493,7 +493,9 @@ router.get('/dms/:handle?', async (req, res) => {
             unread: !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest,
             ...inboxIndex[k],
         }
-    }).sort((a, b) => {
+    }));
+    
+    inboxes.sort((a, b) => {
         if (a.latest > b.latest) {
             return -1;
         } else if (a.latest < b.latest) {
@@ -501,7 +503,7 @@ router.get('/dms/:handle?', async (req, res) => {
         } else {
             return 0;
         }
-    }));
+    })
 
 
     res.render('dms', {
