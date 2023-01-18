@@ -7,9 +7,9 @@ const fetch = (url, type, payload = undefined) => {
     Http.send(payload);
 
     Http.onreadystatechange = () => {
-      if (Http.readyState == 4 && Http.status == 200) {
+      if (Http.readyState === 4 && Http.status === 200) {
         resolve(Http.responseText);
-      } else if (Http.readyState == 4 && Http.status >= 300) {
+      } else if (Http.readyState === 4 && Http.status >= 300) {
         reject(Http.statusText);
       }
     };
@@ -17,24 +17,24 @@ const fetch = (url, type, payload = undefined) => {
 };
 
 const setCookie = (name, value, days) => {
-  var expires = '';
+  let expires = '';
   if (days) {
-    var date = new Date();
+    const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     expires = '; expires=' + date.toUTCString();
   }
   document.cookie = name + '=' + (value || '') + expires + '; path=/';
 };
-const getCookie = name => {
-  var nameEQ = name + '=';
-  var ca = document.cookie.split(';');
-  for (var i = 0; i < ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-};
+// const getCookie = name => {
+//   const nameEQ = name + '=';
+//   const ca = document.cookie.split(';');
+//   for (let i = 0; i < ca.length; i++) {
+//     let c = ca[i];
+//     while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+//     if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+//   }
+//   return null;
+// };
 
 const app = {
   newPosts: 0,
@@ -233,7 +233,7 @@ const app = {
       });
     return false;
   },
-  replyTo: (activityId, mention) => {
+  replyTo: activityId => {
     window.location = '/private/post?inReplyTo=' + activityId;
   },
   toggleFollow: (el, userId) => {
@@ -282,11 +282,11 @@ const app = {
   },
   lookup: () => {
     const follow = document.getElementById('lookup');
-    const lookup_results = document.getElementById('lookup_results');
+    const lookupResults = document.getElementById('lookup_results');
 
     console.log('Lookup user', follow.value);
     fetch('/private/lookup?handle=' + encodeURIComponent(follow.value), 'GET', null).then(newHTML => {
-      lookup_results.innerHTML = newHTML;
+      lookupResults.innerHTML = newHTML;
     });
     return false;
   }

@@ -1,23 +1,25 @@
 import express from 'express';
-export const router = express.Router();
 import { ActivityPub } from '../lib/ActivityPub.js';
 import { fetchUser } from '../lib/users.js';
 import {
   acceptDM,
   addFollower,
-  removeFollower,
-  follow,
-  isReplyToMyPost,
   addNotification,
-  isMyPost,
-  isBlocked,
   addressedOnlyToMe,
+  deleteObject,
+  follow,
+  isBlocked,
   isMention,
-  deleteObject
+  isMyPost,
+  isReplyToMyPost,
+  removeFollower
 } from '../lib/account.js';
-import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
+import { createActivity, getActivity, recordBoost, recordLike, recordUndoLike } from '../lib/notes.js';
 import debug from 'debug';
 import { isIndexed } from '../lib/storage.js';
+
+export const router = express.Router();
+
 const logger = debug('ono:inbox');
 
 router.post('/', async (req, res) => {
@@ -109,7 +111,7 @@ router.post('/', async (req, res) => {
           // - a post that is from someone you follow, but is a reply to a post from someone you do not follow (should be ignored?)
           // - a mention from a following (notification and feed)
           // - a mention from a stranger (notification only)
-          if (incomingRequest.object.directMessage == true || addressedOnlyToMe(incomingRequest)) {
+          if (incomingRequest.object.directMessage === true || addressedOnlyToMe(incomingRequest)) {
             await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo);
           } else if (isReplyToMyPost(incomingRequest.object)) {
             // TODO: What about replies to replies? should we traverse up a bit?

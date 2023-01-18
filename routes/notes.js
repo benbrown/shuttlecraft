@@ -1,13 +1,15 @@
 import express from 'express';
-export const router = express.Router();
 import { getNote } from '../lib/account.js';
 import dotenv from 'dotenv';
+
+export const router = express.Router();
+
 dotenv.config();
 
 const { DOMAIN } = process.env;
 
 router.get('/:guid', async (req, res) => {
-  let guid = req.params.guid;
+  const { guid } = req.params;
   if (!guid) {
     return res.status(400).send('Bad request.');
   } else {

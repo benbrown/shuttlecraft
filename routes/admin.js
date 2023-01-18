@@ -1,48 +1,55 @@
 import { getActivity, getActivitySince, getActivityStream } from '../lib/notes.js';
 import express from 'express';
-export const router = express.Router();
+import querystring from 'node:querystring';
+
 import debug from 'debug';
 import {
+  createNote,
+  filterFollowers,
+  filterFollowing,
+  getBoosts,
   getFollowers,
   getFollowing,
-  writeFollowing,
-  createNote,
-  getNotifications,
-  getNote,
+  getInbox,
+  getInboxIndex,
   getLikes,
-  writeLikes,
-  getBoosts,
-  writeBoosts,
+  getNote,
+  getNotifications,
   isFollower,
   isFollowing,
-  getInboxIndex,
-  getInbox,
-  writeInboxIndex
+  writeBoosts,
+  writeFollowing,
+  writeInboxIndex,
+  writeLikes
 } from '../lib/account.js';
 import { fetchUser } from '../lib/users.js';
 import { getPrefs, INDEX, searchKnownUsers, updatePrefs } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
+
 const logger = debug('ono:admin');
+
+export const router = express.Router();
 
 router.get('/index', async (req, res) => {
   res.json(INDEX);
 });
 
-/** 
-  _____           _____ _    _ ____   ____          _____  _____  
- |  __ \   /\    / ____| |  | |  _ \ / __ \   /\   |  __ \|  __ \ 
+/**
+ _____           _____ _    _ ____   ____          _____  _____
+ |  __ \   /\    / ____| |  | |  _ \ / __ \   /\   |  __ \|  __ \
  | |  | | /  \  | (___ | |__| | |_) | |  | | /  \  | |__) | |  | |
  | |  | |/ /\ \  \___ \|  __  |  _ <| |  | |/ /\ \ |  _  /| |  | |
  | |__| / ____ \ ____) | |  | | |_) | |__| / ____ \| | \ \| |__| |
- |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/                                                              
+ |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/
 
  */
 router.get('/', async (req, res) => {
   const followers = await getFollowers();
-  const following = await getFollowing();
+  const following = getFollowing();
   const likes = await getLikes();
   const boosts = await getBoosts();
-  const offset = parseInt(req.query.offset) || 0;
+  const query = querystring.parse(req.query);
+  const offset = parseInt(query.offset.toString()) || 0;
   const pageSize = 20;
 
   const { activitystream, next } = await getActivityStream(pageSize, offset);
@@ -67,8 +74,8 @@ router.get('/', async (req, res) => {
         n.actor.isFollowing = isFollowing(n.actor.id);
 
         // determine if this post has already been liked
-        n.note.isLiked = likes.some(l => l.activityId === n.note.id) ? true : false;
-        n.note.isBoosted = boosts.some(l => l.activityId === n.note.id) ? true : false;
+        n.note.isLiked = !!likes.some(l => l.activityId === n.note.id);
+        n.note.isBoosted = !!boosts.some(l => l.activityId === n.note.id);
       } else {
         console.error('Post without an actor found', n.note.id);
       }
@@ -79,22 +86,22 @@ router.get('/', async (req, res) => {
 
   const feeds = await getFeedList();
 
-  if (req.query.json) {
+  if (query.json) {
     res.json(notes);
   } else {
     // set auth cookie
-    res.cookie('token', ActivityPub.account.apikey, { maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('token', ActivityPub.account?.apikey, { maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.render('dashboard', {
       layout: 'private',
       url: '/',
       me: ActivityPub.actor,
-      offset: offset,
-      next: notes.length == pageSize ? next : null,
+      offset,
+      next: notes.length === pageSize ? next : null,
       activitystream: notes,
-      feeds: feeds,
-      followers: followers,
-      following: following,
+      feeds,
+      followers,
+      following,
       followersCount: followers.length,
       followingCount: following.length,
       prefs: getPrefs()
@@ -103,17 +110,18 @@ router.get('/', async (req, res) => {
 });
 
 /**
-  _   _  ____ _______ _____ ______ _____ _____       _______ _____ ____  _   _  _____ 
+ _   _  ____ _______ _____ ______ _____ _____       _______ _____ ____  _   _  _____
  | \ | |/ __ \__   __|_   _|  ____|_   _/ ____|   /\|__   __|_   _/ __ \| \ | |/ ____|
- |  \| | |  | | | |    | | | |__    | || |       /  \  | |    | || |  | |  \| | (___  
- | . ` | |  | | | |    | | |  __|   | || |      / /\ \ | |    | || |  | | . ` |\___ \ 
+ |  \| | |  | | | |    | | | |__    | || |       /  \  | |    | || |  | |  \| | (___
+ | . ` | |  | | | |    | | |  __|   | || |      / /\ \ | |    | || |  | | . ` |\___ \
  | |\  | |__| | | |   _| |_| |     _| || |____ / ____ \| |   _| || |__| | |\  |____) |
- |_| \_|\____/  |_|  |_____|_|    |_____\_____/_/    \_\_|  |_____\____/|_| \_|_____/ 
+ |_| \_|\____/  |_|  |_____|_|    |_____\_____/_/    \_\_|  |_____\____/|_| \_|_____/
 
  */
 router.get('/notifications', async (req, res) => {
   const likes = await getLikes();
-  const offset = parseInt(req.query.offset) || 0;
+  const query = querystring.parse(req.query);
+  const offset = parseInt(query.offset.toString()) || 0;
   const pageSize = 20;
   const notes = getNotifications()
     .slice()
@@ -133,7 +141,7 @@ router.get('/notifications', async (req, res) => {
         try {
           note = await getActivity(notification.notification.object);
           original = await getNote(note.inReplyTo);
-          note.isLiked = likes.some(l => l.activityId === note.id) ? true : false;
+          note.isLiked = !!likes.some(l => l.activityId === note.id);
         } catch (err) {
           console.error('Could not fetch parent post', err);
           return null;
@@ -142,7 +150,7 @@ router.get('/notifications', async (req, res) => {
       if (notification.notification.type === 'Mention') {
         try {
           note = await getActivity(notification.notification.object);
-          note.isLiked = likes.some(l => l.activityId === note.id) ? true : false;
+          note.isLiked = !!likes.some(l => l.activityId === note.id);
         } catch (err) {
           console.log('Could not fetch mention post', err);
           return null;
@@ -168,9 +176,9 @@ router.get('/notifications', async (req, res) => {
     prefs: getPrefs(),
     me: ActivityPub.actor,
     url: '/notifications',
-    offset: offset,
+    offset,
     feeds,
-    next: notifications.length == pageSize ? offset + notifications.length : null,
+    next: notifications.length === pageSize ? offset + notifications.length : null,
     notifications: notifications.filter(n => n !== null),
     followersCount: followers.length,
     followingCount: following.length
@@ -178,10 +186,11 @@ router.get('/notifications', async (req, res) => {
 });
 
 router.get('/feeds/:handle?', async (req, res) => {
-  const following = getFollowing();
+  // const following = getFollowing();
   const likes = await getLikes();
   const boosts = await getBoosts();
-  const offset = parseInt(req.query.offset) || 0;
+  const query = querystring.parse(req.query);
+  const offset = parseInt(query.offset.toString()) || 0;
   const pageSize = 20;
   let feed;
 
@@ -216,8 +225,8 @@ router.get('/feeds/:handle?', async (req, res) => {
       }
     }
 
-    note.isLiked = likes.some(l => l.activityId === note.id) ? true : false;
-    note.isBoosted = boosts.some(l => l.activityId === note.id) ? true : false;
+    note.isLiked = !!likes.some(l => l.activityId === note.id);
+    note.isBoosted = !!boosts.some(l => l.activityId === note.id);
 
     return {
       note,
@@ -228,7 +237,7 @@ router.get('/feeds/:handle?', async (req, res) => {
   };
 
   let feedcount = 20;
-  if (req.query.expandfeeds) {
+  if (query.expandfeeds) {
     feedcount = 120;
   }
   const feeds = await getFeedList(0, feedcount);
@@ -244,7 +253,7 @@ router.get('/feeds/:handle?', async (req, res) => {
     if (feed.id === req.app.get('account').actor.id || isFollowing(feed.id)) {
       logger('Loading posts from index for', feed.id);
       activitystream = await Promise.all(
-        INDEX.filter(p => p.actor == account.actor.id)
+        INDEX.filter(p => p.actor === account.actor.id)
           .sort((a, b) => {
             if (a.published > b.published) {
               return -1;
@@ -295,10 +304,10 @@ router.get('/feeds/:handle?', async (req, res) => {
     prefs: getPrefs(),
     feeds,
     feed,
-    expandfeeds: req.query.expandfeeds,
+    expandfeeds: query.expandfeeds,
     activitystream,
     offset,
-    next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null
+    next: activitystream && activitystream.length === pageSize ? offset + activitystream.length : null
   });
 });
 
@@ -378,8 +387,9 @@ router.get('/dms/:handle?', async (req, res) => {
 });
 
 router.get('/post', async (req, res) => {
-  const to = req.query.to;
-  const inReplyTo = req.query.inReplyTo;
+  const query = querystring.parse(req.query);
+  const to = query.to;
+  const inReplyTo = query.inReplyTo;
   let op;
   let actor;
   let prev;
@@ -389,10 +399,10 @@ router.get('/post', async (req, res) => {
     actor = account.actor;
   }
 
-  if (req.query.edit) {
-    console.log('COMPOSING EDIT', req.query.edit);
-    prev = await getNote(req.query.edit);
-    //console.log("ORIGINAL", original);
+  if (query?.edit) {
+    console.log('COMPOSING EDIT', query.edit);
+    prev = await getNote(query.edit);
+    // console.log("ORIGINAL", original);
   }
 
   res.status(200).render('partials/composer', {
@@ -401,7 +411,7 @@ router.get('/post', async (req, res) => {
     inReplyTo,
     actor,
     originalPost: op, // original post being replied to
-    prev: prev, // previous version we posted, now editing
+    prev, // previous version we posted, now editing
     me: req.app.get('account').actor,
     prefs: getPrefs(),
     layout: 'private'
@@ -430,7 +440,8 @@ router.post('/post', async (req, res) => {
 });
 
 router.get('/poll', async (req, res) => {
-  const sincePosts = new Date(req.cookies.latestPost).getTime();
+  const latest = req.cookies?.latestPost.toString() || '';
+  const sincePosts = new Date(latest).getTime();
   const sinceNotifications = parseInt(req.cookies.latestNotification);
   const notifications = getNotifications().filter(n => n.time > sinceNotifications);
   const inboxIndex = getInboxIndex();
@@ -448,33 +459,13 @@ router.get('/poll', async (req, res) => {
 });
 
 router.get('/followers', async (req, res) => {
-  let following = await Promise.all(
-    getFollowing().map(async f => {
-      const acct = await fetchUser(f.actorId);
-      if (acct?.actor?.id) {
-        acct.actor.isFollowing = true; // duh
-        return acct.actor;
-      }
-      return undefined;
-    })
-  );
+  const query = querystring.parse(req.query);
 
-  following = following.filter(f => f !== undefined);
+  const following = await filterFollowing();
+  const followers = await filterFollowers(following);
 
-  let followers = await Promise.all(
-    getFollowers().map(async f => {
-      const acct = await fetchUser(f);
-      if (acct?.actor?.id) {
-        acct.actor.isFollowing = following.some(p => p.id === f);
-        return acct.actor;
-      }
-      return undefined;
-    })
-  );
-
-  followers = followers.filter(f => f !== undefined);
-
-  if (req.query.json) {
+  if (query.json) {
+    const notes = {}; // FIXME: Where are the notes coming from?
     res.json(notes);
   } else {
     res.render('followers', {
@@ -482,8 +473,8 @@ router.get('/followers', async (req, res) => {
       url: '/followers',
       prefs: getPrefs(),
       me: ActivityPub.actor,
-      followers: followers,
-      following: following,
+      followers,
+      following,
       followersCount: followers.length,
       followingCount: following.length
     });
@@ -491,41 +482,21 @@ router.get('/followers', async (req, res) => {
 });
 
 router.get('/following', async (req, res) => {
-  let following = await Promise.all(
-    getFollowing().map(async f => {
-      const acct = await fetchUser(f.actorId);
-      if (acct?.actor?.id) {
-        acct.actor.isFollowing = true; // duh
-        return acct.actor;
-      }
-      return undefined;
-    })
-  );
-  following = following.filter(f => f !== undefined);
-
-  let followers = await Promise.all(
-    getFollowers().map(async f => {
-      const acct = await fetchUser(f);
-      if (acct?.actor?.id) {
-        acct.actor.isFollowing = following.some(p => p.id === f);
-        return acct.actor;
-      }
-      return undefined;
-    })
-  );
-
-  followers = followers.filter(f => f !== undefined);
-
-  if (req.query.json) {
+  const query = querystring.parse(req.query);
+  if (query.json) {
+    const notes = {}; // FIXME: Where are the notes coming from?
     res.json(notes);
   } else {
+    const following = await filterFollowing();
+    const followers = await filterFollowers(following);
+
     res.render('following', {
       layout: 'private',
       url: '/followers',
       prefs: getPrefs(),
       me: ActivityPub.actor,
-      followers: followers,
-      following: following,
+      followers,
+      following,
       followersCount: followers.length,
       followingCount: following.length
     });
@@ -533,13 +504,13 @@ router.get('/following', async (req, res) => {
 });
 
 /**
-  _____  _____  ______ ______ _____ 
+ _____  _____  ______ ______ _____
  |  __ \|  __ \|  ____|  ____/ ____|
- | |__) | |__) | |__  | |__ | (___  
- |  ___/|  _  /|  __| |  __| \___ \ 
+ | |__) | |__) | |__  | |__ | (___
+ |  ___/|  _  /|  __| |  __| \___ \
  | |    | | \ \| |____| |    ____) |
- |_|    |_|  \_\______|_|   |_____/ 
-                                                                    
+ |_|    |_|  \_\______|_|   |_____/
+
  */
 router.get('/prefs', (req, res) => {
   const following = getFollowing();
@@ -557,7 +528,7 @@ router.get('/prefs', (req, res) => {
 
 router.post('/prefs', (req, res) => {
   // lget current prefs.
-  let prefs = getPrefs();
+  const prefs = getPrefs();
 
   // incoming prefs
   const updates = req.body;
@@ -585,7 +556,7 @@ const getFeedList = async (offset = 0, num = 20) => {
       // what we really need to do is look from this person by date
       // and if we sort right it should be reasonable?
       // and we just return unread counts for everything?
-      const posts = INDEX.filter(p => p.actor == follower.actorId);
+      const posts = INDEX.filter(p => p.actor === follower.actorId);
 
       // find most recent post
       const mostRecent =
@@ -605,7 +576,7 @@ const getFeedList = async (offset = 0, num = 20) => {
         actorId: follower.actorId,
         actor: account.actor,
         postCount: posts.length,
-        mostRecent: mostRecent
+        mostRecent
       };
     })
   );
@@ -659,7 +630,7 @@ router.get('/morefeeds', async (req, res) => {
 
   res.render('partials/feeds', {
     layout: null,
-    feeds: feeds,
+    feeds,
     expandfeeds: true
   });
 });
@@ -689,7 +660,7 @@ router.post('/follow', async (req, res) => {
     if (actor) {
       const status = isFollowing(actor.id);
       if (!status) {
-        const message = await ActivityPub.sendFollow(actor);
+        // const message = await ActivityPub.sendFollow(actor);
 
         return res.status(200).json({
           isFollowed: true

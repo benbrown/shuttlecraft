@@ -1,12 +1,9 @@
-import fs from 'fs';
 import express from 'express';
 import { create } from 'express-handlebars';
 import cookieParser from 'cookie-parser';
 
 import dotenv from 'dotenv';
 // load process.env from .env file
-dotenv.config();
-
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http';
@@ -14,7 +11,9 @@ import basicAuth from 'express-basic-auth';
 import moment from 'moment';
 import { ActivityPub } from './lib/ActivityPub.js';
 import { ensureAccount } from './lib/account.js';
-import { account, webfinger, inbox, outbox, admin, notes, publicFacing } from './routes/index.js';
+import { account, admin, inbox, notes, outbox, publicFacing, webfinger } from './routes/index.js';
+
+dotenv.config();
 
 const { USERNAME, PASS, DOMAIN, PORT } = process.env;
 
@@ -29,9 +28,9 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      if (a == b) return options.fn(this);
+      if (a === b) return options.fn(this);
     },
-    or: (a, b, options) => {
+    or: (a, b) => {
       return a || b;
     },
     timesince: date => {
@@ -40,7 +39,7 @@ const hbs = create({
     getUsername: user => {
       return ActivityPub.getUsername(user);
     },
-    stripProtocol: str => str.replace(/^https\:\/\//, ''),
+    stripProtocol: str => str.replace(/^https:\/\//, ''),
     stripHTML: str =>
       str
         .replace(/<\/p>/, '\n')
@@ -74,17 +73,17 @@ app.use(
 ); // support encoded bodies
 
 // basic http authorizer
-let basicUserAuth = basicAuth({
-  authorizer: asyncAuthorizer,
-  authorizeAsync: true,
-  challenge: true
-});
+const basicUserAuth = () =>
+  basicAuth({
+    authorizer: asyncAuthorizer,
+    authorizeAsync: true,
+    challenge: true
+  });
 
 function asyncAuthorizer(username, password, cb) {
-  let isAuthorized = false;
   const isPasswordAuthorized = username === USERNAME;
   const isUsernameAuthorized = password === PASS;
-  isAuthorized = isPasswordAuthorized && isUsernameAuthorized;
+  const isAuthorized = isPasswordAuthorized && isUsernameAuthorized;
   if (isAuthorized) {
     return cb(null, true);
   } else {
@@ -118,18 +117,18 @@ ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   app.set('account', myaccount);
 
   // serve webfinger response
-  app.use('/.well-known/webfinger', cors(), webfinger);
+  app.all('/.well-known/webfinger', cors(), webfinger);
   // server user profile and follower list
-  app.use('/u', cors(), account);
+  app.all('/u', cors(), account);
 
   // serve individual posts
-  app.use('/m', cors(), notes);
+  app.all('/m', cors(), notes);
 
   // handle incoming requests
-  app.use('/api/inbox', cors(), inbox);
-  app.use('/api/outbox', cors(), outbox);
+  app.all('/api/inbox', cors(), inbox);
+  app.all('/api/outbox', cors(), outbox);
 
-  app.use(
+  app.all(
     '/private',
     cors({
       credentials: true,
@@ -138,8 +137,8 @@ ensureAccount(USERNAME, DOMAIN).then(myaccount => {
     authWrapper,
     admin
   );
-  app.use('/', cors(), publicFacing);
-  app.use('/', express.static('public/'));
+  app.all('/', cors(), publicFacing);
+  app.all('/', express.static('public/'));
 
   http.createServer(app).listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
