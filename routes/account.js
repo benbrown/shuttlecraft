@@ -1,9 +1,6 @@
 import express from 'express';
-import {
-  getFollowers
-} from '../lib/account.js';
+import { getFollowers } from '../lib/account.js';
 export const router = express.Router();
-
 
 router.get('/:name', function (req, res) {
   let name = req.params.name;
@@ -40,17 +37,17 @@ router.get('/:name/followers', function (req, res) {
     } else {
       let followers = getFollowers();
       let followersCollection = {
-        "type": "OrderedCollection",
-        "totalItems": followers.length,
-        "id": `https://${domain}/u/${name}/followers`,
-        "first": {
-          "type": "OrderedCollectionPage",
-          "totalItems": followers.length,
-          "partOf": `https://${domain}/u/${name}/followers`,
-          "orderedItems": followers,
-          "id": `https://${domain}/u/${name}/followers?page=1`
+        type: 'OrderedCollection',
+        totalItems: followers.length,
+        id: `https://${domain}/u/${name}/followers`,
+        first: {
+          type: 'OrderedCollectionPage',
+          totalItems: followers.length,
+          partOf: `https://${domain}/u/${name}/followers`,
+          orderedItems: followers,
+          id: `https://${domain}/u/${name}/followers?page=1`
         },
-        "@context": ["https://www.w3.org/ns/activitystreams"]
+        '@context': ['https://www.w3.org/ns/activitystreams']
       };
       res.json(followersCollection);
     }
