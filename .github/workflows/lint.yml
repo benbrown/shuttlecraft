@@ -39,5 +39,13 @@ jobs:
       - name: Install Node packages
         run: npm ci
 
+      - name: Get changed files
+        id: changes
+        run: |
+          echo "::set-output name=files::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .handlebars$ | xargs)"
+
       - name: Run djlint
-        run: npm run lint:hbs
+        uses: selfagency/djlint-reviewdog-action@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          djlint_flags: --profile=handlebars ${{ steps.changes.outputs.files }}
