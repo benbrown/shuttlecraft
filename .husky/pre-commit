@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+PATH=$PATH:./node_modules/.bin
+. "$(dirname -- "$0")/_/husky.sh"
+lint-staged

@@ -2,15 +2,32 @@
   "name": "shuttlecraft",
   "version": "0.0.1",
   "description": "a single user activitypub server - join the federation!",
-  "main": "index.js",
+  "keywords": [
+    "fediverse",
+    "mastodon",
+    "socialmedia",
+    "indieweb",
+    "benbrown"
+  ],
+  "homepage": "https://shuttlecraft.net",
+  "bugs": {
+    "url": "https://github.com/benbrown/shuttlecraft/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benbrown/shuttlecraft"
+  },
+  "license": "MIT",
+  "author": "ben brown <benbrown@gmail.com>",
   "type": "module",
+  "main": "index.js",
   "scripts": {
+    "postinstall": "copy-env-cli",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "copy-env-cli"
-  },
-  "engines": {
-    "node": "16.x"
+    "lint": "eslint lib/. && prettier --check lib/.",
+    "lint:fix": "eslint lib/. --fix && prettier --write lib/.",
+    "prepare": "husky install"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -28,24 +45,25 @@
     "node-fetch": "^3.3.0",
     "rss-generator": "^0.0.3"
   },
-  "keywords": [
-    "fediverse",
-    "mastodon",
-    "socialmedia",
-    "indieweb",
-    "benbrown"
-  ],
-  "author": "ben brown <benbrown@gmail.com>",
-  "homepage": "https://shuttlecraft.net",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/benbrown/shuttlecraft"
-  },
-  "bugs": {
-    "url": "https://github.com/benbrown/shuttlecraft/issues"
-  },
-  "license": "MIT",
   "devDependencies": {
-    "copy-env-cli": "^1.0.0"
+    "copy-env-cli": "^1.0.0",
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.8.3"
+  },
+  "engines": {
+    "node": "16.x"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
