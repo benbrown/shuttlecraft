@@ -194,7 +194,7 @@ router.get('/notifications', async (req, res) => {
 
 router.get('/feeds/:handle?', async (req, res) => {
 
-    const following = getFollowing();
+    // const following = getFollowing();
     const likes = await getLikes();
     const boosts = await getBoosts();
     const offset = parseInt(req.query.offset) || 0;
@@ -713,7 +713,7 @@ router.post('/follow', async (req, res) => {
         if (actor) {
             const status = isFollowing(actor.id);
             if (!status) {
-                const message = await ActivityPub.sendFollow(actor);
+                // const message = await ActivityPub.sendFollow(actor);
 
                 return res.status(200).json({
                     isFollowed: true

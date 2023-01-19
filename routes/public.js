@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import {
   getNote,
   isMyPost,
-  getAccount,
+  // getAccount,
   getOutboxPosts
 } from '../lib/account.js';
 import {
@@ -101,23 +101,23 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {
-    total,
+    // total,
     posts
   } = await getOutboxPosts(offset);
   const actor = ActivityPub.actor;
-  const enrichedPosts = posts.map((post) => {
-    let stats;
-    if (isMyPost(post)) {
-      const likes = getLikesForNote(post.id)
-      stats = {
-        likes: likes.likes.length,
-        boosts: likes.boosts.length,
-        replies: getReplyCountForNote(post.id),
-      }
-      post.stats = stats;
-    }
-    return post;
-  })
+  // const enrichedPosts = posts.map((post) => {
+  //   let stats;
+  //   if (isMyPost(post)) {
+  //     const likes = getLikesForNote(post.id)
+  //     stats = {
+  //       likes: likes.likes.length,
+  //       boosts: likes.boosts.length,
+  //       replies: getReplyCountForNote(post.id),
+  //     }
+  //     post.stats = stats;
+  //   }
+  //   return post;
+  // })
 
   res.render('public/home', {
     me: ActivityPub.actor,
@@ -133,7 +133,7 @@ router.get('/', async (req, res) => {
 
 router.get('/feed', async (req, res) => {
   const {
-    total,
+    // total,
     posts
   } = await getOutboxPosts(0);
 

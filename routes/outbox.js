@@ -7,10 +7,9 @@ import {
 export const router = express.Router();
 dotenv.config();
 
-const {
-    DOMAIN
-} = process.env;
-
+// const {
+//     DOMAIN
+// } = process.env;
 
 router.get('/', async (req, res) => {
     const {

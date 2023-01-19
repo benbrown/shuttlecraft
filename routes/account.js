@@ -11,7 +11,7 @@ router.get('/:name', function (req, res) {
     return res.status(400).send('Bad request.');
   } else {
     const domain = req.app.get('domain');
-    const username = name;
+    // const username = name;
     name = `https://${domain}/u/${name}`;
 
     if (name != req.app.get('account').actor.id) {
