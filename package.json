@@ -25,8 +25,8 @@
     "postinstall": "copy-env-cli",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint lib/. && prettier --check lib/.",
-    "lint:fix": "eslint lib/. --fix && prettier --write lib/.",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
     "prepare": "husky install"
   },
   "dependencies": {
