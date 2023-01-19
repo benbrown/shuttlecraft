@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "copy-env-cli"
+    "postinstall": "copy-env-cli",
+    "lint:hbs": "djlint --check --lint ./design/**/*.handlebars",
+    "lint:hbs:fix": "djlint --lint --reformat ./design/**/*.handlebars"
   },
   "engines": {
     "node": "16.x"
@@ -46,6 +48,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "copy-env-cli": "^1.0.0"
+    "copy-env-cli": "^1.0.0",
+    "djlint": "^1.19.11"
   }
 }
