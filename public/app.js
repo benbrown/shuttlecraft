@@ -253,12 +253,12 @@ const app = {
     },
     lookup: () => {
         const follow = document.getElementById('lookup');
-        const lookup_results = document.getElementById('lookup_results');
+        const lookupResults = document.getElementById('lookup_results');
 
         console.log('Lookup user', follow.value);
         fetch('/private/lookup?handle=' + encodeURIComponent(follow.value), 'GET', null)
             .then((newHTML) => {
-                lookup_results.innerHTML = newHTML;
+                lookupResults.innerHTML = newHTML;
             });
         return false;
     }    
