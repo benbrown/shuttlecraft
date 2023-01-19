@@ -7,9 +7,9 @@ const fetch = (url, type, payload = undefined) => {
         Http.send(payload);
 
         Http.onreadystatechange = () => {
-            if (Http.readyState == 4 && Http.status == 200) {
+            if (Http.readyState === 4 && Http.status === 200) {
                 resolve(Http.responseText);
-            } else if (Http.readyState == 4 && Http.status >= 300) {
+            } else if (Http.readyState === 4 && Http.status >= 300) {
                 reject(Http.statusText);
             }
         }
