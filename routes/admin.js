@@ -108,7 +108,7 @@ router.get('/', async (req, res) => {
             url: '/',
             me: ActivityPub.actor,
             offset, 
-            next: notes.length == pageSize ? next : null,
+            next: notes.length === pageSize ? next : null,
             activitystream: notes,
             feeds,
             followers,
@@ -185,7 +185,7 @@ router.get('/notifications', async (req, res) => {
         url: '/notifications',
         offset,
         feeds,
-        next: notifications.length == pageSize ? offset + notifications.length : null,
+        next: notifications.length === pageSize ? offset + notifications.length : null,
         notifications: notifications.filter((n)=>n!==null),
         followersCount: followers.length,
         followingCount: following.length
@@ -257,7 +257,7 @@ router.get('/feeds/:handle?', async (req, res) => {
 
         if (feed.id === req.app.get('account').actor.id || isFollowing(feed.id)) {
             logger('Loading posts from index for', feed.id);
-            activitystream = await Promise.all(INDEX.filter((p) => p.actor == account.actor.id).sort((a,b) => {
+            activitystream = await Promise.all(INDEX.filter((p) => p.actor === account.actor.id).sort((a,b) => {
                 if (a.published > b.published) {
                     return -1;
                 } else if (a.published < b.published) {
@@ -304,7 +304,7 @@ router.get('/feeds/:handle?', async (req, res) => {
         expandfeeds: req.query.expandfeeds,
         activitystream,
         offset,
-        next: activitystream && activitystream.length == pageSize ? offset + activitystream.length : null,
+        next: activitystream && activitystream.length === pageSize ? offset + activitystream.length : null,
     });
 
 });
@@ -597,7 +597,7 @@ const getFeedList = async (offset = 0, num = 20) => {
         // what we really need to do is look from this person by date
         // and if we sort right it should be reasonable?
         // and we just return unread counts for everything?
-        const posts = INDEX.filter((p) => p.actor == follower.actorId);
+        const posts = INDEX.filter((p) => p.actor === follower.actorId);
         
         // find most recent post
         const mostRecent = posts.sort((a,b) => {

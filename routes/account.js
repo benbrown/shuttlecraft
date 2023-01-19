@@ -14,7 +14,7 @@ router.get('/:name', function (req, res) {
     // const username = name;
     name = `https://${domain}/u/${name}`;
 
-    if (name != req.app.get('account').actor.id) {
+    if (name !== req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
     } else {
       if (req.headers.accept?.includes('application/ld+json')) {
@@ -35,7 +35,7 @@ router.get('/:name/followers', function (req, res) {
 
     name = `https://${domain}/u/${name}`;
 
-    if (name != req.app.get('account').actor.id) {
+    if (name !== req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
     } else {
       const followers = getFollowers();
