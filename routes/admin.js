@@ -485,6 +485,7 @@ router.get('/followers', async (req, res) => {
     followers = followers.filter((f) => f !== undefined);
 
     if (req.query.json) {
+        const notes = {}; // FIXME: Where are the notes coming from?
         res.json(notes);
     } else {
         res.render('followers', {
@@ -523,6 +524,7 @@ router.get('/following', async (req, res) => {
     followers = followers.filter((f) => f !== undefined);
 
     if (req.query.json) {
+        const notes = {}; // FIXME: Where are the notes coming from?
         res.json(notes);
     } else {
         res.render('following', {
