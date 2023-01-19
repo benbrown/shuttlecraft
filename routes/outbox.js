@@ -1,11 +1,11 @@
 import express from 'express';
-export const router = express.Router();
 import dotenv from 'dotenv';
-dotenv.config();
 
 import {
     getOutboxPosts
 } from '../lib/account.js';
+export const router = express.Router();
+dotenv.config();
 
 const {
     DOMAIN
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
     } = await getOutboxPosts(req.query.offset || 0);
     const outboxUrl = req.app.get('account').actor.outbox;
 
-    let collection = {
+    const collection = {
         "type": "OrderedCollection",
         "totalItems": total,
         "id": outboxUrl,

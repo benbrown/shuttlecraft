@@ -4,7 +4,6 @@ import {
     getActivityStream
 } from '../lib/notes.js';
 import express from 'express';
-export const router = express.Router();
 import debug from 'debug';
 import {
     getFollowers,
@@ -36,6 +35,7 @@ import {
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
+export const router = express.Router();
 const logger = debug('ono:admin');
 
 router.get('/index', async (req, res) => {
@@ -85,8 +85,8 @@ router.get('/', async (req, res) => {
             n.actor.isFollowing = isFollowing(n.actor.id);
 
             // determine if this post has already been liked
-            n.note.isLiked = (likes.some((l) => l.activityId === n.note.id)) ? true : false;
-            n.note.isBoosted = (boosts.some((l) => l.activityId === n.note.id)) ? true : false;
+            n.note.isLiked = !!(likes.some((l) => l.activityId === n.note.id));
+            n.note.isBoosted = !!(boosts.some((l) => l.activityId === n.note.id));
 
         } else {
             console.error('Post without an actor found', n.note.id);
@@ -107,12 +107,12 @@ router.get('/', async (req, res) => {
             layout: 'private',
             url: '/',
             me: ActivityPub.actor,
-            offset: offset, 
+            offset, 
             next: notes.length == pageSize ? next : null,
             activitystream: notes,
-            feeds: feeds,
-            followers: followers,
-            following: following,
+            feeds,
+            followers,
+            following,
             followersCount: followers.length,
             followingCount: following.length,
             prefs: getPrefs(),
@@ -149,7 +149,7 @@ router.get('/notifications', async (req, res) => {
             try {
                 note = await getActivity(notification.notification.object);
                 original = await getNote(note.inReplyTo);
-                note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+                note.isLiked = !!(likes.some((l) => l.activityId === note.id));
             } catch(err) {
                 console.error('Could not fetch parent post', err);
                 return null;
@@ -158,7 +158,7 @@ router.get('/notifications', async (req, res) => {
         if (notification.notification.type === 'Mention') {
             try {
                 note = await getActivity(notification.notification.object);
-                note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
+                note.isLiked = !!(likes.some((l) => l.activityId === note.id));
             } catch(err) {
                 console.log('Could not fetch mention post', err);
                 return null;
@@ -183,7 +183,7 @@ router.get('/notifications', async (req, res) => {
         prefs: getPrefs(),
         me: ActivityPub.actor,
         url: '/notifications',
-        offset: offset,
+        offset,
         feeds,
         next: notifications.length == pageSize ? offset + notifications.length : null,
         notifications: notifications.filter((n)=>n!==null),
@@ -232,8 +232,8 @@ router.get('/feeds/:handle?', async (req, res) => {
             }
         }
 
-        note.isLiked = (likes.some((l) => l.activityId === note.id)) ? true : false;
-        note.isBoosted = (boosts.some((l) => l.activityId === note.id)) ? true : false;
+        note.isLiked = !!(likes.some((l) => l.activityId === note.id));
+        note.isBoosted = !!(boosts.some((l) => l.activityId === note.id));
     
         return {
             note, actor, boost, booster
@@ -400,7 +400,7 @@ router.get('/post', async(req, res) => {
     if (req.query.edit) {
         console.log("COMPOSING EDIT", req.query.edit);
         prev = await getNote(req.query.edit);
-        //console.log("ORIGINAL", original);
+        // console.log("ORIGINAL", original);
     }
 
     res.status(200).render('partials/composer', {
@@ -409,7 +409,7 @@ router.get('/post', async(req, res) => {
         inReplyTo,
         actor,
         originalPost: op,   // original post being replied to
-        prev: prev, // previous version we posted, now editing
+        prev, // previous version we posted, now editing
         me: req.app.get('account').actor,
         prefs: getPrefs(),
         layout: 'private'
@@ -492,8 +492,8 @@ router.get('/followers', async (req, res) => {
             url: '/followers',
             prefs: getPrefs(),
             me: ActivityPub.actor,
-            followers: followers,
-            following: following,
+            followers,
+            following,
             followersCount: followers.length,
             followingCount: following.length,
         });
@@ -530,8 +530,8 @@ router.get('/following', async (req, res) => {
             url: '/followers',
             prefs: getPrefs(),
             me: ActivityPub.actor,
-            followers: followers,
-            following: following,
+            followers,
+            following,
             followersCount: followers.length,
             followingCount: following.length
         });
@@ -566,7 +566,7 @@ router.get('/prefs', (req, res) => {
 router.post('/prefs', (req, res) => {
 
     // lget current prefs.
-    let prefs = getPrefs();
+    const prefs = getPrefs();
 
     // incoming prefs
     const updates = req.body;
@@ -616,7 +616,7 @@ const getFeedList = async (offset = 0, num = 20) => {
             actorId: follower.actorId,
             actor: account.actor,
             postCount: posts.length,
-            mostRecent: mostRecent,
+            mostRecent,
         }
     }));
 
@@ -677,7 +677,7 @@ router.get('/morefeeds', async(req, res) => {
 
     res.render('partials/feeds',{
         layout: null,
-        feeds: feeds,
+        feeds,
         expandfeeds: true,
     });
 
