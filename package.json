@@ -5,11 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "prepare": "husky install",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "copy-env-cli",
-    "lint:hbs": "djlint --check --lint ./design/**/*.handlebars",
-    "lint:hbs:fix": "djlint --lint --reformat ./design/**/*.handlebars"
+    "lint:hbs": "djlint --lint ./design/**/*.handlebars",
+    "lint:hbs:format": "djlint --reformat ./design/**/*.handlebars"
   },
   "engines": {
     "node": "16.x"
@@ -49,6 +50,13 @@
   "license": "MIT",
   "devDependencies": {
     "copy-env-cli": "^1.0.0",
-    "djlint": "^1.19.11"
+    "djlint": "^1.19.11",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.0"
+  },
+  "lint-staged": {
+    "design/**/*.handlebars": [
+      "djlint --lint --reformat"
+    ]
   }
 }

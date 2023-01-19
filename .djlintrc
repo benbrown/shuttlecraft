@@ -1,5 +1,6 @@
 {
   "extension": "handlebars",
+  "profile": "handlebars",
   "indent": 2,
   "format_css": true
   "css": {
