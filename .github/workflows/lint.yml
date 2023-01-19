@@ -48,5 +48,5 @@ jobs:
       - uses: reviewdog/action-eslint@v1
         with:
           reporter: github-pr-check
-          eslint_flags: 'lib/**/*.js'
+          eslint_flags: '${{ github.workspace }}/**/*.js'
           # test
