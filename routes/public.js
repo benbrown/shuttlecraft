@@ -1,9 +1,7 @@
 import express from 'express';
-export const router = express.Router();
 import debug from 'debug';
 import RSS from 'rss-generator';
 import dotenv from 'dotenv';
-dotenv.config();
 
 import {
   getNote,
@@ -23,14 +21,16 @@ import {
   ActivityPub
 } from '../lib/ActivityPub.js';
 
+import {
+  fetchUser
+} from '../lib/users.js';
+export const router = express.Router();
+dotenv.config();
+
 const {
   USERNAME,
   DOMAIN
 } = process.env;
-
-import {
-  fetchUser
-} from '../lib/users.js';
 
 const logger = debug('notes');
 
@@ -55,7 +55,7 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
   } else {
     try {
       post = await getActivity(noteId);
-      let account = await fetchUser(post.attributedTo);
+      const account = await fetchUser(post.attributedTo);
       actor = account.actor;
     } catch (err) {
       logger('Could not load a post in a thread. Possibly deleted.', err)
@@ -66,9 +66,9 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
   // if it has been deleted, that info is lost.
   if (post) {
     results.push({
-      stats: stats,
+      stats,
       note: post,
-      actor: actor,
+      actor,
     });
 
     // if this is a reply, get the parent and any other parents straight up the chain
@@ -105,7 +105,7 @@ router.get('/', async (req, res) => {
     posts
   } = await getOutboxPosts(offset);
   const actor = ActivityPub.actor;
-  let enrichedPosts = posts.map((post) => {
+  const enrichedPosts = posts.map((post) => {
     let stats;
     if (isMyPost(post)) {
       const likes = getLikesForNote(post.id)
@@ -121,7 +121,7 @@ router.get('/', async (req, res) => {
 
   res.render('public/home', {
     me: ActivityPub.actor,
-    actor: actor,
+    actor,
     activitystream: posts,
     layout: 'public',
     next: offset + posts.length,
@@ -137,7 +137,7 @@ router.get('/feed', async (req, res) => {
     posts
   } = await getOutboxPosts(0);
 
-  var feed = new RSS({
+  const feed = new RSS({
     title: `${USERNAME}@${DOMAIN}`,
     site_url: DOMAIN,
     pubDate: posts[0].published,
@@ -162,7 +162,7 @@ router.get('/feed', async (req, res) => {
 });
 
 router.get('/notes/:guid', async (req, res) => {
-  let guid = req.params.guid;
+  const guid = req.params.guid;
 
   if (!guid) {
     return res.status(400).send('Bad request.');
@@ -187,7 +187,7 @@ router.get('/notes/:guid', async (req, res) => {
       });
       res.render('public/note', {
         me: ActivityPub.actor,
-        actor: actor,
+        actor,
         activitystream: notes,
         layout: 'public',
         domain: DOMAIN,

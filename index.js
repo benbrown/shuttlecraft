@@ -6,8 +6,6 @@ import {
 import cookieParser from 'cookie-parser';
 
 import dotenv from 'dotenv';
-// load process.env from .env file
-dotenv.config();
 
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -29,6 +27,8 @@ import {
   notes,
   publicFacing
 } from './routes/index.js';
+// load process.env from .env file
+dotenv.config();
 
 const {
   USERNAME,
@@ -83,7 +83,7 @@ app.use(bodyParser.urlencoded({
 })); // support encoded bodies
 
 // basic http authorizer
-let basicUserAuth = basicAuth({
+const basicUserAuth = basicAuth({
   authorizer: asyncAuthorizer,
   authorizeAsync: true,
   challenge: true

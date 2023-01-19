@@ -1,5 +1,4 @@
 import express from 'express';
-export const router = express.Router();
 import {
     ActivityPub
 } from '../lib/ActivityPub.js';
@@ -30,6 +29,7 @@ import debug from 'debug';
 import {
     isIndexed
 } from '../lib/storage.js';
+export const router = express.Router();
 const logger = debug('ono:inbox');
 
 
