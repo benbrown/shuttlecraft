@@ -43,11 +43,6 @@ jobs:
         run: |
           echo "::set-output name=files::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .handlebars$ | xargs)"
 
-      - name: Run djlint
-        uses: selfagency/djlint-reviewdog-action@v0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          djlint_flags: --profile=handlebars ${{ steps.changes.outputs.files }}
       - uses: EPMatt/reviewdog-action-prettier@v1
         with:
           github_token: ${{ secrets.github_token }}
