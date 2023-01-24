@@ -8,6 +8,11 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-23
+- Added linting and code prettification as a pre-commit hook
+- Added Github actions to run linter rules and enforce them on PRs
+Huge thanks to @selfagency for these improvements!
+
 ## 2023-01-15
 - Added a prefs page
 - Added the ability to change all the emojis in the UI 👹
