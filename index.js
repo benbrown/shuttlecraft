@@ -16,13 +16,12 @@ import { account, webfinger, inbox, outbox, admin, notes, publicFacing } from '.
 // load process.env from .env file
 dotenv.config();
 const { USERNAME, PASS, DOMAIN, PORT } = process.env;
-if (!USERNAME || !DOMAIN || !PASS) {
-  const envMsg = envVar => `Specify ${envVar} in environment or .env file`;
-  if (!USERNAME) console.error(envMsg('USERNAME'));
-  if (!DOMAIN) console.error(envMsg('DOMAIN'));
-  if (!PASS) console.error(envMsg('PASS'));
-  process.exit(1);
-}
+[USERNAME, PASS, DOMAIN].forEach(required => {
+  if (!required) {
+    console.error(`Missing required environment variable: \`${required}\`. Exiting.`);
+    process.exit(1);
+  }
+});
 
 const PATH_TO_TEMPLATES = './design';
 const app = express();
