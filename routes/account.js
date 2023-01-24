@@ -1,20 +1,17 @@
 import express from 'express';
-import {
-  getFollowers
-} from '../lib/account.js';
+import { getFollowers } from '../lib/account.js';
 export const router = express.Router();
-
 
 router.get('/:name', function (req, res) {
   let name = req.params.name;
   if (!name) {
     return res.status(400).send('Bad request.');
   } else {
-    let domain = req.app.get('domain');
-    let username = name;
+    const domain = req.app.get('domain');
+    // const username = name;
     name = `https://${domain}/u/${name}`;
 
-    if (name != req.app.get('account').actor.id) {
+    if (name !== req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
     } else {
       if (req.headers.accept?.includes('application/ld+json')) {
@@ -31,26 +28,26 @@ router.get('/:name/followers', function (req, res) {
   if (!name) {
     return res.status(400).send('Bad request.');
   } else {
-    let domain = req.app.get('domain');
+    const domain = req.app.get('domain');
 
     name = `https://${domain}/u/${name}`;
 
-    if (name != req.app.get('account').actor.id) {
+    if (name !== req.app.get('account').actor.id) {
       return res.status(404).send(`No record found for ${name}.`);
     } else {
-      let followers = getFollowers();
-      let followersCollection = {
-        "type": "OrderedCollection",
-        "totalItems": followers.length,
-        "id": `https://${domain}/u/${name}/followers`,
-        "first": {
-          "type": "OrderedCollectionPage",
-          "totalItems": followers.length,
-          "partOf": `https://${domain}/u/${name}/followers`,
-          "orderedItems": followers,
-          "id": `https://${domain}/u/${name}/followers?page=1`
+      const followers = getFollowers();
+      const followersCollection = {
+        type: 'OrderedCollection',
+        totalItems: followers.length,
+        id: `https://${domain}/u/${name}/followers`,
+        first: {
+          type: 'OrderedCollectionPage',
+          totalItems: followers.length,
+          partOf: `https://${domain}/u/${name}/followers`,
+          orderedItems: followers,
+          id: `https://${domain}/u/${name}/followers?page=1`
         },
-        "@context": ["https://www.w3.org/ns/activitystreams"]
+        '@context': ['https://www.w3.org/ns/activitystreams']
       };
       res.json(followersCollection);
     }
