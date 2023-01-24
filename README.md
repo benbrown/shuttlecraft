@@ -158,23 +158,40 @@ and you can start for FREE!
 
 [Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft)
 
-First, make sure the URL of your Glitch project is the one you like. You can change it in the "Settings" menu.
+1. First, make sure the URL of your Glitch project is the one you like. You can change it in the "Settings" menu.
+2. Then, configure the options [as described above](#config) using the .env editor.
+3. Finally, login to the dashboard at `https://yourdomain.glitch.me/private`.
+4. Done!
 
-Then, configure the options [as described above](#config) using the .env editor.
+### Basic: Reverse proxy
 
-Finally, login to the dashboard at `https://yourdomain.glitch.me/private`
+1. Clone the repo to your own server.
+2. Configure it and set it up to run on a port of your choosing.
+3. Configure Caddy or Nginx with a Certbot SSL certificate.
+4. Configure your domain to proxy requests to the localhost port.
 
-Done!
+A sample `Caddyfile` is included in the repo. [Install Caddy](https://caddyserver.com/download) and run:
+```
+caddy run --config Caddyfile
+```
 
-### Basic: nginx proxy
+### Advanced: Docker
 
-Clone the repo to your own server.
-
-Configure it and set it up to run on a port of your choosing.
-
-Configure nginx with a certbot ssl certificate.
-
-Configure your domain to proxy requests to the localhost port.
+1. Clone the repo.
+2. Build the image:
+   ```
+   docker build . --tag "${yourRegistryUsername}/shuttlecraft:latest"
+   ```
+3. Test locally:
+   ```
+   docker run -e PORT=3000 -e DOMAIN="your-domain.com" -e USERNAME="yourUsername" -e PASS="yourPassword" -p "3000:3000" "${yourRegistryUsername}/shuttlecraft"
+   ```
+4. Push the image to your registry:
+   ```
+   docker push "${yourRegistryUsername}/shuttlecraft:latest"
+   ```
+5. Deploy the image to your container platform with the required environment variables (`DOMAIN`, `USERNAME`, `PASS`). 
+6. Configure a web service to proxy requests to the container port and provide HTTPS (see "Reverse proxy" above). 
 
 ## Customize
 
