@@ -12,10 +12,17 @@ import moment from 'moment';
 import { ActivityPub } from './lib/ActivityPub.js';
 import { ensureAccount } from './lib/account.js';
 import { account, webfinger, inbox, outbox, admin, notes, publicFacing } from './routes/index.js';
+
 // load process.env from .env file
 dotenv.config();
-
 const { USERNAME, PASS, DOMAIN, PORT } = process.env;
+if (!USERNAME || !DOMAIN || !PASS) {
+  const envMsg = envVar => `Specify ${envVar} in environment or .env file`;
+  if (!USERNAME) console.error(envMsg('USERNAME'));
+  if (!DOMAIN) console.error(envMsg('DOMAIN'));
+  if (!PASS) console.error(envMsg('PASS'));
+  process.exit(1);
+}
 
 const PATH_TO_TEMPLATES = './design';
 const app = express();
@@ -92,11 +99,6 @@ function asyncAuthorizer(username, password, cb) {
   }
 }
 
-if (!USERNAME || !DOMAIN || !PASS) {
-  console.error('Specify USER PASS and DOMAIN in the .env file');
-  process.exit(1);
-}
-
 // Load/create account file
 ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   const authWrapper = (req, res, next) => {
@@ -110,7 +112,7 @@ ensureAccount(USERNAME, DOMAIN).then(myaccount => {
 
   // set the server to use the main account as its primary actor
   ActivityPub.account = myaccount;
-  console.log('BOOTING SERVER FOR ACCOUNT: ', myaccount.actor.preferredUsername);
+  console.log(`BOOTING SERVER FOR ACCOUNT: ${myaccount.actor.preferredUsername}`);
   console.log(`ACCESS DASHBOARD: https://${DOMAIN}/private`);
 
   // set up globals

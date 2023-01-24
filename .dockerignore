@@ -1,0 +1,12 @@
+.djlintrc
+.env
+.env.*
+.eslintrc.cjs
+.github
+.husky
+.prettierrc
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE.md
+README.md
+node_modules
