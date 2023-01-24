@@ -28,7 +28,8 @@ const hbs = create({
       if (str && str.includes('image')) return options.fn(this);
     },
     isEq: (a, b, options) => {
-      if (a === b) return options.fn(this);
+      // eslint-disable-next-line
+      if (a == b) return options.fn(this);
     },
     or: (a, b, options) => {
       return a || b;
