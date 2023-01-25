@@ -27,9 +27,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "copy-env-cli",
     "lint": "eslint lib/. && prettier --check lib/.",
-    "lint:fix": "eslint lib/. --fix && prettier --write lib/.",
-    "lint:hbs": "djlint --lint ./design/**/*.handlebars",
-    "lint:hbs:format": "djlint --reformat ./design/**/*.handlebars"
+    "lint:fix": "eslint lib/. --fix && prettier --write lib/."
   },
   "engines": {
     "node": "16.x"
@@ -47,26 +45,22 @@
     "glob": "^8.0.3",
     "markdown-it": "^13.0.1",
     "md5": "^2.3.0",
+    "husky": "^8.0.3",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.0",
     "rss-generator": "^0.0.3"
   },
   "devDependencies": {
-    "djlint": "^1.19.11",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
-    "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
     "prettier": "^2.8.3"
   },
   "lint-staged": {
-    "design/**/*.handlebars": [
-        "djlint --lint --reformat"
-    ],
     "*.js": [
       "eslint --fix",
       "prettier --write"
