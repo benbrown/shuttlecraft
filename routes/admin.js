@@ -212,7 +212,7 @@ router.get('/feeds/:handle?', async (req, res) => {
       } catch (err) {
         console.error(err);
         console.error('Could not fetch boosted post...', boost.object);
-        // return;
+        return;
       }
     }
 
@@ -262,6 +262,7 @@ router.get('/feeds/:handle?', async (req, res) => {
               console.error('error while loading post from index', err);
             }
           })
+          .filter(p => p !== undefined) // remove items where we couldn't load the boost
       );
     } else {
       logger('Loading remote posts for', feed.id);
