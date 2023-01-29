@@ -278,7 +278,11 @@ router.get('/feeds/:handle?', async (req, res) => {
               })
               .map(async post => {
                 try {
-                  return getFullPostDetails(post.object);
+                  if (post.type === 'Create') {
+                    return getFullPostDetails(post.object);
+                  } else {
+                    return getFullPostDetails(post);
+                  }
                 } catch (err) {
                   console.error('error while loading post from remote outbox', err);
                 }
@@ -683,6 +687,7 @@ router.get('/lookup', async (req, res) => {
 router.post('/follow', async (req, res) => {
   const handle = req.body.handle;
   if (handle) {
+    logger('toggle follow', handle);
     if (handle === req.app.get('account').actor.id) {
       return res.status(200).json({
         isFollowed: false
@@ -692,7 +697,7 @@ router.post('/follow', async (req, res) => {
     if (actor) {
       const status = isFollowing(actor.id);
       if (!status) {
-        // const message = await ActivityPub.sendFollow(actor);
+        ActivityPub.sendFollow(actor);
 
         return res.status(200).json({
           isFollowed: true
