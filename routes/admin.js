@@ -21,6 +21,7 @@ import {
 import { fetchUser } from '../lib/users.js';
 import { getPrefs, INDEX, searchKnownUsers, updatePrefs } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
+import { queue } from '../lib/queue.js';
 export const router = express.Router();
 const logger = debug('ono:admin');
 
@@ -555,6 +556,11 @@ router.get('/prefs', (req, res) => {
   res.render('prefs', {
     layout: 'private',
     url: '/prefs',
+    queue: {
+      size: queue.size,
+      state: queue.state,
+      shouldRun: queue.shouldRun
+    },
     prefs: getPrefs(),
     me: ActivityPub.actor,
     followersCount: followers.length,
