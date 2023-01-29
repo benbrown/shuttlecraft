@@ -51,8 +51,8 @@
                     {{/if}}
                     {{{content}}}
 
-                    {{#if note.inReplyTo}}
-                    <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
+                    {{#if this.inReplyTo}}
+                    <p><a href="{{this.inReplyTo}}" class="showThread">Show Thread</a></p>
                     {{/if}}
 
                     {{#each note.attachment}}

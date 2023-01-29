@@ -1,5 +1,19 @@
 {{> peopleTools}}
 <div class="box">
+    <header>Outbound Queue</header>
+    <div style="padding: 1rem;">
+        {{#isEq queue.state 0}}✅{{/isEq}}
+        {{#isEq queue.state 1}}🟢{{/isEq}}
+        {{#isEq queue.state 3}}🔴{{/isEq}}
+        {{#if queue.size}}
+            {{#if queue.shouldRun}}Running.{{/if}}
+            {{queue.size}} items remain.
+        {{else}}
+            Queue empty
+        {{/if}}
+    </div>
+</div>
+<div class="box">
     <header>Preferences</header>
     <form method="post" action="/private/prefs">
         <fieldset>
