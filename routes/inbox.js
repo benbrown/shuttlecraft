@@ -28,6 +28,8 @@ router.post('/', async (req, res) => {
       return res.status(403).send('');
     }
 
+    logger('New message', JSON.stringify(incomingRequest, null, 2));
+    logger('Looking up actor', incomingRequest.actor);
     const { actor } = await fetchUser(incomingRequest.actor);
 
     // FIRST, validate the actor

@@ -71,6 +71,12 @@ app.use(
     type: 'application/json'
   })
 ); // support json encoded bodies
+app.use(
+  bodyParser.json({
+    type: 'application/ld+json'
+  })
+); // support json encoded bodies
+
 app.use(cookieParser());
 
 app.use(
