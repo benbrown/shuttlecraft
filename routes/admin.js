@@ -1,5 +1,5 @@
 import { getActivity } from '../lib/notes.js';
-import { getActivitySince, getActivityStream, getFullPostDetails } from '../lib/theAlgorithm.js';
+import { getActivitySince, getActivityStream, getFullPostDetails, sortByDate } from '../lib/theAlgorithm.js';
 import express from 'express';
 import debug from 'debug';
 import {
@@ -164,15 +164,7 @@ router.get('/feeds/:handle?', async (req, res) => {
       logger('Loading posts from index for', feed.id);
       activitystream = await Promise.all(
         INDEX.filter(p => p.actor === account.actor.id)
-          .sort((a, b) => {
-            if (a.published > b.published) {
-              return -1;
-            } else if (a.published < b.published) {
-              return 1;
-            } else {
-              return 0;
-            }
-          })
+          .sort(sortByDate)
           .slice(offset, offset + pageSize)
           .map(async p => {
             try {
@@ -238,16 +230,7 @@ router.get('/dms/:handle?', async (req, res) => {
       inbox = getInbox(recipient.id);
 
       // reverse sort!
-      inbox &&
-        inbox.sort((a, b) => {
-          if (a.published > b.published) {
-            return -1;
-          } else if (a.published < b.published) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
+      inbox && inbox.sort(sortByDate);
 
       // find last message in thread
       lastIncoming = inbox.length ? inbox[0] : null;
@@ -519,16 +502,7 @@ const getFeedList = async (offset = 0, num = 20) => {
       const posts = INDEX.filter(p => p.actor === follower.actorId);
 
       // find most recent post
-      const mostRecent =
-        posts.sort((a, b) => {
-          if (a.published > b.published) {
-            return -1;
-          } else if (a.published < b.published) {
-            return 1;
-          } else {
-            return 0;
-          }
-        })[0]?.published || null;
+      const mostRecent = posts.sort(sortByDate)[0]?.published || null;
 
       const account = await fetchUser(follower.actorId);
 
