@@ -8,6 +8,10 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-29
+- Introduced a background queue system for handling outbound HTTP requests.
+- Fixed follows - outbound follow requests got disabled on 01/23! Oops! 
+
 ## 2023-01-23
 - Added linting and code prettification as a pre-commit hook
 - Added Github actions to run linter rules and enforce them on PRs
