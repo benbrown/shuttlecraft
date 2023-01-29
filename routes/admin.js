@@ -1,4 +1,5 @@
-import { getActivity, getActivitySince, getActivityStream } from '../lib/notes.js';
+import { getActivity } from '../lib/notes.js';
+import { getActivitySince, getActivityStream, getFullPostDetails } from '../lib/theAlgorithm.js';
 import express from 'express';
 import debug from 'debug';
 import {
@@ -39,49 +40,15 @@ router.get('/index', async (req, res) => {
 
  */
 router.get('/', async (req, res) => {
-  const followers = await getFollowers();
-  const following = await getFollowing();
-  const likes = await getLikes();
-  const boosts = await getBoosts();
   const offset = parseInt(req.query.offset) || 0;
   const pageSize = 20;
 
   const { activitystream, next } = await getActivityStream(pageSize, offset);
 
-  const notes = await Promise.all(
-    activitystream.map(async n => {
-      // handle boosted posts
-      if (n.note.type === 'Announce') {
-        n.boost = n.note;
-        n.booster = n.actor;
-        try {
-          n.note = await getActivity(n.boost.object);
-          const acct = await fetchUser(n.note.attributedTo);
-          n.actor = acct.actor;
-        } catch (err) {
-          console.error('Could not fetch boosted post...', n.boost.object);
-          return;
-        }
-      }
-
-      if (n.actor) {
-        n.actor.isFollowing = isFollowing(n.actor.id);
-
-        // determine if this post has already been liked
-        n.note.isLiked = !!likes.some(l => l.activityId === n.note.id);
-        n.note.isBoosted = !!boosts.some(l => l.activityId === n.note.id);
-      } else {
-        console.error('Post without an actor found', n.note.id);
-      }
-
-      return n;
-    })
-  );
-
   const feeds = await getFeedList();
 
   if (req.query.json) {
-    res.json(notes);
+    res.json(activitystream);
   } else {
     // set auth cookie
     res.cookie('token', ActivityPub.account.apikey, { maxAge: 7 * 24 * 60 * 60 * 1000 });
@@ -91,13 +58,9 @@ router.get('/', async (req, res) => {
       url: '/',
       me: ActivityPub.actor,
       offset,
-      next: notes.length === pageSize ? next : null,
-      activitystream: notes,
+      next: activitystream.length === pageSize ? next : null,
+      activitystream,
       feeds,
-      followers,
-      following,
-      followersCount: followers.length,
-      followingCount: following.length,
       prefs: getPrefs()
     });
   }
@@ -179,54 +142,9 @@ router.get('/notifications', async (req, res) => {
 });
 
 router.get('/feeds/:handle?', async (req, res) => {
-  // const following = getFollowing();
-  const likes = await getLikes();
-  const boosts = await getBoosts();
   const offset = parseInt(req.query.offset) || 0;
   const pageSize = 20;
   let feed;
-
-  const getFullPostDetails = async activityOrId => {
-    let note, actor, boost, booster;
-    try {
-      if (typeof activityOrId === 'string') {
-        note = await getActivity(activityOrId);
-      } else {
-        note = activityOrId;
-      }
-    } catch (err) {
-      console.error(err);
-      console.error('Could not load post in feed');
-      return;
-    }
-
-    const account = await fetchUser(note.attributedTo || note.actor);
-    actor = account.actor;
-
-    if (note.type === 'Announce') {
-      boost = note;
-      booster = actor;
-      try {
-        note = await getActivity(boost.object);
-        const op = await fetchUser(note.attributedTo);
-        actor = op.actor;
-      } catch (err) {
-        console.error(err);
-        console.error('Could not fetch boosted post...', boost.object);
-        return;
-      }
-    }
-
-    note.isLiked = !!likes.some(l => l.activityId === note.id);
-    note.isBoosted = !!boosts.some(l => l.activityId === note.id);
-
-    return {
-      note,
-      actor,
-      boost,
-      booster
-    };
-  };
 
   let feedcount = 20;
   if (req.query.expandfeeds) {
