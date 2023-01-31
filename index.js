@@ -16,8 +16,8 @@ import { account, webfinger, inbox, outbox, admin, notes, publicFacing } from '.
 // load process.env from .env file
 dotenv.config();
 const { USERNAME, PASS, DOMAIN, PORT } = process.env;
-[USERNAME, PASS, DOMAIN].forEach(required => {
-  if (!required) {
+['USERNAME', 'PASS', 'DOMAIN'].forEach(required => {
+  if (!process.env[required]) {
     console.error(`Missing required environment variable: \`${required}\`. Exiting.`);
     process.exit(1);
   }
