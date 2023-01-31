@@ -8,6 +8,11 @@ For now, the best way to upgrade is to pull the latest code from the main branch
 
 # CHANGE LOG
 
+## 2023-01-30
+- Fixed the missing edit button
+- Fixed a bug where people without a `name` field would show up blank in some places
+- Fixed a bug related to missing environment variables
+
 ## 2023-01-29
 - Introduced a background queue system for handling outbound HTTP requests.
 - Fixed follows - outbound follow requests got disabled on 01/23! Oops! 
