@@ -277,7 +277,7 @@ router.get('/dms/:handle?', async (req, res) => {
     prefs: getPrefs(),
     url: '/dms',
     lastIncoming: lastIncoming ? lastIncoming.id : null,
-    feeds: inboxes,
+    inboxes,
     inbox,
     feed: recipient,
     error

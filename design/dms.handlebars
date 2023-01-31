@@ -1,27 +1,38 @@
-{{#if error}}
-<div class="error">
-    {{error.message}}
-</div>
-{{else}}
-    <div class="stream">
-        {{#if feed}}
-        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a></header>
-        <div class="inbox">
-            <div class="messages" id="inbox_stream">
-                {{#each inbox}}
-                    {{> dm message=this me=../me}}
-                {{/each}}
-            </div>
-        {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
-        </div>
-        {{else}}
-            <!-- TODO: empty state? -->
-            <div class="empty">
-                Select a conversation. To create a new one, navigate to a profile.
-            </div>
-        {{/if}}
+<div id="dmInbox">
+    <div id="inboxList" class="{{#if feed}}inboxSelected{{/if}}">
+        <header>Messages</header>
+        <nav>
+            <ul>
+                {{> feeds feeds=inboxes currentFeed=feed dms=true}}
+            </ul>
+        </nav>
     </div>
-{{/if}}
+    {{#if error}}
+    <div class="error">
+        {{error.message}}
+    </div>
+    {{else}}
+        <div class="stream {{#if feed}}inboxSelected{{/if}}">
+            {{#if feed}}
+            <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a></header>
+            <div class="inbox">
+                <div class="messages" id="inbox_stream">
+                    {{#each inbox}}
+                        {{> dm message=this me=../me}}
+                    {{/each}}
+                </div>
+            {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
+            </div>
+            {{else}}
+                <!-- TODO: empty state? -->
+                <div class="empty">
+                    Select a conversation. To create a new one, navigate to a profile.
+                </div>
+            {{/if}}
+        </div>
+    {{/if}}
+</div>
+
 <script>
     app.pollForPosts();
 </script>

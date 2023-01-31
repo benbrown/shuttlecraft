@@ -21,33 +21,20 @@
                     </ul>
                 </nav>
             </div>
-            <div id="menu" {{#if nonav}}{{#unless feed}}class="active"{{/unless}}{{/if}}>
+            <div id="menu" class="{{#if nonav}}skinny{{/if}}">
                 <nav>
                     <ul id="top_nav">
-                        {{#unless nonav}}
-                        <li {{#isEq url "/"}}class="current"{{/isEq}}><a href="/private" title="Latest posts">{{prefs.icons.latest}} Latest</a><span class="badge newPostsBadge" hidden></span></li>
-                        <li {{#isEq url "/notifications"}}class="current"{{/isEq}}><a href="/private/notifications" title="Notifications">{{prefs.icons.notifications}} Notifications</a><span class="badge newNotificationsBadge" hidden></span></li>
-                        {{/unless}}
-                        {{#if nonav}}
-                        <li><a href="/private" title="Back">⬅️ Back</a></li>
-                        {{/if}}
-                        <li {{#isEq url "/dms"}}{{#unless ../feed}}class="current"{{/unless}}{{/isEq}}><a href="/private/dms" title="Private message inbox">{{prefs.icons.messages}} Messages</a><span class="badge newDMsBadge" hidden></span></li>
-                        {{#unless nonav}}
-                        <li {{#isEq url "/post"}}class="current"{{/isEq}}><a href="/private/post" title="Post something new">{{prefs.icons.post}} Compose</a></li>
-                        <li {{#isEq feed.id me.id}}class="current"{{/isEq}}><a href="/private/feeds/{{getUsername me.id}}" title="View my posts">{{prefs.icons.myPosts}} My Posts</a></li>
-                        <li {{#isEq url "/prefs"}}class="current"{{/isEq}}><a href="/private/prefs" title="Preferences">{{prefs.icons.prefs}} Prefs</a></li>
-                        <li><a href="https://github.com/benbrown/shuttlecraft/issues" title="Report a bug">Bugs & Issues 🐛</a></li>
-                        {{/unless}}
+                        <li {{#isEq url "/"}}class="current"{{/isEq}}><a href="/private" title="Latest posts">{{prefs.icons.latest}}<span> Latest</span></a><span class="badge newPostsBadge" hidden></span></li>
+                        <li {{#isEq url "/notifications"}}class="current"{{/isEq}}><a href="/private/notifications" title="Notifications">{{prefs.icons.notifications}}<span> Notifications</span></a><span class="badge newNotificationsBadge" hidden></span></li>
+                        <li {{#isEq url "/dms"}}{{#unless ../feed}}class="current"{{/unless}}{{/isEq}}><a href="/private/dms" title="Private message inbox">{{prefs.icons.messages}}<span> Messages</span></a><span class="badge newDMsBadge" hidden></span></li>
+                        <li {{#isEq url "/post"}}class="current"{{/isEq}}><a href="/private/post" title="Post something new">{{prefs.icons.post}}<span> Compose</span></a></li>
+                        <li {{#isEq feed.id me.id}}class="current"{{/isEq}}><a href="/private/feeds/{{getUsername me.id}}" title="View my posts">{{prefs.icons.myPosts}}<span> My Posts</span></a></li>
+                        <li {{#isEq url "/prefs"}}class="current"{{/isEq}}><a href="/private/prefs" title="Preferences">{{prefs.icons.prefs}}<span> Prefs</span></a></li>
+                        <li><a href="https://github.com/benbrown/shuttlecraft/issues" title="Report a bug"><span>Bugs & Issues </span>🐛</a></li>
                     </ul>
 
                     <button onclick="app.showMenu()" id="close_menu">❌</button>
                     <ul id="top_feeds">
-                        {{#if nonav}}
-                        <li style="text-align: center;">
-                            ~ Inboxes ~
-                        </li>
-                        {{/if}}
-                        {{#unless nonav}}
                         <li>
                           <form method="get" action="/private/find">
                               <label for="lookup">find a person</label>
@@ -55,16 +42,13 @@
                               <div id="lookup_results"></div>
                           </form>
                         </li>
-                        {{/unless}}
                         {{> feeds feeds=feeds currentFeed=feed dms=nonav}}
-                        {{#unless nonav}}
-                            {{#unless expandfeeds}}
-                            <li><a href="/private/following" title="Next 100" onclick="return app.loadMoreFeeds();">...</a></li></ul>
-                            {{/unless}}
+                        {{#unless expandfeeds}}
+                        <li><a href="/private/following" title="Next 100" onclick="return app.loadMoreFeeds();">...</a></li></ul>
                         {{/unless}}
                 </nav>
             </div>
-            <div id="content" {{#if nonav}}class="nonav"{{/if}}>
+            <div id="content" class="{{#if nonav}}nonav{{/if}}">
             {{{body}}}
            </div>
         </div>
