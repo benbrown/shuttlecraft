@@ -156,7 +156,9 @@ SSL-enabled endpoint.
 Use Glitch to create a new project! Glitch will provide you with hosting for your instance of Shuttlecraft,
 and you can start for FREE!
 
-[Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft)
+It all starts when you click this link -> [Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft) <--
+
+WHOA! What happened? Well, a copy of the Shuttlecraft code was sent to a new, unique, owned-by-you web server and it started getting set up. You just need to make it yours by following these steps:
 
 1. First, make sure the URL of your Glitch project is the one you like. You can change it in the "Settings" menu.
 2. Then, configure the options [as described above](#config) using the .env editor.
