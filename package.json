@@ -24,7 +24,7 @@
   "scripts": {
     "prepare": "husky install",
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "postinstall": "copy-env-cli",
     "lint": "eslint lib/. && prettier --check lib/.",
     "lint:fix": "eslint lib/. --fix && prettier --write lib/."
