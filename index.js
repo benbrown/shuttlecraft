@@ -30,22 +30,13 @@ import moment from 'moment';
 import { ActivityPub } from './lib/ActivityPub.js';
 import { ensureAccount } from './lib/account.js';
 
-import { 
-  UserProfileRouter, 
-  WebfingerRouter, 
-  inbox, 
-  outbox, 
-  admin, 
-  notes, 
-  publicFacing 
-} from './routes/index.js';
-
+import { UserProfileRouter, WebfingerRouter, inbox, outbox, admin, notes, publicFacing } from './routes/index.js';
 
 // load process.env from .env file
 dotenv.config();
 const { USERNAME, PASS, DOMAIN, PORT } = process.env;
 
-const env_variables = ['USERNAME', 'PASS', 'DOMAIN'];
+const envVariables = ['USERNAME', 'PASS', 'DOMAIN'];
 const PATH_TO_TEMPLATES = './design';
 
 /**
@@ -54,8 +45,8 @@ const PATH_TO_TEMPLATES = './design';
  * @param {string[]} env_variables - An array of environment variable names that are required.
  * @throws {Error} Throws an error and exits the process if any required environment variable is missing.
  */
-function checkRequiredEnvironmentVariables(env_variables) {
-  env_variables.forEach((reqd_variable) => {
+function checkRequiredEnvironmentVariables(envVariables) {
+  envVariables.forEach(reqdVariable => {
     /**
      * Check if the required environment variable is missing.
      * If missing, log an error message and exit the process.
@@ -64,13 +55,13 @@ function checkRequiredEnvironmentVariables(env_variables) {
      * // Example usage:
      * checkRequiredEnvironmentVariables(['PORT', 'DATABASE_URL']);
      */
-    if (!process.env[reqd_variable]) {
-      console.error(`Missing required environment variable: \`${reqd_variable}\`. Exiting.`);
+    if (!process.env[reqdVariable]) {
+      console.error(`Missing required environment variable: \`${reqdVariable}\`. Exiting.`);
       process.exit(1);
     }
   });
 }
-checkRequiredEnvironmentVariables(env_variables);
+checkRequiredEnvironmentVariables(envVariables);
 
 const app = express();
 /**
@@ -184,7 +175,7 @@ const hbs = create({
   }
 });
 
-const setExpressApp = (app) => {
+const setExpressApp = app => {
   app.set('domain', DOMAIN);
   app.set('port', process.env.PORT || PORT || 3000);
   app.set('port-https', process.env.PORT_HTTPS || 8443);
@@ -214,10 +205,9 @@ const setExpressApp = (app) => {
       extended: true
     })
   ); // support encoded bodies
-}
+};
 
 setExpressApp(app);
-
 
 /**
  * Asynchronous basic authorization function for Express.js.
@@ -255,7 +245,7 @@ const asyncAuthorizer = (username, password, callback) => {
   } else {
     return callback(null, false);
   }
-}
+};
 
 /**
  * Express.js middleware for basic user authentication using asyncAuthorizer.
@@ -294,9 +284,8 @@ const basicUserAuth = basicAuth({
    *
    * @type {boolean}
    */
-  challenge: true,
+  challenge: true
 });
-
 
 ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   const authWrapper = (req, res, next) => {
