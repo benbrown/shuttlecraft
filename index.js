@@ -32,7 +32,7 @@ import { ensureAccount } from './lib/account.js';
 
 import { 
   UserProfileRouter, 
-  webfinger, 
+  WebfingerRouter, 
   inbox, 
   outbox, 
   admin, 
@@ -318,7 +318,7 @@ ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   app.set('account', myaccount);
 
   // serve webfinger response
-  app.use('/.well-known/webfinger', cors(), webfinger);
+  app.use('/.well-known/webfinger', cors(), WebfingerRouter);
   // server user profile and follower list
   app.use('/u', cors(), UserProfileRouter);
 
