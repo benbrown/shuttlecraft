@@ -31,7 +31,7 @@ import { ActivityPub } from './lib/ActivityPub.js';
 import { ensureAccount } from './lib/account.js';
 
 import { 
-  account, 
+  UserProfileRouter, 
   webfinger, 
   inbox, 
   outbox, 
@@ -297,6 +297,7 @@ const basicUserAuth = basicAuth({
   challenge: true,
 });
 
+
 ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   const authWrapper = (req, res, next) => {
     if (req.cookies.token) {
@@ -319,7 +320,7 @@ ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   // serve webfinger response
   app.use('/.well-known/webfinger', cors(), webfinger);
   // server user profile and follower list
-  app.use('/u', cors(), account);
+  app.use('/u', cors(), UserProfileRouter);
 
   // serve individual posts
   app.use('/m', cors(), notes);
