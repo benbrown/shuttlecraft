@@ -257,6 +257,45 @@ const asyncAuthorizer = (username, password, callback) => {
   }
 }
 
+/**
+ * Express.js middleware for basic user authentication using asyncAuthorizer.
+ *
+ * @typedef {Object} BasicUserAuth
+ * @property {Function} authorize - Function to perform basic authorization using asyncAuthorizer.
+ * @property {boolean} authorizeAsync - Indicates that authorization is performed asynchronously.
+ * @property {boolean} challenge - Indicates whether to send a 401 Unauthorized response.
+ *
+ * @example
+ * // Example usage:
+ * app.use(basicUserAuth);
+ */
+const basicUserAuth = basicAuth({
+  /**
+   * Function to perform basic authorization using asyncAuthorizer.
+   *
+   * @function
+   * @param {string} username - The provided username for authorization.
+   * @param {string} password - The provided password for authorization.
+   * @param {Function} callback - The callback function to be called upon authorization completion.
+   * @param {Error} callback.error - An error object if an error occurred during authorization, or null if successful.
+   * @param {boolean} callback.authorized - A boolean indicating whether the user is authorized.
+   */
+  authorizer: asyncAuthorizer,
+
+  /**
+   * Indicates that authorization is performed asynchronously.
+   *
+   * @type {boolean}
+   */
+  authorizeAsync: true,
+
+  /**
+   * Indicates whether to send a 401 Unauthorized response.
+   *
+   * @type {boolean}
+   */
+  challenge: true,
+});
 
 ensureAccount(USERNAME, DOMAIN).then(myaccount => {
   const authWrapper = (req, res, next) => {
