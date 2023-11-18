@@ -8,7 +8,11 @@ dotenv.config();
 // const {
 //     DOMAIN
 // } = process.env;
-
+/**
+ * fetch the outbox posts given the offset term
+ * offset default by 0
+ * and publish the activity
+ */
 router.get('/', async (req, res) => {
   const { total, posts } = await getOutboxPosts(req.query.offset || 0);
   const outboxUrl = req.app.get('account').actor.outbox;

@@ -20,6 +20,9 @@ import { isIndexed } from '../lib/storage.js';
 export const router = express.Router();
 const logger = debug('ono:inbox');
 
+/**
+ * Route to the inbox page to check the requests and incoming messages
+ */
 router.post('/', async (req, res) => {
   const incomingRequest = req.body;
 
@@ -88,14 +91,14 @@ router.post('/', async (req, res) => {
           } else {
             // fetch the boosted post if it doesn't exist
             try {
-              await getActivity(incomingRequest.object);
+              getActivity(incomingRequest.object);
             } catch (err) {
               console.error('Could not fetch boosted post');
             }
 
             // log the boost itself to the activity stream
             try {
-              await createActivity(incomingRequest);
+              createActivity(incomingRequest);
             } catch (err) {
               console.error('Could not fetch boosted post...');
             }
@@ -116,7 +119,7 @@ router.post('/', async (req, res) => {
           } else if (isReplyToMyPost(incomingRequest.object)) {
             // TODO: What about replies to replies? should we traverse up a bit?
             if (!isIndexed(incomingRequest.object.id)) {
-              await createActivity(incomingRequest.object);
+              createActivity(incomingRequest.object);
               addNotification({
                 type: 'Reply',
                 actor: incomingRequest.object.attributedTo,
@@ -127,7 +130,7 @@ router.post('/', async (req, res) => {
             }
           } else if (isMention(incomingRequest.object)) {
             if (!isIndexed(incomingRequest.object.id)) {
-              await createActivity(incomingRequest.object);
+              createActivity(incomingRequest.object);
               addNotification({
                 type: 'Mention',
                 actor: incomingRequest.object.attributedTo,
@@ -138,7 +141,7 @@ router.post('/', async (req, res) => {
             }
           } else if (!incomingRequest.object.inReplyTo) {
             // this is a NEW post - most likely from a follower
-            await createActivity(incomingRequest.object);
+            createActivity(incomingRequest.object);
           } else {
             // this is a reply
             // from a following
@@ -147,12 +150,12 @@ router.post('/', async (req, res) => {
             // TODO: we may want to discard things NOT from followings
             // since they may never be seen
             // and we can always go fetch them...
-            await createActivity(incomingRequest.object);
+            createActivity(incomingRequest.object);
           }
 
           break;
         case 'Update':
-          await createActivity(incomingRequest.object);
+          createActivity(incomingRequest.object);
           break;
         default:
           logger('Unknown request type:', incomingRequest.type);

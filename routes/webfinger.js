@@ -1,6 +1,10 @@
 import express from 'express';
 export const router = express.Router();
 
+/**
+ * Take the query resource as the parameter, 
+ * send the webfinger in the response
+ */
 router.get('/', function (req, res) {
   const resource = req.query.resource;
   if (!resource || !resource.includes('acct:')) {

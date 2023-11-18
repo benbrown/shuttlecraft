@@ -2,6 +2,10 @@ import express from 'express';
 import { getFollowers } from '../lib/account.js';
 export const router = express.Router();
 
+/**
+ * Route to the account page or return the account information 
+ * given the parameter a valid user name
+ */
 router.get('/:name', function (req, res) {
   let name = req.params.name;
   if (!name) {
@@ -23,6 +27,10 @@ router.get('/:name', function (req, res) {
   }
 });
 
+/**
+ * Fetch the followers given the parameter a valid user name
+ * return the follower info as a json
+ */
 router.get('/:name/followers', function (req, res) {
   let name = req.params.name;
   if (!name) {
