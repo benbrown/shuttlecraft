@@ -365,7 +365,7 @@ router.get('/poll', async (req, res) => {
   const sinceNotifications = parseInt(req.cookies.latestNotification);
   const notifications = getNotifications().filter(n => n.time > sinceNotifications);
   const inboxIndex = getInboxIndex();
-  const unreadDM = inboxIndex
+  var unreadDM = inboxIndex != null
     ? Object.keys(inboxIndex).filter(k => {
         return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
       })?.length || 0
