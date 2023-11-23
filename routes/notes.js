@@ -6,6 +6,10 @@ dotenv.config();
 
 const { DOMAIN } = process.env;
 
+/**
+ * fetch the notes based on valid guid parameters
+ * either return the json response or to the url
+ */
 router.get('/:guid', async (req, res) => {
   const guid = req.params.guid;
   if (!guid) {

@@ -1,27 +1,38 @@
-{{#if error}}
-<div class="error">
-    {{error.message}}
-</div>
-{{else}}
-    <div class="stream">
-        {{#if feed}}
-        <header><a href="/private/dms">Inbox</a> &raquo; Messages with <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a></header>
-        <div class="inbox">
-            <div class="messages" id="inbox_stream">
-                {{#each inbox}}
-                    {{> dm message=this me=../me}}
-                {{/each}}
-            </div>
-        {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
-        </div>
-        {{else}}
-            <!-- TODO: empty state? -->
-            <div class="empty">
-                Select a conversation. To create a new one, navigate to a profile.
-            </div>
-        {{/if}}
-    </div>
-{{/if}}
+<article>
+    {{#if error}}
+        <aside class="notification error">
+            {{error.message}}
+        </aside>
+    {{else}}
+        <section class="stream">
+            {{#if feed}}
+                <header>
+                    <nav>
+                        <a href="/private/dms">Inbox</a> › 
+                        Messages with 
+                        <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a>
+                    </nav>
+                </header>
+                <div class="message-container">
+                    <ul class="messages-list" id="inbox_stream">
+                        {{#each inbox}}
+                            <li>
+                                {{> dm message=this me=../me}}
+                            </li>
+                        {{/each}}
+                    </ul>
+                    {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
+                </div>
+            {{else}}
+                <div class="empty-state">
+                    Select a conversation. To create a new one, navigate to a profile.
+                </div>
+            {{/if}}
+        </section>
+    {{/if}}
+</article>
 <script>
-    app.pollForPosts();
+    document.addEventListener('DOMContentLoaded', () => {
+        app.pollForPosts();
+    });
 </script>
