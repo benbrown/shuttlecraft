@@ -17,13 +17,47 @@ import {
 import { createActivity, recordLike, recordUndoLike, recordBoost, getActivity } from '../lib/notes.js';
 import debug from 'debug';
 import { isIndexed } from '../lib/storage.js';
-export const router = express.Router();
 const logger = debug('ono:inbox');
 
 /**
- * Route to the inbox page to check the requests and incoming messages
+ * Express.js router for handling incoming ActivityPub requests.
+ *
+ * @typedef {Object} ActivityPubRouter
+ * @property {Function} processActivity - Route handler for processing incoming ActivityPub requests.
+ *
+ * @example
+ * // Example usage:
+ * import { router as activityPubRouter } from './activityPubRouter';
+ * app.use('/activitypub', activityPubRouter);
+ */
+export const router = express.Router();
+
+/**
+ * Route handler for processing incoming ActivityPub requests.
+ *
+ * @function
+ * @async
+ * @param {Object} req - Express.js request object.
+ * @param {Object} res - Express.js response object.
+ * @returns {Promise<void>} Resolves with a success response or rejects with an error response.
+ *
+ * @throws {Error} Responds with a 403 Forbidden if the actor is blocked.
+ * @throws {Error} Responds with a 403 Forbidden if the signature validation fails.
+ *
+ * @example
+ * // Example route:
+ * // POST /activitypub
+ * activityPubRouter.post('/', activityPubHandlers.processActivity);
  */
 router.post('/', async (req, res) => {
+  /**
+   * The incoming ActivityPub request payload.
+   *
+   * @type {Object}
+   * @property {string} type - The type of the incoming request (e.g., 'Create', 'Follow', 'Like').
+   * @property {Object} actor - The actor associated with the request.
+   * @property {Object} object - The object of the request, containing the main content.
+   */
   const incomingRequest = req.body;
 
   if (incomingRequest) {
@@ -33,6 +67,13 @@ router.post('/', async (req, res) => {
 
     logger('New message', JSON.stringify(incomingRequest, null, 2));
     logger('Looking up actor', incomingRequest.actor);
+
+    /**
+     * The user object obtained from fetching the actor of the incoming request.
+     *
+     * @type {Object}
+     * @property {Object} actor - The actor object representing the user.
+     */
     const { actor } = await fetchUser(incomingRequest.actor);
 
     // FIRST, validate the actor

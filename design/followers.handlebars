@@ -1,15 +1,21 @@
-<div class="stream">
-<header>
-    <span>🤷🏽‍♂️ Followers</span>
-</header>
+<div class="followers-stream">
+    <header class="followers-header">
+        <span>🤷🏽‍♂️ Followers</span>
+    </header>
 
-{{#each followers}}
-    <div class="activity">
-        {{> personCard actor=this}}
-    </div>
-{{/each}}
+    <section class="followers-list">
+        {{#each followers}}
+            <article class="follower">
+                {{> personCard actor=this}}
+            </article>
+        {{/each}}
+    </section>
 </div>
+
 {{> peopleTools}}
+
 <script>
-    app.pollForPosts();
+    document.addEventListener('DOMContentLoaded', () => {
+        app.pollForPosts();
+    });
 </script>

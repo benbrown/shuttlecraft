@@ -1,4 +1,4 @@
-{{> peopleTools}}
+{{!-- {{> peopleTools}}
 <div class="box">
     <header>Outbound Queue</header>
     <div style="padding: 1rem;">
@@ -83,4 +83,45 @@
             <button type="submit">Update Preferences</button>
         </fieldset>
     </form>
-</div>
+</div> --}}
+
+{{> peopleTools}}
+<section class="queue-status">
+    <header class="queue-header">Outbound Queue</header>
+    <div class="queue-details">
+        {{#isEq queue.state 0}}✅{{/isEq}}
+        {{#isEq queue.state 1}}🟢{{/isEq}}
+        {{#isEq queue.state 3}}🔴{{/isEq}}
+        {{#if queue.size}}
+            <span class="queue-status-message">
+                {{#if queue.shouldRun}}Running.{{/if}}
+                {{queue.size}} items remain.
+            </span>
+        {{else}}
+            Queue empty
+        {{/if}}
+    </div>
+</section>
+
+<section class="preferences-form">
+    <header class="preferences-header">Preferences</header>
+    <form method="post" action="/private/prefs" class="preferences-settings">
+        <fieldset>
+            <legend>Interface Strings</legend>
+            <div class="form-group">
+                <label for="postButton">Post button</label>
+                <input type="text" id="postButton" name="strings.post" value="{{prefs.strings.post}}" required />
+            </div>
+        </fieldset>
+        <fieldset id="emojis">
+            <legend>Emoji Buttons</legend>
+            {{#each prefs.icons as |icon key|}}
+            <div class="emoji-setting">
+                <label for="icon-{{key}}">{{capitalize key}}</label>
+                <input type="text" id="icon-{{key}}" size="2" maxlength="2" name="icons.{{key}}" value="{{icon}}" required />
+            </div>
+            {{/each}}
+            <button type="submit" class="update-button">Update Preferences</button>
+        </fieldset>
+    </form>
+</section>
