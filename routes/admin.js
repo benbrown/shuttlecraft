@@ -365,17 +365,26 @@ router.get('/poll', async (req, res) => {
   const sinceNotifications = parseInt(req.cookies.latestNotification);
   const notifications = getNotifications().filter(n => n.time > sinceNotifications);
   const inboxIndex = getInboxIndex();
-  const unreadDM = inboxIndex != null
-    ? Object.keys(inboxIndex).filter(k => {
-        return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
-      })?.length:0;
+  if(inboxIndex != null){
+    const unreadDM = Object.keys(inboxIndex).filter(k => {
+      return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
+    })?.length;
 
-  const { activitystream } = await getActivitySince(sincePosts, true);
-  res.json({
-    newPosts: activitystream.length,
-    newNotifications: notifications.length,
-    newDMs: unreadDM
-  });
+    const { activitystream } = await getActivitySince(sincePosts, true); 
+    res.json({
+      newPosts: activitystream.length,
+      newNotifications: notifications.length,
+      newDMs: unreadDM
+    });
+  }else{
+    const unreadDM = null;
+    const { activitystream } = await getActivitySince(sincePosts, true); 
+    res.json({
+      newPosts: activitystream.length,
+      newNotifications: notifications.length,
+      newDMs: unreadDM
+    });
+  }
 });
 
 /**
