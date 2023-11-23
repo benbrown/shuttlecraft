@@ -365,11 +365,10 @@ router.get('/poll', async (req, res) => {
   const sinceNotifications = parseInt(req.cookies.latestNotification);
   const notifications = getNotifications().filter(n => n.time > sinceNotifications);
   const inboxIndex = getInboxIndex();
-  let unreadDM = inboxIndex != null
+  const unreadDM = inboxIndex != null
     ? Object.keys(inboxIndex).filter(k => {
         return !inboxIndex[k].lastRead || inboxIndex[k].lastRead < inboxIndex[k].latest;
-      })?.length || 0
-    : null;
+      })?.length:0;
 
   const { activitystream } = await getActivitySince(sincePosts, true);
   res.json({
