@@ -535,9 +535,10 @@ router.post('/prefs', (req, res) => {
 router.post('/prefsAccount', (req, res) => {
   // lget current prefs.
   const updates = req.body;
+  const bio = updates.bio;
   console.log('me ', ActivityPub.actor.name);
   console.log('GOT ACCOUNT UPDATES', updates);
-  updateAccount(updates.username, DOMAIN).then(myaccount => {
+  updateAccount(updates.username, DOMAIN, bio).then(myaccount => {
     // set the server to use the main account as its primary actor
     ActivityPub.account = myaccount;
     // app.set('account', myaccount);
