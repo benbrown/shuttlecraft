@@ -17,12 +17,14 @@ import {
   isFollowing,
   getInboxIndex,
   getInbox,
-  writeInboxIndex
+  writeInboxIndex,
+  updateAccount
 } from '../lib/account.js';
 import { fetchUser } from '../lib/users.js';
 import { getPrefs, INDEX, searchKnownUsers, updatePrefs } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
 import { queue } from '../lib/queue.js';
+const { DOMAIN } = process.env;
 export const router = express.Router();
 const logger = debug('ono:admin');
 
@@ -42,10 +44,10 @@ router.get('/index', async (req, res) => {
  |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/                                                              
 
  */
- /**
-  * Render the dashboard console in the html
-  * display the feeds
-  */
+/**
+ * Render the dashboard console in the html
+ * display the feeds
+ */
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const pageSize = 20;
@@ -83,7 +85,7 @@ router.get('/', async (req, res) => {
 
  */
 
- /**
+/**
  * Render the notifications by fetching the notification API
  */
 router.get('/notifications', async (req, res) => {
@@ -525,6 +527,23 @@ router.post('/prefs', (req, res) => {
   });
 
   updatePrefs(prefs);
+});
+
+/**
+ * Update the username preference using POST
+ */
+router.post('/prefsAccount', (req, res) => {
+  // lget current prefs.
+  const updates = req.body;
+  console.log('me ', ActivityPub.actor.name);
+  console.log('GOT ACCOUNT UPDATES', updates);
+  updateAccount(updates.username, DOMAIN).then(myaccount => {
+    // set the server to use the main account as its primary actor
+    ActivityPub.account = myaccount;
+    // app.set('account', myaccount);
+  });
+
+  res.redirect('/private');
 });
 
 const getFeedList = async (offset = 0, num = 20) => {
