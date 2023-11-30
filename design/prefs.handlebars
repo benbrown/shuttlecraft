@@ -117,7 +117,8 @@
             <legend>Emoji Buttons</legend>
             {{#each prefs.icons as |icon key|}}
             <div class="emoji-setting">
-                <label for="icon-{{key}}">{{capitalize key}}</label>
+                {{!-- <label for="icon-{{key}}">{{capitalize key}}</label> --}}
+                <label for="icon-{{key}}">{{key}}</label>
                 <input type="text" id="icon-{{key}}" size="2" maxlength="2" name="icons.{{key}}" value="{{icon}}" required />
             </div>
             {{/each}}
