@@ -5,3 +5,17 @@
     <img src="/images/avatar-unknown.png" class="avatar">
     {{/if}}
 {{#unless nolink}}</a>{{/unless}}
+
+<input type="file" id="avatarInput" accept="image/*">
+
+<script>
+    document.getElementById('avatarInput').addEventListener('change', function(event) {
+        if (event.target.files && event.target.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementsByClassName('avatar')[0].src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    });
+</script>

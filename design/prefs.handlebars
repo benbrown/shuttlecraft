@@ -133,9 +133,18 @@
                 <label for="Username">Username</label>
                 <input type="text" id="username" name="username" value="{{me.name}}" required />
             </div>
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio">{{#unless me.bio}}{{else}}{{me.bio}}{{/unless}}</textarea>
+            </div>
+
+
             <button type="submit" class="update-button">Update Account Profile</button>
+                
+
         </fieldset>
 
     </form>
+</div>
     
 </section>
