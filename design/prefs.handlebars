@@ -117,11 +117,25 @@
             <legend>Emoji Buttons</legend>
             {{#each prefs.icons as |icon key|}}
             <div class="emoji-setting">
-                <label for="icon-{{key}}">{{capitalize key}}</label>
+                {{!-- <label for="icon-{{key}}">{{capitalize key}}</label> --}}
+                <label for="icon-{{key}}">{{key}}</label>
                 <input type="text" id="icon-{{key}}" size="2" maxlength="2" name="icons.{{key}}" value="{{icon}}" required />
             </div>
             {{/each}}
             <button type="submit" class="update-button">Update Preferences</button>
         </fieldset>
     </form>
+
+     <form method="post" action="/private/prefsAccount" class="preferences-settings">
+        <fieldset>
+            <legend>Account Profile</legend>
+            <div class="form-group">
+                <label for="Username">Username</label>
+                <input type="text" id="username" name="username" value="{{me.name}}" required />
+            </div>
+            <button type="submit" class="update-button">Update Account Profile</button>
+        </fieldset>
+
+    </form>
+    
 </section>
