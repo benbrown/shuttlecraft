@@ -216,3 +216,5 @@ To block users or instances:
 - Add an entry to the file at `.data/blocks`
 - You can block a user using their actor ID (something like https://foo.bar/@jerk) or their entire domain (https://foo.bar/)
 - Restart the app 
+
+CSE 210 ROXXX

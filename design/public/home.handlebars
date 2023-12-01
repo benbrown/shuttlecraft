@@ -1,27 +1,31 @@
-<div class="profile stream">
-    <div class="follow_box">
+<article class="profile stream">
+    <section class="follow_box">
         <p>
             Follow this site on Mastodon or other fediverse clients: 
             <input type="text" value="{{user}}@{{domain}}" size="50"/>
         </p>
-    </div>
-    <div class="profileHeader">
+    </section>
+    <section class="profileHeader">
         {{#if actor.image}}
             <img src="{{actor.image.url}}">
         {{/if}}
-    </div>
-    <div class="profileToolbar">
+    </section>
+    <section class="profileToolbar">
         <div class="avatarLink">
             {{> avatar actor=actor public=true}}
         </div>
         <div class="tools">
         </div>
-    </div>
-    <div class="profileBody">
+    </section>
+    <section class="profileBody">
         <div class="profile">
             <a href="{{or actor.url actor.id}}" class="author">{{actor.name}}</a>
             <span class="handle">{{getUsername actor.id}}</span>
-
+            
+            {{#if actor.bio}}
+                <p>{{actor.bio}}</p>
+            {{/if}}
+            
             {{{actor.summary}}}
 
             {{#if actor.attachment}}
@@ -37,7 +41,7 @@
                 </dl>
             {{/if}}
         </div>
-    </div>
+    </section>
     <header>
         <span>🏠 Latest</span>
         <a href="/private" id="newPosts" class="unread" hidden></a>
@@ -87,4 +91,4 @@
         </div>
     {{/each}}
     <a href="/?offset={{next}}"  class="moreLink">More</a>
-</div>
+</article>

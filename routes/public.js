@@ -21,6 +21,10 @@ const { USERNAME, DOMAIN } = process.env;
 
 const logger = debug('notes');
 
+/**
+ * publish the post to go up the stream
+ * check all the posts below and above the threads
+ */
 const unrollThread = async (noteId, results = [], ascend = true, descend = true) => {
   let post, actor;
   let stats;
@@ -86,6 +90,9 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
   return results;
 };
 
+/**
+ * Renders the home page with the outbox posts fetched through the api
+ */
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const {
@@ -118,6 +125,9 @@ router.get('/', async (req, res) => {
   });
 });
 
+/**
+ * Fetch the feed for the user and display it in the html
+ */
 router.get('/feed', async (req, res) => {
   const {
     // total,
