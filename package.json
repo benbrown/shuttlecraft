@@ -24,7 +24,7 @@
   "scripts": {
     "prepare": "husky install",
     "start": "node index.js",
-    "test": "jest",
+    "test": "jest --coverage",
     "postinstall": "copy-env-cli",
     "lint": "eslint lib/. && prettier --check lib/.",
     "lint:fix": "eslint lib/. --fix && prettier --write lib/."
