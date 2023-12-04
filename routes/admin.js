@@ -28,8 +28,6 @@ const { DOMAIN } = process.env;
 export const router = express.Router();
 const logger = debug('ono:admin');
 
-import multer from 'multer';
-
 /**
  * Return the INDEX in form of JSON
  */
