@@ -28,6 +28,8 @@ const { DOMAIN } = process.env;
 export const router = express.Router();
 const logger = debug('ono:admin');
 
+import multer from 'multer';
+
 /**
  * Return the INDEX in form of JSON
  */
@@ -536,9 +538,10 @@ router.post('/prefsAccount', (req, res) => {
   // lget current prefs.
   const updates = req.body;
   const bio = updates.bio;
+  const img = updates.avatarInput;
   console.log('me ', ActivityPub.actor.name);
   console.log('GOT ACCOUNT UPDATES', updates);
-  updateAccount(updates.username, DOMAIN, bio).then(myaccount => {
+  updateAccount(updates.username, DOMAIN, bio, img).then(myaccount => {
     // set the server to use the main account as its primary actor
     ActivityPub.account = myaccount;
     // app.set('account', myaccount);
