@@ -1,12 +1,12 @@
 {{#unless nolink}}<a href="{{#if public}}{{or actor.url actor.id}}{{else}}/private/feeds/{{getUsername actor.id}}{{/if}}" class="avatar_link">{{/unless}}
-    {{#if actor.icon.url}}
+    {{#if actor.icon.url }}
     <img src="{{actor.icon.url}}" class="avatar">
     {{else}}
-    <img src="/images/avatar-unknown.png" class="avatar">
+    <img src="https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2247726673.jpg" class="avatar">
     {{/if}}
 {{#unless nolink}}</a>{{/unless}}
 
-<input type="file" id="avatarInput" accept="image/*">
+{{!-- <input type="file" id="avatarInput" accept="image/*">
 
 <script>
     document.getElementById('avatarInput').addEventListener('change', function(event) {
@@ -18,4 +18,4 @@
             reader.readAsDataURL(event.target.files[0]);
         }
     });
-</script>
+</script> --}}
