@@ -5,11 +5,12 @@ This was created and is maintained by [Ben Brown](https://benbrown.com).
 
 Currently, this means:
 
-- a stand-alone NodeJS web application 
+- a stand-alone NodeJS web application
 - with no external service dependencies
 - that is hostable on Glitch or commodity virtualhost
 
 Including features:
+
 - Follow people (on Mastodon, other instances)
 - Compose posts and deliver on the web, and also via ActivityPub, RSS
 - Fave, boost and reply to posts
@@ -18,9 +19,10 @@ Including features:
 - Block people or instances
 
 Not yet supported:
+
 - Media uploads
 
-## Warning: Experimental Software! 
+## Warning: Experimental Software!
 
 This software should be considered an EXPERIMENTAL PROTOTYPE.
 Do not use it to store or exchange sensitive information.
@@ -32,7 +34,7 @@ Do not use it to store or exchange sensitive information.
 
 Because of the way the Mastodon works, once you start to engage with
 users on other instances, you will start to receive traffic from a
-wide array of other instances -- not all of which is necessary or 
+wide array of other instances -- not all of which is necessary or
 relevant to you. As a result, operating this software on a small basis
 may result in unexpected amounts of incoming traffic.
 
@@ -83,7 +85,7 @@ When you are ready to start, run:
 ## Config
 
 Initial configuration of your instance is done by editing the
-.env file to include your desired USERNAME, PASSWORD, and DOMAIN NAME.
+.env file to include your desired USER_NAME, PASSWORD, and DOMAIN NAME.
 These values MUST BE SET before you launch the application, as
 they are used to generate your account details, including your
 Fediverse actor ID.
@@ -91,13 +93,13 @@ Fediverse actor ID.
 In the .env file, put:
 
 ```
-USERNAME=yourusername
+USER_NAME=yourusername
 PASS=yourpasswordforadmintools
 DOMAIN=yourdomainname
 PORT=3000
 ```
 
-USERNAME and PASS are required to login to the private dashboard tools.
+USER_NAME and PASS are required to login to the private dashboard tools.
 
 When you launch the app for the first time, these values will be used
 to create the `.data/account.json` file which is the source of your
@@ -111,17 +113,14 @@ the real URL served by this app. Also note that it is embedded in
 every post you write - so if you change values in the `account.json` file,
 your previous posts may break.
 
-
 ## Login
 
 To login, visit `https://yourdomain.com/private` and provide the username and password from your .env file
 
-
-
 ## Debugging
 
 If you want more logging or want to see what is happening in the background,
-enable debugging by adding DEBUG=ono:* to the .env file, or starting the app
+enable debugging by adding DEBUG=ono:\* to the .env file, or starting the app
 with:
 
 `DEBUG=ono:* npm start`
@@ -139,9 +138,8 @@ Cached user information is in `.data/users`
 
 Follower list, following list, like list, boost list, block list,
 and notifications can all be found in their own files at the root
-of the `.data` folder. This is your data! Back it up if you care 
+of the `.data` folder. This is your data! Back it up if you care
 about it.
-
 
 ## Host
 
@@ -173,6 +171,7 @@ WHOA! What happened? Well, a copy of the Shuttlecraft code was sent to a new, un
 4. Configure your domain to proxy requests to the localhost port.
 
 A sample `Caddyfile` is included in the repo. [Install Caddy](https://caddyserver.com/download) and run:
+
 ```
 caddy run --config Caddyfile
 ```
@@ -186,33 +185,37 @@ caddy run --config Caddyfile
    ```
 3. Test locally:
    ```
-   docker run -e PORT=3000 -e DOMAIN="your-domain.com" -e USERNAME="yourUsername" -e PASS="yourPassword" -p "3000:3000" "${yourRegistryUsername}/shuttlecraft"
+   docker run -e PORT=3000 -e DOMAIN="your-domain.com" -e USER_NAME="yourUsername" -e PASS="yourPassword" -p "3000:3000" "${yourRegistryUsername}/shuttlecraft"
    ```
 4. Push the image to your registry:
    ```
    docker push "${yourRegistryUsername}/shuttlecraft:latest"
    ```
-5. Deploy the image to your container platform with the required environment variables (`DOMAIN`, `USERNAME`, `PASS`). 
-6. Configure a web service to proxy requests to the container port and provide HTTPS (see "Reverse proxy" above). 
+5. Deploy the image to your container platform with the required environment variables (`DOMAIN`, `USER_NAME`, `PASS`).
+6. Configure a web service to proxy requests to the container port and provide HTTPS (see "Reverse proxy" above).
 
 ## Customize
 
 This app uses HandlebarsJS for templating.
 
 Customize the public pages:
+
 - Templates are in `design/public/home.handlebars` and `design/public/note.handlebars` and `design/layouts/public.handlebars`
 - CSS is in `public/css/main.css`
 
 Customize your avatar:
+
 - Replace `public/images/avatar.png`
 - As necessary, update the url in `.data/account.json` inside the actor.icon.url field
 
 Customize the backend:
+
 - Templates are in `design/dashboard.handlebars` and `design/notifications.handlebars` and `design/layouts/private.handlebars`
 - Some common components in `design/partials`
 - CSS in `public/css/secret.css`
 
 To block users or instances:
+
 - Add an entry to the file at `.data/blocks`
 - You can block a user using their actor ID (something like https://foo.bar/@jerk) or their entire domain (https://foo.bar/)
-- Restart the app 
+- Restart the app

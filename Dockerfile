@@ -17,7 +17,7 @@ COPY . .
 # Env Vars
 ENV PORT=3000
 ENV DOMAIN=""
-ENV USERNAME=""
+ENV USER_NAME=""
 ENV PASS=""
 
 # Expose port

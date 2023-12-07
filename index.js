@@ -34,9 +34,9 @@ import { UserProfileRouter, WebfingerRouter, inbox, outbox, admin, notes, public
 
 // load process.env from .env file
 dotenv.config();
-const { USERNAME, PASS, DOMAIN, PORT } = process.env;
+const { USER_NAME, PASS, DOMAIN, PORT } = process.env;
 
-const envVariables = ['USERNAME', 'PASS', 'DOMAIN'];
+const envVariables = ['USER_NAME', 'PASS', 'DOMAIN'];
 const PATH_TO_TEMPLATES = './design';
 
 /**
@@ -231,7 +231,7 @@ setExpressApp(app);
 const asyncAuthorizer = (username, password, callback) => {
   let isAuthorized = false;
   // Check if the provided password matches the hardcoded username
-  const isPasswordAuthorized = username === USERNAME;
+  const isPasswordAuthorized = username === USER_NAME;
 
   // Check if the provided username matches the hardcoded password
   const isUsernameAuthorized = password === PASS;
@@ -287,7 +287,7 @@ const basicUserAuth = basicAuth({
   challenge: true
 });
 
-ensureAccount(USERNAME, DOMAIN).then(myaccount => {
+ensureAccount(USER_NAME, DOMAIN).then(myaccount => {
   const authWrapper = (req, res, next) => {
     if (req.cookies.token) {
       if (req.cookies.token === myaccount.apikey) {

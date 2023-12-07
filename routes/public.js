@@ -17,7 +17,7 @@ import { fetchUser } from '../lib/users.js';
 export const router = express.Router();
 dotenv.config();
 
-const { USERNAME, DOMAIN } = process.env;
+const { USER_NAME, DOMAIN } = process.env;
 
 const logger = debug('notes');
 
@@ -121,7 +121,7 @@ router.get('/', async (req, res) => {
     layout: 'public',
     next: offset + posts.length,
     domain: DOMAIN,
-    user: USERNAME
+    user: USER_NAME
   });
 });
 
@@ -135,7 +135,7 @@ router.get('/feed', async (req, res) => {
   } = await getOutboxPosts(0);
 
   const feed = new RSS({
-    title: `${USERNAME}@${DOMAIN}`,
+    title: `${USER_NAME}@${DOMAIN}`,
     site_url: DOMAIN,
     pubDate: posts[0].published
   });
@@ -187,7 +187,7 @@ router.get('/notes/:guid', async (req, res) => {
         activitystream: notes,
         layout: 'public',
         domain: DOMAIN,
-        user: USERNAME
+        user: USER_NAME
       });
     }
   }
