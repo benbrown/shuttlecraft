@@ -1,6 +1,6 @@
 <article>
     {{#if error}}
-        <aside class="notification error">
+        <aside class="error">
             {{error.message}}
         </aside>
     {{else}}
@@ -8,13 +8,13 @@
             {{#if feed}}
                 <header>
                     <nav>
-                        <a href="/private/dms">Inbox</a> › 
+                        <a href="/private/dms">Inbox</a> &raquo;
                         Messages with 
                         <a href="/private/feeds/{{getUsername feed.id}}">{{feed.preferredUsername}}</a>
                     </nav>
                 </header>
-                <div class="message-container">
-                    <ul class="messages-list" id="inbox_stream">
+                <div class="inbox">
+                    <ul class="messages" id="inbox_stream">
                         {{#each inbox}}
                             <li>
                                 {{> dm message=this me=../me}}
@@ -24,7 +24,7 @@
                     {{> minicomposer inReplyTo=lastIncoming to=feed.id}}
                 </div>
             {{else}}
-                <div class="empty-state">
+                <div class="empty">
                     Select a conversation. To create a new one, navigate to a profile.
                 </div>
             {{/if}}

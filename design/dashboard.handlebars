@@ -1,7 +1,7 @@
 <div class="stream">
     <header class="stream-header">
         <span>{{prefs.icons.latest}} Latest</span>
-        <a href="/private" id="newPosts" class="unread-link" hidden></a>
+        <a href="/private" id="newPosts" class="unread" hidden></a>
     </header>
     <main id="home_stream">
         {{#if activitystream}}
@@ -9,7 +9,7 @@
                 <article class="activity">
                     {{#with this}}
                         {{#if boost}}
-                            <section class="boost-notification">
+                            <section class="boost">
                                 🚀 Boosted by 
                                 <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
                             </section>
@@ -19,7 +19,7 @@
                 </article>
             {{/each}}
         {{else}}
-            <div class="empty-state">
+            <div class="empty">
                 <p>Follow some people to fill your feed with posts.</p>
                 <p>Suggestion: Follow 
                     <a href="/private/feeds/benbrown@hackers.town">benbrown@hackers.town</a>
@@ -30,7 +30,7 @@
 
     {{#if next}}
         <footer>
-            <a href="/private?offset={{next}}" class="more-link">More</a>
+            <a href="/private?offset={{next}}" class="moreLink">More</a>
         </footer>
     {{/if}}
 </div>
