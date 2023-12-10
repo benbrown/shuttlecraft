@@ -1,45 +1,39 @@
-<div class="content-area">
-    {{#if error}}
-        <aside class="error">
-            {{error.message}}
-        </aside>
-    {{else}}
-        <section class="stream">
-            {{#if feed}}
-                {{> profileHeader actor=feed nobio=true}}
-            {{/if}}
-
-            {{#if activitystream}}
-                {{#each activitystream}}
-                    {{#with this}}
-                        <article class="activity">
-                            {{#if boost}}
-                                <div class="boost">
-                                    🚀 Boosted by 
-                                    <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
-                                </div>
-                                {{> note note=note}}
-                            {{else}}
-                                {{> note note=note hidebyline=true}}
-                            {{/if}}
-                        </article>
-                    {{/with}}
-                {{/each}}
-            {{else}}
-                <div class="empty">
-                    No posts. <a href="/private/feeds/{{getUsername feed.id}}">Reload</a>
-                </div>
-            {{/if}}
-
-            {{#if next}}
-                <footer class="pagination">
-                    <a href="?offset={{next}}" class="moreLink">More</a>
-                </footer>
-            {{/if}}
-        </section>
-    {{/if}}
+{{#if error}}
+<div class="error">
+    {{error.message}}
 </div>
+{{else}}
+    <div class="stream">
+        {{#if feed}} 
+        {{> profileHeader actor=feed nobio=true}}
+        {{/if}}
+        {{#if activitystream}}
+            {{#each activitystream}}
+                {{#with this}}
+                    <div class="activity">
+                        {{#if boost}}
+                            <div class="boost">
+                            🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
+                            </div>
+                            {{> note note=note}}
+                        {{else}}
+                            {{> note note=note hidebyline=true}}
+                        {{/if}}
+                    </div>
+                {{/with}}
+            {{/each}}
+        {{else}}
+            <!-- TODO: empty state? -->
+            <div class="empty">
+                No posts. <a href="/private/feeds/{{getUsername feed.id}}">Reload</a>
+            </div>
+        {{/if}}
 
+        {{#if next}}
+        <a href="?offset={{next}}" class="moreLink">More</a>
+        {{/if}}
+
+    </div>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         app.pollForPosts();

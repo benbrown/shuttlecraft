@@ -1,102 +1,7 @@
-{{!-- {{> peopleTools}}
-<div class="box">
-    <header>Outbound Queue</header>
-    <div style="padding: 1rem;">
-        {{#isEq queue.state 0}}✅{{/isEq}}
-        {{#isEq queue.state 1}}🟢{{/isEq}}
-        {{#isEq queue.state 3}}🔴{{/isEq}}
-        {{#if queue.size}}
-        {{#if queue.shouldRun}}Running.{{/if}}
-        {{queue.size}} items remain.
-        {{else}}
-        Queue empty
-        {{/if}}
-    </div>
-</div>
-<div class="box">
-    <header>Preferences</header>
-    <form method="post" action="/private/prefs">
-        <fieldset>
-            <legend>
-                Interface Strings
-            </legend>
-
-            <p>
-                <label for="post">Post button</label>
-                <input type="string" name="strings.post" value="{{prefs.strings.post}}" required />
-            </p>
-        </fieldset>
-        <fieldset id="emojis">
-            <legend>
-                Emoji Buttons
-            </legend>
-
-            <p>
-                <label for="post">Mascot</label>
-                <input type="string" size="2" maxlength="2" name="icons.mascot" value="{{prefs.icons.mascot}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Latest</label>
-                <input type="string" size="2" maxlength="2" name="icons.latest" value="{{prefs.icons.latest}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Notifications</label>
-                <input type="string" size="2" maxlength="2" name="icons.notifications"
-                    value="{{prefs.icons.notifications}}" required />
-            </p>
-            <p>
-                <label for="post">Messages</label>
-                <input type="string" size="2" maxlength="2" name="icons.messages" value="{{prefs.icons.messages}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Post</label>
-                <input type="string" size="2" maxlength="2" name="icons.post" value="{{prefs.icons.post}}" required />
-            </p>
-            <p>
-                <label for="post">My Posts</label>
-                <input type="string" size="2" maxlength="2" name="icons.myPosts" value="{{prefs.icons.myPosts}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Prefs</label>
-                <input type="string" size="2" maxlength="2" name="icons.prefs" value="{{prefs.icons.prefs}}" required />
-            </p>
-            <p>
-                <label for="post">Fave (off)</label>
-                <input type="string" size="2" maxlength="2" name="icons.faveInactive"
-                    value="{{prefs.icons.faveInactive}}" required />
-            </p>
-            <p>
-                <label for="post">Fave (on)</label>
-                <input type="string" size="2" maxlength="2" name="icons.faveActive" value="{{prefs.icons.faveActive}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Boost (off)</label>
-                <input type="string" size="2" maxlength="2" name="icons.boostInactive"
-                    value="{{prefs.icons.boostInactive}}" required />
-            </p>
-            <p>
-                <label for="post">Boost (on)</label>
-                <input type="string" size="2" maxlength="2" name="icons.boostActive" value="{{prefs.icons.boostActive}}"
-                    required />
-            </p>
-            <p>
-                <label for="post">Reply</label>
-                <input type="string" size="2" maxlength="2" name="icons.reply" value="{{prefs.icons.reply}}" required />
-            </p>
-
-            <button type="submit">Update Preferences</button>
-        </fieldset>
-    </form>
-</div> --}}
 
 {{> peopleTools}}
 <section class="queue-status">
-    <header class="queue-header">Outbound Queue</header>
+    <header class="queue-header" >Outbound Queue</header>
     <div class="queue-details">
         {{#isEq queue.state 0}}✅{{/isEq}}
         {{#isEq queue.state 1}}🟢{{/isEq}}
@@ -147,32 +52,65 @@
                 <label for="bio">Bio</label>
                 <textarea id="bio" name="bio">{{#unless me.bio}}{{else}}{{me.bio}}{{/unless}}</textarea>
             </div>
-            <div class="form-group">
+            <div class="avatar-table">
+    <table>
+        <tr>
+            <!-- Row 1 with 6 avatars -->
+            <td>
                 <input type="radio" id="avatarInput1" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar1.png">
-                <label for="avatar1"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar1.png" alt="Avatar 1" width="40px" height="40px"/></label>
+                <label for="avatarInput1"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar1.png" alt="Avatar 1" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput2" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar2.png">
-                <label for="avatar2"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar2.png" alt="Avatar 2" width="40px" height="40px"/></label>
+                <label for="avatarInput2"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar2.png" alt="Avatar 2" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput3" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar3.png">
-                <label for="avatar3"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar3.png" alt="Avatar 3" width="40px" height="40px"/></label>
+                <label for="avatarInput3"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar3.png" alt="Avatar 3" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput4" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar4.png">
-                <label for="avatar4"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar4.png" alt="Avatar 4" width="40px" height="40px"/></label>
+                <label for="avatarInput4"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar4.png" alt="Avatar 4" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput5" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar5.png">
-                <label for="avatar5"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar5.png" alt="Avatar 5" width="40px" height="40px"/></label>
+                <label for="avatarInput5"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar5.png" alt="Avatar 5" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput6" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar6.png">
-                <label for="avatar6"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar6.png" alt="Avatar 6" width="40px" height="40px"/></label>
+                <label for="avatarInput6"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar6.png" alt="Avatar 6" width="40px" height="40px"/></label>
+            </td>
+        </tr>
+        <tr>
+            <!-- Row 2 with 6 avatars -->
+            <td>
                 <input type="radio" id="avatarInput7" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar7.png">
-                <label for="avatar7"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar7.png" alt="Avatar 7" width="40px" height="40px"/></label>
+                <label for="avatarInput7"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar7.png" alt="Avatar 7" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput8" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar8.png">
-                <label for="avatar8"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar8.png" alt="Avatar 8" width="40px" height="40px"/></label>
+                <label for="avatarInput8"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar8.png" alt="Avatar 8" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput9" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar9.png">
-                <label for="avatar9"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar9.png" alt="Avatar 9" width="40px" height="40px"/></label>
+                <label for="avatarInput9"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar9.png" alt="Avatar 9" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput10" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar10.png">
-                <label for="avatar10"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar10.png" alt="Avatar 10" width="40px" height="40px"/></label>
+                <label for="avatarInput10"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar10.png" alt="Avatar 10" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput11" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar11.png">
-                <label for="avatar11"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar11.png" alt="Avatar 11" width="40px" height="40px"/></label>
+                <label for="avatarInput11"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar11.png" alt="Avatar 11" width="40px" height="40px"/></label>
+            </td>
+            <td>
                 <input type="radio" id="avatarInput12" name="avatarInput" value="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar12.png">
-                <label for="avatar11"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar12.png" alt="Avatar 12" width="40px" height="40px"/></label>
-            </div>
+                <label for="avatarInput12"><img src="https://raw.githubusercontent.com/sora1998/avatar_repo/main/avatar12.png" alt="Avatar 12" width="40px" height="40px"/></label>
+            </td>
+        </tr>
+    </table>
+</div>
+
             <button type="submit" class="update-button">Update Account Profile</button>
 
 
