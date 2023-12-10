@@ -1,19 +1,19 @@
 <div class="stream">
     <header class="notification-header">
         <span>{{prefs.icons.notifications}} Notifications</span>
-        <a href="/private/notifications" id="newNotifications" class="unread-indicator" hidden></a>
+        <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
     </header>
 
     <section class="notification-list">
         {{#each notifications}}
-            <article class="notification-item">
+            <article class="activity">
                 {{#with this}}
                     {{#isEq notification.type "Announce"}}
-                        <div class="notification-announce">
+                        <div class="notification">
                             🚀 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> boosted 
                             <a href="{{../note.id}}">your post</a> {{timesince ../time}}
                         </div>
-                        <div class="post-preview">
+                        <div class="preview">
                             {{{...note.content}}}
                         </div>
                     {{/isEq}}
@@ -21,22 +21,22 @@
                         {{> note actor=../actor note=../note}}
                     {{/isEq}}
                     {{#isEq notification.type "Mention"}}
-                        <div class="notification-mention">
+                        <div class="notification">
                             💬 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> mentioned you {{timesince ../time}}
                         </div>
                         {{> note actor=../actor note=../note}}
                     {{/isEq}}
                     {{#isEq notification.type "Like"}}
-                        <div class="notification-like">
+                        <div class="notification">
                             ⭐️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> liked 
                             <a href="{{../note.id}}">your post</a>  {{timesince ../time}}
                         </div>
-                        <div class="post-preview">
+                        <div class="preview">
                             {{{...note.content}}}
                         </div>
                     {{/isEq}}
                     {{#isEq notification.type "Follow"}}
-                        <div class="notification-follow">
+                        <div class="notification">
                             🤷🏽‍♂️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> followed you {{timesince ../time}}
                         </div>
                         {{> byline actor=../actor}}
@@ -48,7 +48,7 @@
 
     {{#if next}}
         <footer class="more-notifications">
-            <a href="/private/notifications?offset={{next}}" class="more-link">More</a>
+            <a href="/private/notifications?offset={{next}}" class="moreLink">More</a>
         </footer>
     {{/if}}
 </div>

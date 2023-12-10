@@ -1,6 +1,6 @@
 <div class="content-area">
     {{#if error}}
-        <aside class="error-message">
+        <aside class="error">
             {{error.message}}
         </aside>
     {{else}}
@@ -12,9 +12,9 @@
             {{#if activitystream}}
                 {{#each activitystream}}
                     {{#with this}}
-                        <article class="activity-post">
+                        <article class="activity">
                             {{#if boost}}
-                                <div class="boost-notice">
+                                <div class="boost">
                                     🚀 Boosted by 
                                     <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
                                 </div>
@@ -26,14 +26,14 @@
                     {{/with}}
                 {{/each}}
             {{else}}
-                <div class="empty-state">
+                <div class="empty">
                     No posts. <a href="/private/feeds/{{getUsername feed.id}}">Reload</a>
                 </div>
             {{/if}}
 
             {{#if next}}
                 <footer class="pagination">
-                    <a href="?offset={{next}}" class="more-link">More</a>
+                    <a href="?offset={{next}}" class="moreLink">More</a>
                 </footer>
             {{/if}}
         </section>
