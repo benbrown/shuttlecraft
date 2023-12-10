@@ -1,36 +1,36 @@
 <div class="stream">
-    <header class="stream-header">
-        <span>{{prefs.icons.latest}} Latest</span>
-        <a href="/private" id="newPosts" class="unread-link" hidden></a>
-    </header>
-    <main id="home_stream">
-        {{#if activitystream}}
-            {{#each activitystream}}
-                <article class="activity">
-                    {{#with this}}
-                        {{#if boost}}
-                            <section class="boost-notification">
-                                🚀 Boosted by 
-                                <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
-                            </section>
-                        {{/if}}
-                        {{> note note=note me=../me}}
-                    {{/with}}
-                </article>
-            {{/each}}
-        {{else}}
-            <div class="empty-state">
-                <p>Follow some people to fill your feed with posts.</p>
-                <p>Suggestion: Follow 
-                    <a href="/private/feeds/benbrown@hackers.town">benbrown@hackers.town</a>
-                </p>
-            </div>
-        {{/if}}
-    </main>
+<header>
+    <span>{{prefs.icons.latest}} Latest</span>
+    <a href="/private" id="newPosts" class="unread" hidden></a>
+</header>
+<div id="home_stream">
+    {{#if activitystream}}
+        {{#each activitystream}}
+            {{#with this}}
+                <div class="activity">
+                    {{#if boost}}
+                        <div class="boost">
+                        🚀 boosted by <a href="/private/feeds/{{getUsername booster.id}}">{{booster.name}}</a>
+                        </div>
+                    {{/if}}
+                    {{> note note=note me=../me}}
+                </div>
+            {{/with}}
+        {{/each}}
+    {{else}}
+        <div class="empty">
+            <p>Follow some people to fill your feed with posts.</p>
+            <p>I suggest following me! 
+                I'm <a href="/private/feeds/benbrown@hackers.town">benbrown@hackers.town</a>
+            </p>
+        </div>
+    {{/if}}
+</div>
+
 
     {{#if next}}
         <footer>
-            <a href="/private?offset={{next}}" class="more-link">More</a>
+            <a href="/private?offset={{next}}" class="moreLink">More</a>
         </footer>
     {{/if}}
 </div>
