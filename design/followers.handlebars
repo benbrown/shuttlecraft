@@ -1,17 +1,14 @@
 <div class="stream">
-    <header class="followers-header">
-        <span>🤷🏽‍♂️ Followers</span>
-    </header>
+<header>
+    <span>🤷🏽‍♂️ Followers</span>
+</header>
 
-    <section class="followers-list">
-        {{#each followers}}
-            <article class="activity">
-                {{> personCard actor=this}}
-            </article>
-        {{/each}}
-    </section>
+{{#each followers}}
+    <div class="activity">
+        {{> personCard actor=this}}
+    </div>
+{{/each}}
 </div>
-
 {{> peopleTools}}
 
 <script>

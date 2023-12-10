@@ -1,32 +1,24 @@
-<section class="stream">
+<div class="stream">
     <header>
-        <form method="get" action="/private/find" class="search-form">
-            <label for="lookup">Find People</label>
-            <input 
-                type="search" 
-                placeholder="user@instance.town" 
-                id="lookup" 
-                name="handle" 
-                aria-label="Search for people"
-                value="{{query}}" />
-            {{!-- <button type="submit" class="search-button">Search</button> --}}
+        <form method="get" action="/private/find">
+        <label for="lookup">Find People</label>
+        <input type="search" placeholder="user@instance.town" id="lookup" name="handle" value="{{query}}" />
         </form>
-    </header>
 
+    </header>
     {{#if results}}
-        <div class="results-container">
-            {{#each results}}
-                <div class="activity">
-                    {{> personCard actor=this nobio=true}}
-                </div>
-            {{/each}}
-        </div>
+        {{#each results}}
+            <div class="activity">
+                {{> personCard actor=this nobio=true}}
+            </div>
+        {{/each}}
     {{else}}
         <div class="activity">
-            No results found.
+            Nobody results
         </div>
     {{/if}}
-</section>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         app.pollForPosts();

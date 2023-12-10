@@ -1,56 +1,42 @@
 <div class="stream">
-    <header class="notification-header">
-        <span>{{prefs.icons.notifications}} Notifications</span>
-        <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
-    </header>
+<header>
+    <span>{{prefs.icons.notifications}} Notifications</span>
+    <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
+</header>
+{{#each notifications}}
+    <div class="activity">
+    {{#with this}}
+        {{#isEq notification.type "Announce"}}
+            <div class="notification">🚀 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
+            <div class="preview">
+                {{{...note.content}}}
+            </div>
+        {{/isEq}}
+        {{#isEq notification.type "Reply"}}
+            {{> note actor=../actor note=../note}}
+        {{/isEq}}
+        {{#isEq notification.type "Mention"}}
+            <div class="notification">💬 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> mentioned you {{timesince ../time}}</div>
+            {{> note actor=../actor note=../note}}
+        {{/isEq}}
+        {{#isEq notification.type "Like"}}
+            <div class="notification">⭐️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> liked <a href="{{../note.id}}">your post</a>  {{timesince ../time}}</div>
+            <div class="preview">
+                {{{...note.content}}}
+            </div>
+        {{/isEq}}
+        {{#isEq notification.type "Follow"}}
+            <div class="notification">🤷🏽‍♂️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> followed you {{timesince ../time}}</div>
+            {{> byline actor=../actor}}
+        {{/isEq}}
+    {{/with}}
+    </div>
+{{/each}}
 
-    <section class="notification-list">
-        {{#each notifications}}
-            <article class="activity">
-                {{#with this}}
-                    {{#isEq notification.type "Announce"}}
-                        <div class="notification">
-                            🚀 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> boosted 
-                            <a href="{{../note.id}}">your post</a> {{timesince ../time}}
-                        </div>
-                        <div class="preview">
-                            {{{...note.content}}}
-                        </div>
-                    {{/isEq}}
-                    {{#isEq notification.type "Reply"}}
-                        {{> note actor=../actor note=../note}}
-                    {{/isEq}}
-                    {{#isEq notification.type "Mention"}}
-                        <div class="notification">
-                            💬 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> mentioned you {{timesince ../time}}
-                        </div>
-                        {{> note actor=../actor note=../note}}
-                    {{/isEq}}
-                    {{#isEq notification.type "Like"}}
-                        <div class="notification">
-                            ⭐️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> liked 
-                            <a href="{{../note.id}}">your post</a>  {{timesince ../time}}
-                        </div>
-                        <div class="preview">
-                            {{{...note.content}}}
-                        </div>
-                    {{/isEq}}
-                    {{#isEq notification.type "Follow"}}
-                        <div class="notification">
-                            🤷🏽‍♂️ <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> followed you {{timesince ../time}}
-                        </div>
-                        {{> byline actor=../actor}}
-                    {{/isEq}}
-                {{/with}}
-            </article>
-        {{/each}}
-    </section>
+{{#if next}}
+<a href="/private/notifications?offset={{next}}" class="moreLink">More</a>
+{{/if}}
 
-    {{#if next}}
-        <footer class="more-notifications">
-            <a href="/private/notifications?offset={{next}}" class="moreLink">More</a>
-        </footer>
-    {{/if}}
 </div>
 
 <script>
