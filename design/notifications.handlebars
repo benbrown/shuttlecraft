@@ -3,11 +3,41 @@
     <span>{{prefs.icons.notifications}} Notifications</span>
     <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
 </header>
+{{!-- mock notification starts --}}
+    {{!-- <div class="activity notification-activity">
+        <div class="notification">🚀 <a href="/private/feeds/actor_id">username</a> boosted <a href="note id">your post</a> at time</div>
+        <div class="preview">
+            note content
+        </div>
+    </div>
+    <div class="activity notification-activity">
+        {{> note actor=../actor note=../note}}
+    </div>
+    
+    <div class="activity notification-activity">
+        <div class="notification">💬 <a href="/private/feeds/actor_id">username</a> mentioned you at time</div>
+        {{> note actor=../actor note=../note}}
+    </div>
+
+    
+    <div class="activity notification-activity">
+        <div class="notification">⭐️ <a href="/private/feeds/actor_id">username</a> liked <a href="note id">your post</a>  at time</div>
+        <div class="preview">
+            note content
+        </div>
+    </div>
+    
+    <div class="activity notification-activity">
+        <div class="notification">🤷🏽‍♂️ <a href="/private/feeds/actor_id">username</a> followed you at time</div>
+        {{> byline actor=../actor}}
+    </div> --}}
+    
+{{!-- mock notification ends --}}
 {{#each notifications}}
-    <div class="activity">
+    <div class="activity notification-activity">
     {{#with this}}
         {{#isEq notification.type "Announce"}}
-            <div class="notification">🚀 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
+            <div class="notification">🚀 <a href="/private/feeds/actor_id">{{or ../actor.name ../actor.preferredUsername}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
             <div class="preview">
                 {{{...note.content}}}
             </div>
