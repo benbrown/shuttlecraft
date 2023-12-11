@@ -1,0 +1,72 @@
+@import url('./constants.css');
+
+#content {
+  padding-bottom: 3rem;
+}
+
+#content.nonav {
+  padding-bottom: 0;
+}
+
+#content {
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow-y: auto;
+}
+
+.content {
+  font-size: medium;
+  padding-bottom: 2px;
+}
+.activity .content {
+  padding-left: calc(50px + 1rem);
+}
+
+.content_warning {
+  /* padding: 0.5rem 1rem; */
+  font-size: smaller;
+}
+
+.content_warning .tools {
+  flex-grow: 1;
+  text-align: right;
+  /* padding-right: 1rem; */
+}
+
+.content_warning .tools a {
+  margin: 0px auto;
+  padding: 0.25rem 1rem;
+  border-radius: 4px;
+  background: var(--shade);
+  text-decoration: none;
+}
+
+.content .tools {
+  flex-grow: 1;
+}
+.content .tools div {
+  display: inline-block;
+}
+.content .tools button {
+  font-size: 1rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 2rem;
+  margin-right: 0.5rem;
+}
+/* .content .tools button.active { background: var(--highlight); } */
+.content .tools button .active {
+  display: none;
+}
+.content .tools button.active .active {
+  display: block;
+}
+.content .tools button.active .inactive {
+  display: none;
+}
+
+#content {
+    padding-left: 50px;
+    padding-top: 10px;
+  }
