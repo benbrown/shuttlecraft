@@ -1,4 +1,4 @@
-        {{#unless hidebyline}}
+        {{!-- {{#unless hidebyline}}
         {{> byline actor=actor}}
         {{/unless}}
         {{#if note.summary}}
@@ -44,5 +44,48 @@
                     {{/isEq}}
                 </div>
                 <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
+            </footer>
+        </div> --}}
+
+{{!-- mock the data starting from below!!! --}}
+<div class="content content_warning">
+            <span>⚠️ summary of the notes here: ......... aka content warning</span>
+            <div class="tools">
+                <a href="#" onclick='return app.toggleCW("id");'>Toggle</a>
+            </div>
+        </div>
+        <div class="content" id="1">
+            The content of the post is here. Hi CSE 210, the code freeze is coming soon..
+{{!-- 
+            {{#if note.inReplyTo}}
+            <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
+            {{/if}} --}}
+{{!-- 
+            {{#each note.attachment}}
+                <div class="attachment">
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" loop controls type="{{../mediaType}}"></video>
+                    {{/isVideo}}
+                </div>
+            {{/each}} --}}
+            <footer>
+                <div class="tools">
+                    <button onclick='return app.replyTo("id","actor id")'>{{@root.prefs.icons.reply}}</button>
+                    <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "id")'>
+                        <span class="active">{{@root.prefs.icons.boostActive}}</span>
+                        <span class="inactive">{{@root.prefs.icons.boostInactive}}</span>
+                    </button>
+                    <button class="like" onclick='return app.toggleLike(this, "")'>
+                        <span class="active">{{@root.prefs.icons.faveActive}}</span>
+                        <span class="inactive">{{@root.prefs.icons.faveInactive}}</span>
+                    </button>
+                    <button onclick='return app.editPost("1")'>
+                        <span>✏️</span>
+                    </button>
+                </div>
+                <a href="url" class="permalink">Published</a>
             </footer>
         </div>

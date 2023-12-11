@@ -7,6 +7,18 @@
         {{#if feed}} 
         {{> profileHeader actor=feed nobio=true}}
         {{/if}}
+        {{!-- mock data begins --}}
+        <div class="activity">
+            {{!-- {{#if boost}} --}}
+                <div class="boost">
+                🚀 boosted by <a href="/private/feeds/booster">booster_name</a>
+                </div>
+                {{> note note=note}}
+            {{!-- {{else}}
+                {{> note note=note hidebyline=true}}
+            {{/if}} --}}
+        </div>
+        {{!-- mock data ends --}}
         {{#if activitystream}}
             {{#each activitystream}}
                 {{#with this}}
