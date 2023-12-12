@@ -66,10 +66,8 @@
   display: none;
 }
 
+
 #content {
-  width: 75%; /* Set the width of your child container */
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  padding-top: 1rem;
+    padding-left: 50px;
+    padding-top: 10px;
   }
