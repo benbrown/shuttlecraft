@@ -18,14 +18,14 @@
         <input type="text" id="cw" placeholder="content warning"
         {{!-- {{#if prev}}value="{{{prev.summary}}}"{{/if}} --}}
         />
-        <input id="inReplyTo" placeholder="in reply to" hidden
+        <input id="inReplyTo" class='inReplyTo' placeholder="in reply to" hidden
         {{#if prev}}
         value="{{{prev.inReplyTo}}}"
         {{else}}
         value="{{inReplyTo}}"
         {{/if}}
         />
-        <input id="to" placeholder="to" hidden value="{{to}}"
+        <input id="to" class="to" placeholder="to" hidden value="{{to}}"
         {{#if prev}}
         value="{{{prev.to}}}"
         {{else}}
