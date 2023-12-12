@@ -37,7 +37,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install Node packages
-        run: npm ci
+        run: npm install && npm ci
       - name: Get changed files
         id: changes
         run: |
