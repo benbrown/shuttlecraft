@@ -3,12 +3,7 @@ import debug from 'debug';
 import RSS from 'rss-generator';
 import dotenv from 'dotenv';
 
-import {
-  getNote,
-  isMyPost,
-  // getAccount,
-  getOutboxPosts
-} from '../lib/account.js';
+import { getNote, isMyPost, getAccount, getOutboxPosts, ifAccount } from '../lib/account.js';
 import { getActivity, getLikesForNote, getReplyCountForNote } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
@@ -94,25 +89,16 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
  * Renders the home page with the outbox posts fetched through the api
  */
 router.get('/', async (req, res) => {
+  if (!ifAccount()) {
+    console.log('No account found. Redirecting to account creation.');
+    res.redirect('/private');
+  }
   const offset = parseInt(req.query.offset) || 0;
-  const {
-    // total,
-    posts
-  } = await getOutboxPosts(offset);
+  const { posts } = await getOutboxPosts(offset);
+
+  const myaccount = getAccount();
+  ActivityPub.account = myaccount;
   const actor = ActivityPub.actor;
-  // const enrichedPosts = posts.map((post) => {
-  //   let stats;
-  //   if (isMyPost(post)) {
-  //     const likes = getLikesForNote(post.id)
-  //     stats = {
-  //       likes: likes.likes.length,
-  //       boosts: likes.boosts.length,
-  //       replies: getReplyCountForNote(post.id),
-  //     }
-  //     post.stats = stats;
-  //   }
-  //   return post;
-  // })
 
   res.render('public/home', {
     me: ActivityPub.actor,

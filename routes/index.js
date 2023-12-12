@@ -5,3 +5,4 @@ export { router as outbox } from './outbox.js';
 export { router as admin } from './admin.js';
 export { router as notes } from './notes.js';
 export { router as publicFacing } from './public.js';
+export { router as accountHandler } from './accountHandler.js';

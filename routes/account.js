@@ -1,7 +1,6 @@
 import express from 'express';
 import { getFollowers } from '../lib/account.js';
 
-
 /**
  * Express.js router for handling user profile-related routes.
  *
@@ -52,7 +51,7 @@ router.get('/:name', (req, res) => {
 
     // Check if the provided 'name' matches the stored user profile ID
     if (name !== req.app.get('account').actor.id) {
-       // Respond with a 404 Not Found if no record is found for the provided 'name'
+      // Respond with a 404 Not Found if no record is found for the provided 'name'
       return res.status(404).send(`No record found for ${name}.`);
     } else {
       // Check the 'Accept' header for JSON-LD format and respond accordingly
@@ -88,12 +87,11 @@ router.get('/:name', (req, res) => {
 router.get('/:name/followers', (req, res) => {
   // Extract the 'name' parameter from the request
   let name = req.params.name;
-  
+
   // Handle missing 'name' parameter with a 400 Bad Request response
   if (!name) {
     return res.status(400).send('Bad request.');
   } else {
-    
     // Obtain the domain from the app settings
     const domain = req.app.get('domain');
 
