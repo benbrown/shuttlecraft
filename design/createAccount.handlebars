@@ -1,0 +1,50 @@
+<h1 class='form-title'>Create User Account</h1>
+
+<form class='create-form' action='/account/create' method='POST'>
+
+  <label for='username' class='form-label'>Username:</label>
+
+  <input type='text' id='username' name='username' class='form-input' required />
+
+  <label for='password' class='form-label'>Password:</label>
+
+  <input
+    type='password'
+    id='password'
+    name='password'
+    class='form-input'
+    pattern='^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\n\t]{6,}$'
+    title='Your password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and no escape characters.'
+    required
+  />
+
+  <label for='domain' class='form-label'>Domain:</label>
+
+  <input
+    type='text'
+    id='domain'
+    name='domain'
+    class='form-input'
+    pattern='^((?:(?:(?:\w[\.-+]?)*)\w)+)((?:(?:(?:\w[\.-+]?){0,62})\w)+)\.(\w{2,6})$'
+    title='Invalid Domain'
+    required
+  />
+
+  <button type='submit' id='submit-btn' class='form-button'>
+    Create Account
+  </button>
+
+</form>
+
+<style>
+  * { margin:0; padding:0; } form.create-form { max-width: 500px; margin: 0px auto; padding: 20px; border: 1px solid
+  #ddd; border-radius: 5px; } label.form-label { display: block; margin-bottom: 5px; font-weight: bold; }
+  input#username.form-input, input#password.form-input, input#domain.form-input { width: 100%; padding: 10px; border:
+  1px solid #ccc; border-radius: 5px; box-sizing: border-box; margin-bottom: 20px; font-size: 14px; }
+  input.form-input:focus { outline: none; border-color: #3b99fc; box-shadow: 0 0 5px rgba(59, 153, 252, 0.5); }
+  button#submit-btn.form-button { display: block; width: 100%; padding: 10px; background-color: #3b99fc; color: white;
+  border: none; border-radius: 5px; font-size: 16px; cursor: pointer; } button.form-button:hover { background-color:
+  #2180d8; } .form-title { font-size: 12px; color: #777; } h1.form-title { font-size: 24px; font-weight: bold;
+  text-align: center; margin-top: 30px; color: white} @media (max-width: 600px) { h1.form-title { font-size: 18px; } }
+
+</style>

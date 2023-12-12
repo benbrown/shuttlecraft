@@ -2,7 +2,7 @@
     {{#if originalPost}}
         <Header>Reply</Header>
         <div class="activity">
-            {{> byline actor=actor}}
+            {{!-- {{> byline actor=actor}} --}}
             {{{originalPost.content}}}
         </div>
     {{else}}
@@ -16,16 +16,16 @@
         <fieldset id="composer_form">
         <textarea id="post" required placeholder="The coolest thing I can think of right now..." onfocus="this.value = this.value;">{{#if actor}}@{{getUsername actor.id}} {{/if}}{{#if prev}}{{stripHTML prev.content}}{{/if}}</textarea>
         <input type="text" id="cw" placeholder="content warning"
-        {{#if prev}}value="{{{prev.summary}}}"{{/if}}
+        {{!-- {{#if prev}}value="{{{prev.summary}}}"{{/if}} --}}
         />
-        <input id="inReplyTo" placeholder="in reply to" hidden
+        <input id="inReplyTo" class='inReplyTo' placeholder="in reply to" hidden
         {{#if prev}}
         value="{{{prev.inReplyTo}}}"
         {{else}}
         value="{{inReplyTo}}"
         {{/if}}
         />
-        <input id="to" placeholder="to" hidden value="{{to}}"
+        <input id="to" class="to" placeholder="to" hidden value="{{to}}"
         {{#if prev}}
         value="{{{prev.to}}}"
         {{else}}

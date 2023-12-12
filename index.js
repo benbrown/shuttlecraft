@@ -15,9 +15,6 @@ import dotenv from 'dotenv';
 // the Express.js framework for building web applications
 import express from 'express';
 
-// middleware for implementing basic authentication in Express
-import basicAuth from 'express-basic-auth';
-
 // the Handlebars view engine for rendering dynamic HTML content
 import { create } from 'express-handlebars';
 
@@ -27,16 +24,33 @@ import http from 'http';
 // the Moment.js library for handling dates and times
 import moment from 'moment';
 
+// ActivityPub for handling ActivityPub requests
 import { ActivityPub } from './lib/ActivityPub.js';
-import { ensureAccount } from './lib/account.js';
 
-import { UserProfileRouter, WebfingerRouter, inbox, outbox, admin, notes, publicFacing } from './routes/index.js';
+// Check if account already exists
+import { ifAccount } from './lib/account.js';
+
+// Authentication middleware
+import { handleAuthenticatedUser } from './lib/authentication.js';
+
+import {
+  UserProfileRouter,
+  WebfingerRouter,
+  inbox,
+  outbox,
+  admin,
+  notes,
+  publicFacing,
+  accountHandler
+} from './routes/index.js';
 
 // load process.env from .env file
 dotenv.config();
-const { USER_NAME, PASS, DOMAIN, PORT } = process.env;
+const DOMAIN = process.env.DOMAIN;
+const PORT = process.env.PORT;
 
-const envVariables = ['USER_NAME', 'PASS', 'DOMAIN'];
+// const envVariables = ['USER_NAME', 'PASS', 'DOMAIN'];
+const envVariables = ['DOMAIN'];
 const PATH_TO_TEMPLATES = './design';
 
 /**
@@ -63,7 +77,9 @@ function checkRequiredEnvironmentVariables(envVariables) {
 }
 checkRequiredEnvironmentVariables(envVariables);
 
-const app = express();
+export const app = express();
+// Export app
+// module.exports = app;
 /**
  * Handlebars helper functions for custom template rendering.
  *
@@ -209,128 +225,56 @@ const setExpressApp = app => {
 
 setExpressApp(app);
 
-/**
- * Asynchronous basic authorization function for Express.js.
- *
- * @param {string} username - The provided username for authorization.
- * @param {string} password - The provided password for authorization.
- * @param {Function} callback - The callback function to be called upon authorization completion.
- * @param {Error} callback.error - An error object if an error occurred during authorization, or null if successful.
- * @param {boolean} callback.authorized - A boolean indicating whether the user is authorized.
- *
- * @example
- * // Example usage:
- * asyncAuthorizer('admin', 'password123', (error, authorized) => {
- *   if (error) {
- *     console.error(error.message);
- *   } else {
- *     console.log(`User is authorized: ${authorized}`);
- *   }
- * });
- */
-const asyncAuthorizer = (username, password, callback) => {
-  let isAuthorized = false;
-  // Check if the provided password matches the hardcoded username
-  const isPasswordAuthorized = username === USER_NAME;
-
-  // Check if the provided username matches the hardcoded password
-  const isUsernameAuthorized = password === PASS;
-
-  // Set isAuthorized to true if both username and password are authorized
-  isAuthorized = isPasswordAuthorized && isUsernameAuthorized;
-
-  // Invoke the callback with the authorization result
-  if (isAuthorized) {
-    return callback(null, true);
+const authWrapper = (req, res, next) => {
+  if (ifAccount()) {
+    handleAuthenticatedUser(req, res, next);
   } else {
-    return callback(null, false);
+    res.redirect('/account/create');
   }
 };
 
-/**
- * Express.js middleware for basic user authentication using asyncAuthorizer.
- *
- * @typedef {Object} BasicUserAuth
- * @property {Function} authorize - Function to perform basic authorization using asyncAuthorizer.
- * @property {boolean} authorizeAsync - Indicates that authorization is performed asynchronously.
- * @property {boolean} challenge - Indicates whether to send a 401 Unauthorized response.
- *
- * @example
- * // Example usage:
- * app.use(basicUserAuth);
- */
-const basicUserAuth = basicAuth({
-  /**
-   * Function to perform basic authorization using asyncAuthorizer.
-   *
-   * @function
-   * @param {string} username - The provided username for authorization.
-   * @param {string} password - The provided password for authorization.
-   * @param {Function} callback - The callback function to be called upon authorization completion.
-   * @param {Error} callback.error - An error object if an error occurred during authorization, or null if successful.
-   * @param {boolean} callback.authorized - A boolean indicating whether the user is authorized.
-   */
-  authorizer: asyncAuthorizer,
+console.log(`ACCESS DASHBOARD: https://${DOMAIN}/private`);
 
-  /**
-   * Indicates that authorization is performed asynchronously.
-   *
-   * @type {boolean}
-   */
-  authorizeAsync: true,
+// set up globals
+app.set('domain', DOMAIN);
+// app.set('account', myaccount);
 
-  /**
-   * Indicates whether to send a 401 Unauthorized response.
-   *
-   * @type {boolean}
-   */
-  challenge: true
-});
+// serve webfinger response
+app.use('/.well-known/webfinger', cors(), WebfingerRouter);
+// server user profile and follower list
+app.use('/u', cors(), UserProfileRouter);
 
-ensureAccount(USER_NAME, DOMAIN).then(myaccount => {
-  const authWrapper = (req, res, next) => {
-    if (req.cookies.token) {
-      if (req.cookies.token === myaccount.apikey) {
-        return next();
-      }
-    }
-    return basicUserAuth(req, res, next);
-  };
+// serve individual posts
+app.use('/m', cors(), notes);
 
-  // set the server to use the main account as its primary actor
-  ActivityPub.account = myaccount;
-  console.log(`BOOTING SERVER FOR ACCOUNT: ${myaccount.actor.preferredUsername}`);
-  console.log(`ACCESS DASHBOARD: https://${DOMAIN}/private`);
+// handle incoming requests
+app.use('/api/inbox', cors(), inbox);
+app.use('/api/outbox', cors(), outbox);
 
-  // set up globals
-  app.set('domain', DOMAIN);
-  app.set('account', myaccount);
+// serve account creation and login
+app.use(
+  '/account',
+  cors({
+    credentials: true,
+    origin: true
+  }),
+  accountHandler
+);
 
-  // serve webfinger response
-  app.use('/.well-known/webfinger', cors(), WebfingerRouter);
-  // server user profile and follower list
-  app.use('/u', cors(), UserProfileRouter);
+// serve user dashboard
+app.use(
+  '/private',
+  cors({
+    credentials: true,
+    origin: true
+  }),
+  authWrapper,
+  admin
+);
 
-  // serve individual posts
-  app.use('/m', cors(), notes);
+app.use('/', cors(), publicFacing);
+app.use('/', express.static('public/'));
 
-  // handle incoming requests
-  app.use('/api/inbox', cors(), inbox);
-  app.use('/api/outbox', cors(), outbox);
-
-  app.use(
-    '/private',
-    cors({
-      credentials: true,
-      origin: true
-    }),
-    authWrapper,
-    admin
-  );
-  app.use('/', cors(), publicFacing);
-  app.use('/', express.static('public/'));
-
-  http.createServer(app).listen(app.get('port'), function () {
-    console.log('Express server listening on port ' + app.get('port'));
-  });
+http.createServer(app).listen(app.get('port'), function () {
+  console.log('Express server listening on port ' + app.get('port'));
 });
