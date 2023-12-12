@@ -342,7 +342,16 @@ router.get('/post', async (req, res) => {
  */
 router.post('/post', async (req, res) => {
   // TODO: this is probably supposed to be a post to /api/outbox
-  const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, req.body.editOf);
+  const post = await createNote(
+    req.body.post,
+    req.body.cw,
+    req.body.inReplyTo,
+    req.body.to,
+    req.body.editOf,
+    req.body.canReply,
+    req.body.canBoost,
+    req.body.canFave
+  );
   if (post.directMessage === true) {
     // return html partial of the new post for insertion in the feed
     res.status(200).render('partials/dm', {
