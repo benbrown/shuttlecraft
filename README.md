@@ -61,7 +61,7 @@ Please read the [contributor's guide](CONTRIBUTING.md) before sending pull reque
 
 ## Install
 
-Quick start: [Remix on Glitch](https://glitch.com/edit/#!/import/github.com/CSE-210-Team-6/shuttlecraft)
+Quick start: [Remix on Glitch](https://glitch.com/edit/#!/import/github/CSE-210-Team-6/shuttlecraft)
 
 - Remix the repo on glitch:
 `https://github.com/CSE-210-Team-6/shuttlecraft.git`
