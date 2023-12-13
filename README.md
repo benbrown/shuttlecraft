@@ -1,7 +1,7 @@
-# SHUTTLECRAFT by Ben Brown
+# SHUTTLECRAFT by the Confused Mavericks
 
 This is a project to create an "easy" way to participate in the ActivityPub "Fediverse" and other indie web protocols like RSS.
-This was created and is maintained by [Ben Brown](https://benbrown.com).
+This was created by [Ben Brown](https://benbrown.com) and enhanced by UCSD CSE 210 Team 6 (Confused Mavericks).
 
 Currently, this means:
 
@@ -11,7 +11,9 @@ Currently, this means:
 
 Including features:
 
+- Create a fediverse account
 - Follow people (on Mastodon, other instances)
+- Customize your fediverse profile
 - Compose posts and deliver on the web, and also via ActivityPub, RSS
 - Fave, boost and reply to posts
 - View notifications
@@ -40,22 +42,15 @@ may result in unexpected amounts of incoming traffic.
 
 ## Warning: Known limitations!
 
-My goal with this app is to not use any major external services.
+Our goal with this app is to not use any major external services.
 As a result, all data is written as PLAIN TEXT FILES to the disk.
 
 Right now, the app builds an IN-MEMORY INDEX of EVERY SINGLE POST.
 This will work for several thousand posts, but ... maybe not for 10,000s of posts.
-I'm not sure how far it will go. I have ideas about being able to
-shard the index into multiple files and page through it, etc. But.
 
 ALSO, there is nothing fancy happening in terms of queuing or rate
 limiting outgoing posts. When you post, it will send out HTTP requests
 right away, all at once. This may cause issues.
-
-## Acknowledgements
-
-This project owes a great debt to @dariusk's excellent [express-activitypub](https://github.com/dariusk/express-activitypub) repo.
-My work started from his reference implementation, and there are many lines of code cribbed from his work.
 
 ## Bug Reports & Contributions
 
@@ -66,26 +61,19 @@ Please read the [contributor's guide](CONTRIBUTING.md) before sending pull reque
 
 ## Install
 
-Quick start: [Remix on Glitch](#easiest-glitch)
+Quick start: [Remix on Glitch](https://glitch.com/edit/#!/import/github.com/CSE-210-Team-6/shuttlecraft)
 
-Clone the repo:
-`git clone git@github.com:benbrown/shuttlecraft.git`
+- Remix the repo on glitch:
+`https://github.com/CSE-210-Team-6/shuttlecraft.git`
 
-Enter folder:
-`cd shuttlecraft`
-
-Install node dependencies:
-`npm install`
+- Go to settings -> Edit project details -> Change the project name to what you want. This will be your website domain
 
 You are ready to run! But first, set your configuration.
-
-When you are ready to start, run:
-`npm start`
 
 ## Config
 
 Initial configuration of your instance is done by editing the
-.env file to include your desired USER_NAME, PASSWORD, and DOMAIN NAME.
+.env file to include your desired DOMAIN NAME.
 These values MUST BE SET before you launch the application, as
 they are used to generate your account details, including your
 Fediverse actor ID.
@@ -93,29 +81,22 @@ Fediverse actor ID.
 In the .env file, put:
 
 ```
-USER_NAME=yourusername
-PASS=yourpasswordforadmintools
-DOMAIN=yourdomainname
-PORT=3000
+DOMAIN={your-project-name}.glitch.me
+PORT={not required but can specify}
 ```
-
-USER_NAME and PASS are required to login to the private dashboard tools.
 
 When you launch the app for the first time, these values will be used
 to create the `.data/account.json` file which is the source of your
 public account information, and will be used for many operations.
-
-There is currently no UI built to view or manage your account. If you
-need to make updates, edit the JSON directly.
 
 HOWEVER PLEASE NOTE that your ID is a real URL, and it must reflect
 the real URL served by this app. Also note that it is embedded in
 every post you write - so if you change values in the `account.json` file,
 your previous posts may break.
 
-## Login
+## Access
 
-To login, visit `https://yourdomain.com/private` and provide the username and password from your .env file
+Access your website at `https://yourdomain.com/private`. You will be prompted to create account or login if required.
 
 ## Debugging
 
@@ -154,7 +135,7 @@ SSL-enabled endpoint.
 Use Glitch to create a new project! Glitch will provide you with hosting for your instance of Shuttlecraft,
 and you can start for FREE!
 
-It all starts when you click this link -> [Remix this project on Glitch](https://glitch.com/edit/#!/import/github/benbrown/shuttlecraft) <--
+It all starts when you click this link -> [Remix this project on Glitch](https://glitch.com/edit/#!/import/github.com/CSE-210-Team-6/shuttlecraft) <--
 
 WHOA! What happened? Well, a copy of the Shuttlecraft code was sent to a new, unique, owned-by-you web server and it started getting set up. You just need to make it yours by following these steps:
 
@@ -185,13 +166,13 @@ caddy run --config Caddyfile
    ```
 3. Test locally:
    ```
-   docker run -e PORT=3000 -e DOMAIN="your-domain.com" -e USER_NAME="yourUsername" -e PASS="yourPassword" -p "3000:3000" "${yourRegistryUsername}/shuttlecraft"
+   docker run -e PORT=3000 -e DOMAIN="your-domain.com" -p "3000:3000" "${yourRegistryUsername}/shuttlecraft"
    ```
 4. Push the image to your registry:
    ```
    docker push "${yourRegistryUsername}/shuttlecraft:latest"
    ```
-5. Deploy the image to your container platform with the required environment variables (`DOMAIN`, `USER_NAME`, `PASS`).
+5. Deploy the image to your container platform with the required environment variables (`DOMAIN`).
 6. Configure a web service to proxy requests to the container port and provide HTTPS (see "Reverse proxy" above).
 
 ## Customize
