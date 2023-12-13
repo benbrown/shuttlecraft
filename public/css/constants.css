@@ -1,13 +1,14 @@
 :root {
-    --background: #f9f9f9; /* Light gray background */
-    --text: #333; /* Dark text color */
-    --link: #1da1f2; /* Twitter blue */
-    --secondary: #666; /* Dimmed secondary text */
-    --tertiary: #e5e5e5; /* Light gray for tertiary elements */
-    --contrast: #555; /* Dark gray for contrast */
-    --separator: #1da1f2; /* Twitter blue for separators */
-    --header: #e0e0e0;
-    --shade: rgba(249, 249, 249, 0.25); /* Slight shade for depth */
-    --highlight: #888; /* Medium gray for highlights */
-    --accent: #e50b76; /* Pink accent */
-  }
+  --background: #f9f9f9; /* Light gray background */
+  --text: #333; /* Dark text color */
+  --link: #1da1f2; /* Twitter blue */
+  --secondary: #666; /* Dimmed secondary text */
+  --tertiary: #e5e5e5; /* Light gray for tertiary elements */
+  --contrast: #555; /* Dark gray for contrast */
+  --separator: #1da1f2; /* Twitter blue for separators */
+  --header: #e0e0e0;
+  --shade: rgba(249, 249, 249, 0.25); /* Slight shade for depth */
+  --highlight: #888; /* Medium gray for highlights */
+  --accent: #e50b76; /* Pink accent */
+  --authentication-color: rgb(8, 0, 115); /* Twitter blue for authentication */
+}

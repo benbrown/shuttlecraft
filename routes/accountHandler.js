@@ -8,7 +8,7 @@ export const router = express.Router();
 request to the '/create' endpoint. */
 router.get('/create', async (req, res) => {
   res.status(200).render('createAccount', {
-    layout: 'public'
+    layout: 'authentication'
   });
 });
 

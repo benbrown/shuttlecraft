@@ -1,18 +1,18 @@
 <form class='authetication-form' action='/account/login' method='POST'>
   <h1 class='form-title'>Login</h1>
 
-  <label for='username' class='form-label'>Username:</label>
+  {{! <label for='username' class='form-label'>Username:</label> }}
 
-  <input type='text' id='username' name='username' class='form-input' required />
+  <input type='text' id='username' name='username' class='form-input' placeholder='username' required />
 
-  <label for='password' class='form-label'>Password:</label>
+  {{! <label for='password' class='form-label'>Password:</label> }}
 
-  <input type='password' id='password' name='password' class='form-input' required />
+  <input type='password' id='password' name='password' class='form-input' placeholder='password' required />
   {{#if message}}
-    <p style='color: red;'>{{message}}</p>
+    <div style='color: red;'>{{message}}</div>
   {{/if}}
   <button type='submit' id='submit-btn' class='form-button'>
-    Create Account
+    Submit
   </button>
 
 </form>
