@@ -35,14 +35,6 @@
         {{#if prev}}
         <input id="editOf" value="{{{prev.id}}}" hidden/>
         {{/if}}
-        <div>
-            <input type="checkbox" id="canReply" name="canReply" checked />
-            <label for="canReply">Allow Reply</label>
-            <input type="checkbox" id="canBoost" name="canBoost" checked />
-            <label for="canBoost">Allow Boost</label>
-            <input type="checkbox" id="canFave" name="canFave" checked />
-            <label for="canFave">Allow Fave</label>
-        </div>
         <button id="submit" type="submit">{{@root.prefs.strings.post}}</button>
         </fieldset>
     </form>

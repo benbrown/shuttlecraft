@@ -196,10 +196,9 @@ const app = {
     const inReplyTo = document.getElementById('inReplyTo');
     const to = document.getElementById('to');
     const editOf = document.getElementById('editOf');
-    const canReply = document.getElementById('canReply').checked;
-    const canBoost = document.getElementById('canBoost').checked;
-    const canFave = document.getElementById('canFave').checked;
+
     const form = document.getElementById('composer_form');
+
     form.disabled = true;
 
     fetch(
@@ -210,10 +209,7 @@ const app = {
         cw: cw.value,
         inReplyTo: inReplyTo.value,
         to: to.value,
-        editOf: editOf ? editOf.value : null,
-        canReply,
-        canBoost,
-        canFave
+        editOf: editOf ? editOf.value : null
       })
     )
       .then(newHtml => {
