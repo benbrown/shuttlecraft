@@ -17,40 +17,33 @@
         <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
         {{/if}}
 
-        {{#each note.attachment}}
-            <div class="attachment">
-                {{#isImage mediaType}}
-                <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
-                {{/isImage}}
-                {{#isVideo mediaType}}
-                <video role="application" src="{{../url}}" loop controls type="{{../mediaType}}"></video>
-                {{/isVideo}}
-            </div>
-        {{/each}}
-        <footer>
-            <div class="tools">
-                {{#if note.canReply}}
-                <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>{{@root.prefs.icons.reply}}</button>
-                {{/if}}
-                {{#if note.canBoost}}
-                <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "{{note.id}}")'>
-                    <span class="active">{{@root.prefs.icons.boostActive}}</span>
-                    <span class="inactive">{{@root.prefs.icons.boostInactive}}</span>
-                </button>
-                {{/if}}
-                {{#if note.canFave}}
-                <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
-                    <span class="active">{{@root.prefs.icons.faveActive}}</span>
-                    <span class="inactive">{{@root.prefs.icons.faveInactive}}</span>
-                </button>
-                {{/if}}
-                {{#isEq note.attributedTo @root.me.id}}
-                <button onclick='return app.editPost("{{../note.id}}")'>
-                    <span>✏️</span>
-                </button>
-                {{/isEq}}
-            </div>
-            <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
-        </footer>
-    </div>
-</div>
+            {{#each note.attachment}}
+                <div class="attachment">
+                    {{#isImage mediaType}}
+                    <a href="{{../url}}" target="_blank"><img src="{{../url}}" alt="{{../name}}" /></a>
+                    {{/isImage}}
+                    {{#isVideo mediaType}}
+                    <video role="application" src="{{../url}}" loop controls type="{{../mediaType}}"></video>
+                    {{/isVideo}}
+                </div>
+            {{/each}}
+            <footer>
+                <div class="tools">
+                    <button onclick='return app.replyTo("{{note.id}}","{{{getUsername actor.id}}}")'>{{@root.prefs.icons.reply}}</button>
+                    <button class="booster {{#if note.isBoosted}}active{{/if}}" onclick='return app.toggleBoost(this, "{{note.id}}")'>
+                        <span class="active">{{@root.prefs.icons.boostActive}}</span>
+                        <span class="inactive">{{@root.prefs.icons.boostInactive}}</span>
+                    </button>
+                    <button class="like {{#if note.isLiked}}active{{/if}}" onclick='return app.toggleLike(this, "{{note.id}}")'>
+                        <span class="active">{{@root.prefs.icons.faveActive}}</span>
+                        <span class="inactive">{{@root.prefs.icons.faveInactive}}</span>
+                    </button>
+                    {{#isEq note.attributedTo @root.me.id}}
+                    <button onclick='return app.editPost("{{../note.id}}")'>
+                        <span>✏️</span>
+                    </button>
+                    {{/isEq}}
+                </div>
+                <a href="{{note.url}}" class="permalink">{{timesince note.published}}</a>
+            </footer>
+        </div>
