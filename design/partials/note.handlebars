@@ -1,21 +1,20 @@
-<div class="note-activity">
-    {{#unless hidebyline}}
-    {{> byline actor=actor}}
-    {{/unless}}
-    {{#if note.summary}}
-    <div class="content content_warning">
-        <span>⚠️ {{note.summary}}</span>
-        <div class="tools">
-            <a href="#" onclick='return app.toggleCW("{{note.id}}");'>Toggle</a>
+        {{#unless hidebyline}}
+        {{> byline actor=actor}}
+        {{/unless}}
+        {{#if note.summary}}
+        <div class="content content_warning">
+            <span>⚠️ {{note.summary}}</span>
+            <div class="tools">
+                <a href="#" onclick='return app.toggleCW("{{note.id}}");'>Toggle</a>
+            </div>
         </div>
-    </div>
-    {{/if}}
-    <div class="content {{#if note.summary}}collapsed{{/if}}" id="{{note.id}}">
-        {{{note.content}}}
-
-        {{#if note.inReplyTo}}
-        <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
         {{/if}}
+        <div class="content {{#if note.summary}}collapsed{{/if}}" id="{{note.id}}">
+            {{{note.content}}}
+
+            {{#if note.inReplyTo}}
+            <p><a href="{{note.inReplyTo}}" class="showThread">Show Thread</a></p>
+            {{/if}}
 
             {{#each note.attachment}}
                 <div class="attachment">
