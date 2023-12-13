@@ -1,0 +1,26 @@
+<html>
+
+  <head>
+    <title>{{me.preferredUsername}}</title>
+    <link rel='alternate' type='application/rss+xml' title='RSS Feed' href='https://{{domain}}/feed' />
+    <link rel='stylesheet' href='{{rootUrl}}/css/main.css' />
+    <link rel='stylesheet' href='{{rootUrl}}/css/secret.css' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+  </head>
+
+  <body class='authentication-body'>
+    <div id='wrapper'>
+      <main id='main'>
+        <section id='content'>
+          {{{body}}}
+        </section>
+      </main>
+    </div>
+  </body>
+
+</html>
+
+<style>
+  .authentication-body{ background-image: url('https://gdurl.com/490S'); background-size: cover; /* <------ */
+  background-repeat: no-repeat; background-position: center center; }
+</style>
