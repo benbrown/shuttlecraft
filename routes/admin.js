@@ -339,7 +339,16 @@ router.get('/post', async (req, res) => {
  * Update and create the post using the POST method
  */
 router.post('/post', async (req, res) => {
-  const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, req.body.editOf);
+  const post = await createNote(
+    req.body.post,
+    req.body.cw,
+    req.body.inReplyTo,
+    req.body.to,
+    req.body.editOf,
+    req.body.canReply,
+    req.body.canBoost,
+    req.body.canFave
+  );
   if (post.directMessage === true) {
     // return html partial of the new post for insertion in the feed
     res.status(200).render('partials/dm', {
