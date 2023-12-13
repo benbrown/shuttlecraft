@@ -321,7 +321,6 @@ router.get('/post', async (req, res) => {
   if (req.query.edit) {
     console.log('COMPOSING EDIT', req.query.edit);
     prev = await getNote(req.query.edit);
-    // console.log("ORIGINAL", original);
   }
 
   res.status(200).render('partials/composer', {
@@ -537,7 +536,6 @@ router.post('/prefsAccount', (req, res) => {
   const updates = req.body;
   const bio = updates.bio;
   const img = updates.avatarInput;
-  console.log('me ', ActivityPub.actor.name);
   console.log('GOT ACCOUNT UPDATES', updates);
   updateAccount(updates.username, DOMAIN, bio, img).then(myaccount => {
     // set the server to use the main account as its primary actor
