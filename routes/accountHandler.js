@@ -46,3 +46,10 @@ router.post('/login', (req, res) => {
     });
   }
 });
+
+/* The code router.get('/logout', (req, res) => { ... }) is defining a route handler for a GET
+request to the '/logout' endpoint. */
+router.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/account/login');
+});
