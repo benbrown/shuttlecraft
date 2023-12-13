@@ -96,7 +96,7 @@ your previous posts may break.
 
 ## Access
 
-Access your website at `https://yourdomain.com/private`. You will be prompted to create account or login if required.
+Access your website at `https://{yourdomain}.com/private`. You will be prompted to create account or login if required.
 
 ## Debugging
 
@@ -130,7 +130,7 @@ specified in the .env file.
 In order to play nice with the fediverse, it must be hosted on an
 SSL-enabled endpoint.
 
-### Easiest: Glitch
+### Easy: Glitch
 
 Use Glitch to create a new project! Glitch will provide you with hosting for your instance of Shuttlecraft,
 and you can start for FREE!
@@ -140,22 +140,10 @@ It all starts when you click this link -> [Remix this project on Glitch](https:/
 WHOA! What happened? Well, a copy of the Shuttlecraft code was sent to a new, unique, owned-by-you web server and it started getting set up. You just need to make it yours by following these steps:
 
 1. First, make sure the URL of your Glitch project is the one you like. You can change it in the "Settings" menu.
-2. Then, configure the options [as described above](#config) using the .env editor.
-3. Finally, login to the dashboard at `https://yourdomain.glitch.me/private`.
-4. Done!
-
-### Basic: Reverse proxy
-
-1. Clone the repo to your own server.
-2. Configure it and set it up to run on a port of your choosing.
-3. Configure Caddy or Nginx with a Certbot SSL certificate.
-4. Configure your domain to proxy requests to the localhost port.
-
-A sample `Caddyfile` is included in the repo. [Install Caddy](https://caddyserver.com/download) and run:
-
-```
-caddy run --config Caddyfile
-```
+2. Then, configure the options [as described above](#config) using the .env editor. 
+3. Finally, create and login to the dashboard at `https://yourdomain.glitch.me/private`. 
+4. It is very important that the domain you add while creating you user is `https://{yourdomain}.glitch.me`. If not this will break things!
+5. Done!
 
 ### Advanced: Docker
 

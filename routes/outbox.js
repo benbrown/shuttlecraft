@@ -86,7 +86,6 @@ router.get('/', async (req, res) => {
     collection.id = `${outboxUrl}?offset=${offset}`;
     collection.partOf = outboxUrl;
     collection.next = `${outboxUrl}?offset=${offset + 10}`;
-    // todo: stop at 0
     if (offset - 10 > 0) {
       collection.prev = `${outboxUrl}?offset=${offset - 10}`;
     } else {

@@ -87,7 +87,6 @@ router.post('/', async (req, res) => {
           logger('Incoming follow request');
           addFollower(incomingRequest);
 
-          // TODO: should wait to confirm follow acceptance?
           ActivityPub.sendAccept(actor, incomingRequest);
           break;
         case 'Undo':
@@ -158,7 +157,6 @@ router.post('/', async (req, res) => {
           if (incomingRequest.object.directMessage === true || addressedOnlyToMe(incomingRequest)) {
             await acceptDM(incomingRequest.object, incomingRequest.object.attributedTo);
           } else if (isReplyToMyPost(incomingRequest.object)) {
-            // TODO: What about replies to replies? should we traverse up a bit?
             if (!isIndexed(incomingRequest.object.id)) {
               createActivity(incomingRequest.object);
               addNotification({
@@ -188,9 +186,6 @@ router.post('/', async (req, res) => {
             // from a following
             // or from someone else who replied to a following?
             // the visibility should be determined on the feed
-            // TODO: we may want to discard things NOT from followings
-            // since they may never be seen
-            // and we can always go fetch them...
             createActivity(incomingRequest.object);
           }
 

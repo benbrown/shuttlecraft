@@ -100,7 +100,6 @@ router.get('/notifications', async (req, res) => {
     notes.map(async notification => {
       const { actor } = await fetchUser(notification.notification.actor);
       let note, original;
-      // TODO: check if user is in following list
       actor.isFollowing = isFollowing(actor.id);
 
       if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
@@ -340,7 +339,6 @@ router.get('/post', async (req, res) => {
  * Update and create the post using the POST method
  */
 router.post('/post', async (req, res) => {
-  // TODO: this is probably supposed to be a post to /api/outbox
   const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, req.body.editOf);
   if (post.directMessage === true) {
     // return html partial of the new post for insertion in the feed
@@ -672,8 +670,6 @@ router.post('/follow', async (req, res) => {
       } else {
         // send unfollow
         await ActivityPub.sendUndoFollow(actor, status.id);
-
-        // todo: this should just be a function like removeFollowing
 
         let following = getFollowing();
 

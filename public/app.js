@@ -2,7 +2,6 @@ const fetch = (url, type, payload = undefined) => {
   return new Promise((resolve, reject) => {
     const Http = new XMLHttpRequest();
     Http.open(type, url);
-    // TODO: should be a parameter
     Http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
     Http.send(payload);
 
