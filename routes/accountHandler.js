@@ -8,7 +8,7 @@ export const router = express.Router();
 request to the '/create' endpoint. */
 router.get('/create', async (req, res) => {
   res.status(200).render('createAccount', {
-    layout: 'public'
+    layout: 'authentication'
   });
 });
 
@@ -26,7 +26,7 @@ router.get('/login', (req, res) => {
     res.redirect('/account/create');
   }
   res.status(200).render('login', {
-    layout: 'public'
+    layout: 'authentication'
   });
 });
 
@@ -41,7 +41,7 @@ router.post('/login', (req, res) => {
     res.redirect('/private');
   } else {
     res.status(200).render('login', {
-      layout: 'public',
+      layout: 'authentication',
       message: "Username or password don't match"
     });
   }
