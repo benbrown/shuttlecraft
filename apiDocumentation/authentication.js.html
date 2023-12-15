@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: authentication.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: authentication.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import dotenv from 'dotenv';
+import { ensureAccount, getAccount } from './account.js';
+import { promises as fsPromises } from 'fs';
+import { ActivityPub } from './ActivityPub.js';
+
+/**
+ * The function `getUsername` retrieves the value of the `USER_NAME` environment variable.
+ * @returns The function `getUsername` is returning the value of the `USER_NAME` environment variable.
+ */
+const getUsername = () => {
+  dotenv.config();
+  const { USER_NAME } = process.env;
+  return USER_NAME;
+};
+
+/**
+ * The function `getPassword` retrieves the value of the `PASS` environment variable using the `dotenv`
+ * package.
+ * @returns The function `getPassword` is returning the value of the `PASS` environment variable.
+ */
+const getPassword = () => {
+  dotenv.config();
+  const { PASS } = process.env;
+  return PASS;
+};
+
+/**
+ * The function `authenticateLogin` checks if the provided username and password match the stored
+ * username and password.
+ * @param username - The `username` parameter is the username entered by the user during the login
+ * process.
+ * @param password - The `password` parameter is the password entered by the user during the login
+ * process.
+ * @returns a boolean value. It returns true if the provided username and password match the stored
+ * username and password, and false otherwise.
+ */
+export const authenticateLogin = (username, password) => {
+  if (username === getUsername() &amp;&amp; password === getPassword()) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * The `createAccount` function creates a new account, sets the account in the app, sets a token in a
+ * cookie, and redirects to a private route.
+ * @param req - The `req` parameter is an object that represents the HTTP request made by the client.
+ * It contains information such as the request headers, request body, request method, request URL, and
+ * other relevant details.
+ * @param res - The `res` parameter is the response object that is used to send the response back to
+ * the client. It contains methods and properties that allow you to control the response, such as
+ * setting headers, sending data, and redirecting the client to a different URL.
+ */
+export const createAccount = async (req, res) => {
+  const { username, domain } = req.body;
+
+  try {
+    await ensureAccount(username, domain);
+
+    // Set account in the app
+    const myaccount = await getAccount();
+    req.app.set('account', myaccount);
+
+    // Set token in cookie
+    res.cookie('token', myaccount.apikey);
+
+    // Redirect to private route
+    res.redirect('/private');
+  } catch (error) {
+    console.error('Error creating account:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+/**
+ * The function `writeEnvToFile` writes the values of `username`, `password`, and `domain` to a `.env`
+ * file.
+ * @param req - The `req` parameter is an object that represents the HTTP request made to the server.
+ * It contains information about the request, such as the request method, headers, and body.
+ * @param res - The `res` parameter is the response object. It is used to send a response back to the
+ * client after the operation is completed.
+ */
+export const writeEnvToFile = async (req, res) => {
+  const { username, password, domain } = req.body;
+
+  const envData = `
+    USER_NAME=${username}
+    PASS=${password}
+    DOMAIN=${domain}
+    `;
+
+  const envFilePath = './.env';
+
+  try {
+    await fsPromises.writeFile(envFilePath, envData);
+    console.log('Data has been written to .env file');
+  } catch (error) {
+    console.error('Error writing to .env file:', error);
+  }
+};
+
+/**
+ * The function checks if the user is authenticated by comparing the token in the request cookies with
+ * the API key stored in the account, and redirects to the login page if not authenticated.
+ * @param req - The `req` parameter is the request object, which contains information about the
+ * incoming HTTP request from the client. It includes properties such as the request headers, query
+ * parameters, request body, cookies, etc.
+ * @param res - The `res` parameter is the response object that is used to send a response back to the
+ * client. It contains methods and properties that allow you to control the response, such as setting
+ * headers, sending data, and redirecting the client to a different URL.
+ * @param next - The `next` parameter is a function that is used to pass control to the next middleware
+ * function in the request-response cycle. It is typically called at the end of the current middleware
+ * function to indicate that it has completed its processing and the next middleware function should be
+ * called.
+ * @returns If the condition `req.cookies.token &amp;&amp; req.cookies.token === myaccount.apikey` is true,
+ * then the `next()` function will be called, which means the control will be passed to the next
+ * middleware function in the request-response cycle.
+ */
+export const handleAuthenticatedUser = (req, res, next) => {
+  const myaccount = getAccount();
+  req.app.set('account', myaccount);
+  ActivityPub.account = myaccount;
+
+  if (req.cookies.token &amp;&amp; req.cookies.token === myaccount.apikey) {
+    console.log('TOKEN', req.cookies);
+    return next();
+  } else {
+    res.redirect('/account/login');
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ActivityPubClient.html">ActivityPubClient</a></li></ul><h3>Global</h3><ul><li><a href="global.html#acceptDM">acceptDM</a></li><li><a href="global.html#addActivityToIndex">addActivityToIndex</a></li><li><a href="global.html#addFailureToIndex">addFailureToIndex</a></li><li><a href="global.html#addFollower">addFollower</a></li><li><a href="global.html#addNotification">addNotification</a></li><li><a href="global.html#addressedOnlyToMe">addressedOnlyToMe</a></li><li><a href="global.html#authenticateLogin">authenticateLogin</a></li><li><a href="global.html#buildIndex">buildIndex</a></li><li><a href="global.html#cacheExpire">cacheExpire</a></li><li><a href="global.html#createAccount">createAccount</a></li><li><a href="global.html#createActivity">createActivity</a></li><li><a href="global.html#createActor">createActor</a></li><li><a href="global.html#createFileName">createFileName</a></li><li><a href="global.html#createNote">createNote</a></li><li><a href="global.html#createWebfinger">createWebfinger</a></li><li><a href="global.html#deleteActivity">deleteActivity</a></li><li><a href="global.html#deleteActivityFromIndex">deleteActivityFromIndex</a></li><li><a href="global.html#deleteJSONDictionary">deleteJSONDictionary</a></li><li><a href="global.html#deleteObject">deleteObject</a></li><li><a href="global.html#ensureAccount">ensureAccount</a></li><li><a href="global.html#ensureDataFolder">ensureDataFolder</a></li><li><a href="global.html#fetchActivity">fetchActivity</a></li><li><a href="global.html#fetchUser">fetchUser</a></li><li><a href="global.html#fetchUserFromSource">fetchUserFromSource</a></li><li><a href="global.html#follow">follow</a></li><li><a href="global.html#fromIndex">fromIndex</a></li><li><a href="global.html#garbageCollector">garbageCollector</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getActivity">getActivity</a></li><li><a href="global.html#getActivitySince">getActivitySince</a></li><li><a href="global.html#getActivityStream">getActivityStream</a></li><li><a href="global.html#getBlocks">getBlocks</a></li><li><a href="global.html#getBoosts">getBoosts</a></li><li><a href="global.html#getFileName">getFileName</a></li><li><a href="global.html#getFollowers">getFollowers</a></li><li><a href="global.html#getFollowing">getFollowing</a></li><li><a href="global.html#getFullPostDetails">getFullPostDetails</a></li><li><a href="global.html#getInbox">getInbox</a></li><li><a href="global.html#getInboxIndex">getInboxIndex</a></li><li><a href="global.html#getLikes">getLikes</a></li><li><a href="global.html#getLikesFileName">getLikesFileName</a></li><li><a href="global.html#getLikesForNote">getLikesForNote</a></li><li><a href="global.html#getNote">getNote</a></li><li><a href="global.html#getNotifications">getNotifications</a></li><li><a href="global.html#getOutboxPosts">getOutboxPosts</a></li><li><a href="global.html#getPassword">getPassword</a></li><li><a href="global.html#getPrefs">getPrefs</a></li><li><a href="global.html#getReplyCountForNote">getReplyCountForNote</a></li><li><a href="global.html#getUsername">getUsername</a></li><li><a href="global.html#handleAuthenticatedUser">handleAuthenticatedUser</a></li><li><a href="global.html#ifAccount">ifAccount</a></li><li><a href="global.html#isBlocked">isBlocked</a></li><li><a href="global.html#isFollower">isFollower</a></li><li><a href="global.html#isFollowing">isFollowing</a></li><li><a href="global.html#isIndexed">isIndexed</a></li><li><a href="global.html#isMention">isMention</a></li><li><a href="global.html#isMyPost">isMyPost</a></li><li><a href="global.html#isReplyToFollowing">isReplyToFollowing</a></li><li><a href="global.html#isReplyToMyPost">isReplyToMyPost</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#readJSONDictionary">readJSONDictionary</a></li><li><a href="global.html#recordBoost">recordBoost</a></li><li><a href="global.html#recordLike">recordLike</a></li><li><a href="global.html#recordUndoLike">recordUndoLike</a></li><li><a href="global.html#removeFollower">removeFollower</a></li><li><a href="global.html#searchKnownUsers">searchKnownUsers</a></li><li><a href="global.html#sendCreateToFollowers">sendCreateToFollowers</a></li><li><a href="global.html#sendUpdateToFollowers">sendUpdateToFollowers</a></li><li><a href="global.html#sortByDate">sortByDate</a></li><li><a href="global.html#updatePrefs">updatePrefs</a></li><li><a href="global.html#writeBoosts">writeBoosts</a></li><li><a href="global.html#writeEnvToFile">writeEnvToFile</a></li><li><a href="global.html#writeFollowers">writeFollowers</a></li><li><a href="global.html#writeFollowing">writeFollowing</a></li><li><a href="global.html#writeInboxIndex">writeInboxIndex</a></li><li><a href="global.html#writeJSONDictionary">writeJSONDictionary</a></li><li><a href="global.html#writeLikes">writeLikes</a></li><li><a href="global.html#writeNotifications">writeNotifications</a></li><li><a href="global.html#zeroPad">zeroPad</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Dec 14 2023 18:11:22 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

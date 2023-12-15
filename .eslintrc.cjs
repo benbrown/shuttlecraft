@@ -13,5 +13,5 @@ module.exports = {
   },
   rules: {
   },
-  ignorePatterns: ["**/*.jest.js"],
+  ignorePatterns: ["**/*.jest.js", "**/prettify"],
 }
