@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Markdown.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Markdown.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* This module contains the markdown renderer used to format posts
+
+ By default, urls will be linkifies with nofollow, noopener, and noreferrer attributes
+ Override those attributes by setting LINK_ATTRIBUTES in the .env file
+
+Usage:
+const html = md.render(markdown);
+
+*/
+
+import dotenv from 'dotenv';
+import MarkdownIt from 'markdown-it';
+
+dotenv.config();
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true
+});
+
+const LINK_ATTRIBUTES = process.env.LINK_ATTRIBUTES || 'nofollow noopener noreferrer';
+
+/**
+ * The above function modifies the rendering of link tags in Markdown by adding a "rel" attribute with
+ * the value of LINK_ATTRIBUTES.
+ * @param tokens - The `tokens` parameter is an array of token objects. Each token object represents a
+ * part of the Markdown document, such as a paragraph, heading, link, etc. The `tokens` array is passed
+ * to the renderer function to generate the corresponding HTML output.
+ * @param idx - The `idx` parameter in the code refers to the index of the current token being rendered
+ * in the array of tokens.
+ * @param options - The `options` parameter is an object that contains various options and
+ * configurations for the Markdown renderer. It can include settings such as the rendering mode, the
+ * HTML tag names to use for different elements, and other customization options.
+ * @param env - The `env` parameter in the code snippet refers to the environment object. It is an
+ * optional parameter that can be used to pass additional information or configuration to the rendering
+ * rules. It can be used to store and access data that needs to be shared between different rendering
+ * rules.
+ * @param self - The `self` parameter refers to the Markdown-it instance. It is used to access the
+ * `renderToken` method and the `renderer` object, which contains the rules for rendering Markdown
+ * tokens.
+ *
+ * customize the link formatter to include noopener noreferrer links
+ * this prevents browsers from telling downstream pages about where the links came from
+ * and protects the privacy of our users.
+ * code from: https://publishing-project.rivendellweb.net/customizing-markdown-it/
+ */
+const proxy = (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options);
+const defaultLinkOpenRenderer = md.renderer.rules.link_open || proxy;
+md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin('rel', LINK_ATTRIBUTES);
+  return defaultLinkOpenRenderer(tokens, idx, options, env, self);
+};
+
+export { md, LINK_ATTRIBUTES };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ActivityPubClient.html">ActivityPubClient</a></li></ul><h3>Global</h3><ul><li><a href="global.html#acceptDM">acceptDM</a></li><li><a href="global.html#addActivityToIndex">addActivityToIndex</a></li><li><a href="global.html#addFailureToIndex">addFailureToIndex</a></li><li><a href="global.html#addFollower">addFollower</a></li><li><a href="global.html#addNotification">addNotification</a></li><li><a href="global.html#addressedOnlyToMe">addressedOnlyToMe</a></li><li><a href="global.html#authenticateLogin">authenticateLogin</a></li><li><a href="global.html#buildIndex">buildIndex</a></li><li><a href="global.html#cacheExpire">cacheExpire</a></li><li><a href="global.html#createAccount">createAccount</a></li><li><a href="global.html#createActivity">createActivity</a></li><li><a href="global.html#createActor">createActor</a></li><li><a href="global.html#createFileName">createFileName</a></li><li><a href="global.html#createNote">createNote</a></li><li><a href="global.html#createWebfinger">createWebfinger</a></li><li><a href="global.html#deleteActivity">deleteActivity</a></li><li><a href="global.html#deleteActivityFromIndex">deleteActivityFromIndex</a></li><li><a href="global.html#deleteJSONDictionary">deleteJSONDictionary</a></li><li><a href="global.html#deleteObject">deleteObject</a></li><li><a href="global.html#ensureAccount">ensureAccount</a></li><li><a href="global.html#ensureDataFolder">ensureDataFolder</a></li><li><a href="global.html#fetchActivity">fetchActivity</a></li><li><a href="global.html#fetchUser">fetchUser</a></li><li><a href="global.html#fetchUserFromSource">fetchUserFromSource</a></li><li><a href="global.html#follow">follow</a></li><li><a href="global.html#fromIndex">fromIndex</a></li><li><a href="global.html#garbageCollector">garbageCollector</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getActivity">getActivity</a></li><li><a href="global.html#getActivitySince">getActivitySince</a></li><li><a href="global.html#getActivityStream">getActivityStream</a></li><li><a href="global.html#getBlocks">getBlocks</a></li><li><a href="global.html#getBoosts">getBoosts</a></li><li><a href="global.html#getFileName">getFileName</a></li><li><a href="global.html#getFollowers">getFollowers</a></li><li><a href="global.html#getFollowing">getFollowing</a></li><li><a href="global.html#getFullPostDetails">getFullPostDetails</a></li><li><a href="global.html#getInbox">getInbox</a></li><li><a href="global.html#getInboxIndex">getInboxIndex</a></li><li><a href="global.html#getLikes">getLikes</a></li><li><a href="global.html#getLikesFileName">getLikesFileName</a></li><li><a href="global.html#getLikesForNote">getLikesForNote</a></li><li><a href="global.html#getNote">getNote</a></li><li><a href="global.html#getNotifications">getNotifications</a></li><li><a href="global.html#getOutboxPosts">getOutboxPosts</a></li><li><a href="global.html#getPassword">getPassword</a></li><li><a href="global.html#getPrefs">getPrefs</a></li><li><a href="global.html#getReplyCountForNote">getReplyCountForNote</a></li><li><a href="global.html#getUsername">getUsername</a></li><li><a href="global.html#handleAuthenticatedUser">handleAuthenticatedUser</a></li><li><a href="global.html#ifAccount">ifAccount</a></li><li><a href="global.html#isBlocked">isBlocked</a></li><li><a href="global.html#isFollower">isFollower</a></li><li><a href="global.html#isFollowing">isFollowing</a></li><li><a href="global.html#isIndexed">isIndexed</a></li><li><a href="global.html#isMention">isMention</a></li><li><a href="global.html#isMyPost">isMyPost</a></li><li><a href="global.html#isReplyToFollowing">isReplyToFollowing</a></li><li><a href="global.html#isReplyToMyPost">isReplyToMyPost</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#readJSONDictionary">readJSONDictionary</a></li><li><a href="global.html#recordBoost">recordBoost</a></li><li><a href="global.html#recordLike">recordLike</a></li><li><a href="global.html#recordUndoLike">recordUndoLike</a></li><li><a href="global.html#removeFollower">removeFollower</a></li><li><a href="global.html#searchKnownUsers">searchKnownUsers</a></li><li><a href="global.html#sendCreateToFollowers">sendCreateToFollowers</a></li><li><a href="global.html#sendUpdateToFollowers">sendUpdateToFollowers</a></li><li><a href="global.html#sortByDate">sortByDate</a></li><li><a href="global.html#updatePrefs">updatePrefs</a></li><li><a href="global.html#writeBoosts">writeBoosts</a></li><li><a href="global.html#writeEnvToFile">writeEnvToFile</a></li><li><a href="global.html#writeFollowers">writeFollowers</a></li><li><a href="global.html#writeFollowing">writeFollowing</a></li><li><a href="global.html#writeInboxIndex">writeInboxIndex</a></li><li><a href="global.html#writeJSONDictionary">writeJSONDictionary</a></li><li><a href="global.html#writeLikes">writeLikes</a></li><li><a href="global.html#writeNotifications">writeNotifications</a></li><li><a href="global.html#zeroPad">zeroPad</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Dec 14 2023 18:11:22 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -3,12 +3,7 @@ import debug from 'debug';
 import RSS from 'rss-generator';
 import dotenv from 'dotenv';
 
-import {
-  getNote,
-  isMyPost,
-  // getAccount,
-  getOutboxPosts
-} from '../lib/account.js';
+import { getNote, isMyPost, getAccount, getOutboxPosts, ifAccount } from '../lib/account.js';
 import { getActivity, getLikesForNote, getReplyCountForNote } from '../lib/notes.js';
 import { INDEX } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
@@ -17,10 +12,14 @@ import { fetchUser } from '../lib/users.js';
 export const router = express.Router();
 dotenv.config();
 
-const { USERNAME, DOMAIN } = process.env;
+const { USER_NAME, DOMAIN } = process.env;
 
 const logger = debug('notes');
 
+/**
+ * publish the post to go up the stream
+ * check all the posts below and above the threads
+ */
 const unrollThread = async (noteId, results = [], ascend = true, descend = true) => {
   let post, actor;
   let stats;
@@ -86,26 +85,20 @@ const unrollThread = async (noteId, results = [], ascend = true, descend = true)
   return results;
 };
 
+/**
+ * Renders the home page with the outbox posts fetched through the api
+ */
 router.get('/', async (req, res) => {
+  if (!ifAccount()) {
+    console.log('No account found. Redirecting to account creation.');
+    res.redirect('/private');
+  }
   const offset = parseInt(req.query.offset) || 0;
-  const {
-    // total,
-    posts
-  } = await getOutboxPosts(offset);
+  const { posts } = await getOutboxPosts(offset);
+
+  const myaccount = getAccount();
+  ActivityPub.account = myaccount;
   const actor = ActivityPub.actor;
-  // const enrichedPosts = posts.map((post) => {
-  //   let stats;
-  //   if (isMyPost(post)) {
-  //     const likes = getLikesForNote(post.id)
-  //     stats = {
-  //       likes: likes.likes.length,
-  //       boosts: likes.boosts.length,
-  //       replies: getReplyCountForNote(post.id),
-  //     }
-  //     post.stats = stats;
-  //   }
-  //   return post;
-  // })
 
   res.render('public/home', {
     me: ActivityPub.actor,
@@ -114,10 +107,13 @@ router.get('/', async (req, res) => {
     layout: 'public',
     next: offset + posts.length,
     domain: DOMAIN,
-    user: USERNAME
+    user: USER_NAME
   });
 });
 
+/**
+ * Fetch the feed for the user and display it in the html
+ */
 router.get('/feed', async (req, res) => {
   const {
     // total,
@@ -125,7 +121,7 @@ router.get('/feed', async (req, res) => {
   } = await getOutboxPosts(0);
 
   const feed = new RSS({
-    title: `${USERNAME}@${DOMAIN}`,
+    title: `${USER_NAME}@${DOMAIN}`,
     site_url: DOMAIN,
     pubDate: posts[0].published
   });
@@ -177,7 +173,7 @@ router.get('/notes/:guid', async (req, res) => {
         activitystream: notes,
         layout: 'public',
         domain: DOMAIN,
-        user: USERNAME
+        user: USER_NAME
       });
     }
   }

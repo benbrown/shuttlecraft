@@ -4,7 +4,7 @@
     <a href="/private/notifications" id="newNotifications" class="unread" hidden></a>
 </header>
 {{#each notifications}}
-    <div class="activity">
+    <div class="activity notification-activity">
     {{#with this}}
         {{#isEq notification.type "Announce"}}
             <div class="notification">🚀 <a href="/private/feeds/{{getUsername ../actor.id}}">{{or ../actor.name ../actor.preferredUsername}}</a> boosted <a href="{{../note.id}}">your post</a> {{timesince ../time}}</div>
@@ -38,13 +38,16 @@
 {{/if}}
 
 </div>
+
 <script>
-    // take note of the most recent post date
-    {{#isEq offset "0"}}
-    {{#each ../notifications}} {{#if @first}} 
-    app.latestNotification("{{this.time}}");
-     {{/if}}{{/each}}
-     {{/isEq}}
-   
-    app.pollForPosts();
+    document.addEventListener('DOMContentLoaded', () => {
+        {{#isEq offset "0"}}
+            {{#each ../notifications}} 
+                {{#if @first}} 
+                    app.latestNotification("{{this.time}}");
+                {{/if}}
+            {{/each}}
+        {{/isEq}}
+        app.pollForPosts();
+    });
 </script>

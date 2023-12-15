@@ -1,0 +1,32 @@
+<form class='authetication-form' action='/account/create' method='POST'>
+  <h1 class='form-title'>Create User Account</h1>
+
+  <input type='text' id='username' name='username' class='form-input' placeholder='username' required />
+
+  <input
+    type='password'
+    id='password'
+    name='password'
+    class='form-input'
+    pattern='^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\n\t]{6,}$'
+    placeholder='password'
+    title='Your password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and no escape characters.'
+    required
+  />
+
+  <input
+    type='text'
+    id='domain'
+    name='domain'
+    class='form-input'
+    placeholder='domain'
+    pattern='^((?:(?:(?:\w[\.-+]?)*)\w)+)((?:(?:(?:\w[\.-+]?){0,62})\w)+)\.(\w{2,6})$'
+    title='Invalid Domain'
+    required
+  />
+
+  <button type='submit' id='submit-btn' class='form-button'>
+    Submit
+  </button>
+
+</form>

@@ -17,15 +17,20 @@ import {
   isFollowing,
   getInboxIndex,
   getInbox,
-  writeInboxIndex
+  writeInboxIndex,
+  updateAccount
 } from '../lib/account.js';
 import { fetchUser } from '../lib/users.js';
 import { getPrefs, INDEX, searchKnownUsers, updatePrefs } from '../lib/storage.js';
 import { ActivityPub } from '../lib/ActivityPub.js';
 import { queue } from '../lib/queue.js';
+const { DOMAIN } = process.env;
 export const router = express.Router();
 const logger = debug('ono:admin');
 
+/**
+ * Return the INDEX in form of JSON
+ */
 router.get('/index', async (req, res) => {
   res.json(INDEX);
 });
@@ -38,6 +43,10 @@ router.get('/index', async (req, res) => {
  | |__| / ____ \ ____) | |  | | |_) | |__| / ____ \| | \ \| |__| |
  |_____/_/    \_\_____/|_|  |_|____/ \____/_/    \_\_|  \_\_____/                                                              
 
+ */
+/**
+ * Render the dashboard console in the html
+ * display the feeds
  */
 router.get('/', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
@@ -75,6 +84,10 @@ router.get('/', async (req, res) => {
  |_| \_|\____/  |_|  |_____|_|    |_____\_____/_/    \_\_|  |_____\____/|_| \_|_____/ 
 
  */
+
+/**
+ * Render the notifications by fetching the notification API
+ */
 router.get('/notifications', async (req, res) => {
   const likes = await getLikes();
   const offset = parseInt(req.query.offset) || 0;
@@ -87,7 +100,6 @@ router.get('/notifications', async (req, res) => {
     notes.map(async notification => {
       const { actor } = await fetchUser(notification.notification.actor);
       let note, original;
-      // TODO: check if user is in following list
       actor.isFollowing = isFollowing(actor.id);
 
       if (notification.notification.type === 'Like' || notification.notification.type === 'Announce') {
@@ -141,6 +153,9 @@ router.get('/notifications', async (req, res) => {
   });
 });
 
+/**
+ * Load the feeds in the activity stream
+ */
 router.get('/feeds/:handle?', async (req, res) => {
   const offset = parseInt(req.query.offset) || 0;
   const pageSize = 20;
@@ -218,6 +233,9 @@ router.get('/feeds/:handle?', async (req, res) => {
   });
 });
 
+/**
+ * Load the inboxes
+ */
 router.get('/dms/:handle?', async (req, res) => {
   const inboxIndex = getInboxIndex();
   let error, inbox, recipient, lastIncoming;
@@ -284,6 +302,9 @@ router.get('/dms/:handle?', async (req, res) => {
   });
 });
 
+/**
+ * Load the post using the GET method
+ */
 router.get('/post', async (req, res) => {
   const to = req.query.to;
   const inReplyTo = req.query.inReplyTo;
@@ -299,7 +320,6 @@ router.get('/post', async (req, res) => {
   if (req.query.edit) {
     console.log('COMPOSING EDIT', req.query.edit);
     prev = await getNote(req.query.edit);
-    // console.log("ORIGINAL", original);
   }
 
   res.status(200).render('partials/composer', {
@@ -315,9 +335,20 @@ router.get('/post', async (req, res) => {
   });
 });
 
+/**
+ * Update and create the post using the POST method
+ */
 router.post('/post', async (req, res) => {
-  // TODO: this is probably supposed to be a post to /api/outbox
-  const post = await createNote(req.body.post, req.body.cw, req.body.inReplyTo, req.body.to, req.body.editOf);
+  const post = await createNote(
+    req.body.post,
+    req.body.cw,
+    req.body.inReplyTo,
+    req.body.to,
+    req.body.editOf,
+    req.body.canReply,
+    req.body.canBoost,
+    req.body.canFave
+  );
   if (post.directMessage === true) {
     // return html partial of the new post for insertion in the feed
     res.status(200).render('partials/dm', {
@@ -336,6 +367,9 @@ router.post('/post', async (req, res) => {
   }
 });
 
+/**
+ * Poll the new notifications, inboxes, activities.
+ */
 router.get('/poll', async (req, res) => {
   const sincePosts = new Date(req.cookies.latestPost).getTime();
   const sinceNotifications = parseInt(req.cookies.latestNotification);
@@ -354,6 +388,9 @@ router.get('/poll', async (req, res) => {
   });
 });
 
+/**
+ * Render the followers in the page
+ */
 router.get('/followers', async (req, res) => {
   let following = await Promise.all(
     getFollowing().map(async f => {
@@ -398,6 +435,9 @@ router.get('/followers', async (req, res) => {
   }
 });
 
+/**
+ * Render the following in the page
+ */
 router.get('/following', async (req, res) => {
   let following = await Promise.all(
     getFollowing().map(async f => {
@@ -450,6 +490,9 @@ router.get('/following', async (req, res) => {
  |_|    |_|  \_\______|_|   |_____/ 
                                                                     
  */
+/**
+ * Render the preferewnce page with the preference using GET
+ */
 router.get('/prefs', (req, res) => {
   const following = getFollowing();
   const followers = getFollowers();
@@ -469,6 +512,9 @@ router.get('/prefs', (req, res) => {
   });
 });
 
+/**
+ * Update the preference using POST
+ */
 router.post('/prefs', (req, res) => {
   // lget current prefs.
   const prefs = getPrefs();
@@ -487,6 +533,24 @@ router.post('/prefs', (req, res) => {
   });
 
   updatePrefs(prefs);
+});
+
+/**
+ * Update the username preference using POST
+ */
+router.post('/prefsAccount', (req, res) => {
+  // lget current prefs.
+  const updates = req.body;
+  const bio = updates.bio;
+  const img = updates.avatarInput;
+  console.log('GOT ACCOUNT UPDATES', updates);
+  updateAccount(updates.username, DOMAIN, bio, img).then(myaccount => {
+    // set the server to use the main account as its primary actor
+    ActivityPub.account = myaccount;
+    // app.set('account', myaccount);
+  });
+
+  res.redirect('/private');
 });
 
 const getFeedList = async (offset = 0, num = 20) => {
@@ -528,6 +592,9 @@ const getFeedList = async (offset = 0, num = 20) => {
   return feeds.slice(offset, offset + num);
 };
 
+/**
+ * Find the user given the user information and display the result
+ */
 router.get('/find', async (req, res) => {
   let results = [];
 
@@ -559,6 +626,9 @@ router.get('/find', async (req, res) => {
   });
 });
 
+/**
+ * Render more feeds based on different indexes
+ */
 router.get('/morefeeds', async (req, res) => {
   const feeds = await getFeedList(20, 100);
 
@@ -569,6 +639,9 @@ router.get('/morefeeds', async (req, res) => {
   });
 });
 
+/**
+ * Look up the user based on the user information
+ */
 router.get('/lookup', async (req, res) => {
   const { actor } = await fetchUser(req.query.handle);
   if (actor) {
@@ -582,6 +655,9 @@ router.get('/lookup', async (req, res) => {
   }
 });
 
+/**
+ * Follow a user given the user information using POST
+ */
 router.post('/follow', async (req, res) => {
   const handle = req.body.handle;
   if (handle) {
@@ -604,8 +680,6 @@ router.post('/follow', async (req, res) => {
         // send unfollow
         await ActivityPub.sendUndoFollow(actor, status.id);
 
-        // todo: this should just be a function like removeFollowing
-
         let following = getFollowing();
 
         // filter out the one we are removing
@@ -622,6 +696,9 @@ router.post('/follow', async (req, res) => {
   res.status(404).send('not found');
 });
 
+/**
+ * Like the post given the activity ID using POST
+ */
 router.post('/like', async (req, res) => {
   const activityId = req.body.post;
   let likes = getLikes();

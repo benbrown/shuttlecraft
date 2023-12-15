@@ -1,116 +1,110 @@
 body {
-    background: #F0F0f0;
-    color: #333;
-    font-size: 18px;
+  background: #f0f0f0;
+  color: #333;
+  font-size: 18px;
 }
 
 #wrapper {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    gap: 0;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 0;
 }
 
 #main {
-    height: 100vh;
-    overflow-y: scroll;
-    flex-grow: 1;
-    padding-bottom: 100px;
+  height: 100vh;
+  overflow-y: scroll;
+  flex-grow: 1;
+  padding-bottom: 100px;
 }
 
-#content { 
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+#content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-
-a { color: #8c8dff; }
+a {
+  color: #8c8dff;
+}
 
 .stream {
-    width: 100%;
-    margin: 0px auto;
-    max-width: 40rem;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
+  width: 100%;
+  margin: 0px auto;
+  max-width: 40rem;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
 }
 
 .activity {
-    border-top: 1px solid #393f4f;
-    background: #FFF;
-    padding: 1rem;
+  border-top: 1px solid #393f4f;
+  background: #fff;
+  padding: 1rem;
 }
 
 .activity .header {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
 }
 
 .activity .header .avatar {
-    height: 50px;
-    width: 50px;
+  height: 50px;
+  width: 50px;
 }
 
 .activity .attachment img {
-    max-width: 100%;
+  max-width: 100%;
 }
-
 
 .follow_box {
-    padding: 1rem;
+  padding: 1rem;
 }
 .follow_box p {
-    margin: 0;
+  margin: 0;
 }
 
-
-
-
 .profileHeader {
-    height: 150px;
-    /* background: #111122; */
+  height: 150px;
+  /* background: #111122; */
 }
 
 .profileHeader img {
-    object-fit: cover;
-    height: 150px;
-    width: 100%;
+  object-fit: cover;
+  height: 150px;
+  width: 100%;
 }
 
 .profile {
-    /* background: #333344; */
+  /* background: #333344; */
 }
 
-
 .profileToolbar {
-    padding: 1rem;
-    display: flex;
+  padding: 1rem;
+  display: flex;
 }
 
 .profileToolbar .avatarLink {
-    flex-grow: 0;
-    margin-top: calc(-50px - 1rem);
+  flex-grow: 0;
+  margin-top: calc(-50px - 1rem);
 }
 
 .profileToolbar .avatar {
-    width: 110px;
-    height: 110px;
-    border: 5px solid #333344;
+  width: 110px;
+  height: 110px;
+  border: 5px solid #333344;
 }
 
 .profileToolbar .tools {
-    text-align: right;
-    flex-grow: 1;
+  text-align: right;
+  flex-grow: 1;
 }
 
-
 .profileBody {
-    padding: 0 1rem 1rem;
+  padding: 0 1rem 1rem;
 }
 
 .profileBody .author {
-    font-size: 1.25rem;
-    margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
 }
-

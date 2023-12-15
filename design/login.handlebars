@@ -1,0 +1,14 @@
+<form class='authetication-form' action='/account/login' method='POST'>
+  <h1 class='form-title'>Login</h1>
+
+  <input type='text' id='username' name='username' class='form-input' placeholder='username' required />
+
+  <input type='password' id='password' name='password' class='form-input' placeholder='password' required />
+  {{#if message}}
+    <div style='color: red;'>{{message}}</div>
+  {{/if}}
+  <button type='submit' id='submit-btn' class='form-button'>
+    Submit
+  </button>
+
+</form>

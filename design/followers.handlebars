@@ -10,6 +10,9 @@
 {{/each}}
 </div>
 {{> peopleTools}}
+
 <script>
-    app.pollForPosts();
+    document.addEventListener('DOMContentLoaded', () => {
+        app.pollForPosts();
+    });
 </script>

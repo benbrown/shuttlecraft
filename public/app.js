@@ -2,7 +2,6 @@ const fetch = (url, type, payload = undefined) => {
   return new Promise((resolve, reject) => {
     const Http = new XMLHttpRequest();
     Http.open(type, url);
-    // TODO: should be a parameter
     Http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
     Http.send(payload);
 
@@ -196,7 +195,9 @@ const app = {
     const inReplyTo = document.getElementById('inReplyTo');
     const to = document.getElementById('to');
     const editOf = document.getElementById('editOf');
-
+    const canReply = document.getElementById('canReply').checked;
+    const canBoost = document.getElementById('canBoost').checked;
+    const canFave = document.getElementById('canFave').checked;
     const form = document.getElementById('composer_form');
 
     form.disabled = true;
@@ -209,7 +210,10 @@ const app = {
         cw: cw.value,
         inReplyTo: inReplyTo.value,
         to: to.value,
-        editOf: editOf ? editOf.value : null
+        editOf: editOf ? editOf.value : null,
+        canReply,
+        canBoost,
+        canFave
       })
     )
       .then(newHtml => {

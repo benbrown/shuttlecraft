@@ -20,24 +20,31 @@
     {{else}}
         <div class="empty">
             <p>Follow some people to fill your feed with posts.</p>
-            <p>I suggest following me! 
-                I'm <a href="/private/feeds/benbrown@hackers.town">benbrown@hackers.town</a>
+            <p>We suggest following our Professor Thomas Powell! You can find him at
+                <a href="/private/feeds/thomasapowell@fosstodon.org">thomasapowell@fosstodon.org</a>
             </p>
         </div>
     {{/if}}
 </div>
 
 
-{{#if next}}
-<a href="/private?offset={{next}}" class="moreLink">More</a>
-{{/if}}
+    {{#if next}}
+        <footer>
+            <a href="/private?offset={{next}}" class="moreLink">More</a>
+        </footer>
+    {{/if}}
 </div>
+
 <script>
-    // take note of the most recent post date
-    {{#isEq offset "0"}}
-    {{#each ../activitystream}} {{#if @first}} 
-    app.latestPost("{{or this.boost.published this.note.published}}");
-    {{/if}}{{/each}}
-    {{/isEq}}
-    app.pollForPosts();
+    document.addEventListener('DOMContentLoaded', () => {
+        // Take note of the most recent post date
+        {{#isEq offset "0"}}
+            {{#each ../activitystream}}
+                {{#if @first}}
+                    app.latestPost("{{or this.boost.published this.note.published}}");
+                {{/if}}
+            {{/each}}
+        {{/isEq}}
+        app.pollForPosts();
+    });
 </script>

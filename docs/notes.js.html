@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: notes.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: notes.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import fs from 'fs';
+import debug from 'debug';
+import { addNotification, isBlocked, writeNotifications, getNotifications } from './account.js';
+import {
+  INDEX,
+  readJSONDictionary,
+  writeJSONDictionary,
+  fromIndex,
+  deleteActivityFromIndex,
+  deleteJSONDictionary,
+  addActivityToIndex,
+  addFailureToIndex,
+  createFileName,
+  getFileName,
+  getLikesFileName
+} from './storage.js';
+import { ActivityPub } from './ActivityPub.js';
+
+const logger = debug('ono:notes');
+
+/**
+ * The function `getLikesForNote` retrieves the likes and boosts for a given note ID from a JSON
+ * dictionary.
+ * @returns The function `getLikesForNote` is returning the result of calling the `readJSONDictionary`
+ * function with the `fileName` and an object containing `likes` and `boosts` properties.
+ */
+export const getLikesForNote = id => {
+  const fileName = getLikesFileName(id);
+  return readJSONDictionary(fileName, {
+    likes: [],
+    boosts: []
+  });
+};
+
+/**
+ * The function `getReplyCountForNote` returns the number of replies for a given note ID.
+ * @returns The number of replies for a given note ID.
+ */
+export const getReplyCountForNote = id => {
+  return INDEX.filter(i => i.inReplyTo === id).length;
+};
+
+/**
+ * The function records a like for a note and adds the actor to the list of likes if they haven't
+ * already liked the note.
+ */
+export const recordLike = request => {
+  const actor = request.actor;
+  const noteId = request.object;
+
+  logger('INCOMING LIKE FOR', noteId);
+
+  const likes = getLikesForNote(noteId);
+  if (likes.likes.indexOf(actor) &lt; 0) {
+    likes.likes.push(actor);
+    const fileName = getLikesFileName(noteId);
+    writeJSONDictionary(fileName, likes);
+    addNotification(request);
+  }
+};
+
+/**
+ * The function `recordBoost` records a boost for a note and adds the actor to the list of boosts if
+ * they haven't already boosted the note.
+ */
+export const recordBoost = request => {
+  const actor = request.actor;
+  const noteId = request.object;
+
+  logger('INCOMING BOOST FOR', noteId);
+
+  const likes = getLikesForNote(noteId);
+  if (likes.boosts.indexOf(actor) &lt; 0) {
+    likes.boosts.push(actor);
+    const fileName = getLikesFileName(noteId);
+    writeJSONDictionary(fileName, likes);
+    addNotification(request);
+  }
+};
+
+/**
+ * The function `recordUndoLike` removes the actor's like from the likes list for a given note and
+ * updates the likes file.
+ */
+export const recordUndoLike = request => {
+  const actor = request.actor;
+  const noteId = request.object;
+
+  logger('INCOMING UNLIKE FOR', noteId);
+
+  const likes = getLikesForNote(noteId);
+  likes.likes = likes.likes.filter(a => a !== actor);
+  const fileName = getLikesFileName(noteId);
+  writeJSONDictionary(fileName, likes);
+};
+
+/**
+ * The `deleteActivity` function deletes an activity and its associated notifications from the system.
+ * @param id - The `id` parameter represents the unique identifier of the activity that needs to be
+ * deleted. It is used to locate the corresponding note file and delete it.
+ * @param tombstone - The `tombstone` parameter is not used in the code snippet provided. It is
+ * mentioned in a comment, but there is no code that utilizes it.
+ */
+export const deleteActivity = (id, tombstone) => {
+  const noteFile = getFileName(id);
+  if (fs.existsSync(noteFile)) {
+    // rather than capture a tombstone, just delete it like it never was.
+    deleteActivityFromIndex(id);
+    deleteJSONDictionary(noteFile);
+
+    // delete any reply or mention notifications
+    const notifications = getNotifications();
+    writeNotifications(
+      notifications.filter(n => {
+        // filter only notifications that are replies or mentions
+        if ((n.notification.type === 'Reply' || n.notification.type === 'Mention') &amp;&amp; n.notification.object === id) {
+          return false;
+        }
+        return true;
+      })
+    );
+  }
+};
+
+/**
+ * The `createActivity` function creates a new activity by writing a note to a file and adding it to an
+ * index if the file does not already exist.
+ */
+export const createActivity = note => {
+  const noteFile = createFileName(note);
+  if (!fs.existsSync(noteFile)) {
+    addActivityToIndex(note);
+  }
+  writeJSONDictionary(noteFile, note);
+};
+
+/**
+ * The function `getActivity` retrieves activity data either from a cache or by fetching it from a
+ * remote source, handling potential errors along the way.
+ * @returns The function `getActivity` returns a Promise that resolves to the result of either
+ * `readJSONDictionary(noteFile, {})` or `fetchActivity(id)`.
+ */
+export const getActivity = async id => {
+  try {
+    if (isBlocked(id)) {
+      throw new Error('Content is from blocked domain', id);
+    }
+    const indexed = fromIndex(id);
+    if (indexed !== false) {
+      // if is cached, no need to check for file
+      if (indexed.type === 'fail') {
+        // TODO: could retry after a while...
+        throw new Error('Activity was unreachable', indexed);
+      } else {
+        const noteFile = getFileName(id);
+        return readJSONDictionary(noteFile, {});
+      }
+    } else {
+      return await fetchActivity(id);
+    }
+  } catch (err) {
+    console.error('Failed to getActivity', err);
+    throw err;
+  }
+};
+
+/**
+ * The function fetches an activity using its ID and handles any errors that occur during the process.
+ * @returns The `fetchActivity` function returns the `activity` object if the fetch is successful.
+ */
+const fetchActivity = async activityId => {
+  logger('FETCH ', activityId);
+  try {
+    const query = await ActivityPub.fetch(activityId, {});
+    if (query.ok) {
+      const activity = await query.json();
+      createActivity(activity);
+      return activity;
+    } else {
+      console.error('Failed to fetch', activityId, 'REASON:', query.statusText);
+      addFailureToIndex({
+        id: activityId,
+        time: new Date().getTime(),
+        status: query.status
+      });
+      throw new Error('could not get post', activityId);
+    }
+  } catch (err) {
+    addFailureToIndex({
+      id: activityId,
+      time: new Date().getTime(),
+      status: err.message
+    });
+    throw new Error('could not get post', activityId);
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ActivityPubClient.html">ActivityPubClient</a></li></ul><h3>Global</h3><ul><li><a href="global.html#acceptDM">acceptDM</a></li><li><a href="global.html#addActivityToIndex">addActivityToIndex</a></li><li><a href="global.html#addFailureToIndex">addFailureToIndex</a></li><li><a href="global.html#addFollower">addFollower</a></li><li><a href="global.html#addNotification">addNotification</a></li><li><a href="global.html#addressedOnlyToMe">addressedOnlyToMe</a></li><li><a href="global.html#authenticateLogin">authenticateLogin</a></li><li><a href="global.html#buildIndex">buildIndex</a></li><li><a href="global.html#cacheExpire">cacheExpire</a></li><li><a href="global.html#createAccount">createAccount</a></li><li><a href="global.html#createActivity">createActivity</a></li><li><a href="global.html#createActor">createActor</a></li><li><a href="global.html#createFileName">createFileName</a></li><li><a href="global.html#createNote">createNote</a></li><li><a href="global.html#createWebfinger">createWebfinger</a></li><li><a href="global.html#deleteActivity">deleteActivity</a></li><li><a href="global.html#deleteActivityFromIndex">deleteActivityFromIndex</a></li><li><a href="global.html#deleteJSONDictionary">deleteJSONDictionary</a></li><li><a href="global.html#deleteObject">deleteObject</a></li><li><a href="global.html#ensureAccount">ensureAccount</a></li><li><a href="global.html#ensureDataFolder">ensureDataFolder</a></li><li><a href="global.html#fetchActivity">fetchActivity</a></li><li><a href="global.html#fetchUser">fetchUser</a></li><li><a href="global.html#fetchUserFromSource">fetchUserFromSource</a></li><li><a href="global.html#follow">follow</a></li><li><a href="global.html#fromIndex">fromIndex</a></li><li><a href="global.html#garbageCollector">garbageCollector</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getActivity">getActivity</a></li><li><a href="global.html#getActivitySince">getActivitySince</a></li><li><a href="global.html#getActivityStream">getActivityStream</a></li><li><a href="global.html#getBlocks">getBlocks</a></li><li><a href="global.html#getBoosts">getBoosts</a></li><li><a href="global.html#getFileName">getFileName</a></li><li><a href="global.html#getFollowers">getFollowers</a></li><li><a href="global.html#getFollowing">getFollowing</a></li><li><a href="global.html#getFullPostDetails">getFullPostDetails</a></li><li><a href="global.html#getInbox">getInbox</a></li><li><a href="global.html#getInboxIndex">getInboxIndex</a></li><li><a href="global.html#getLikes">getLikes</a></li><li><a href="global.html#getLikesFileName">getLikesFileName</a></li><li><a href="global.html#getLikesForNote">getLikesForNote</a></li><li><a href="global.html#getNote">getNote</a></li><li><a href="global.html#getNotifications">getNotifications</a></li><li><a href="global.html#getOutboxPosts">getOutboxPosts</a></li><li><a href="global.html#getPassword">getPassword</a></li><li><a href="global.html#getPrefs">getPrefs</a></li><li><a href="global.html#getReplyCountForNote">getReplyCountForNote</a></li><li><a href="global.html#getUsername">getUsername</a></li><li><a href="global.html#handleAuthenticatedUser">handleAuthenticatedUser</a></li><li><a href="global.html#ifAccount">ifAccount</a></li><li><a href="global.html#isBlocked">isBlocked</a></li><li><a href="global.html#isFollower">isFollower</a></li><li><a href="global.html#isFollowing">isFollowing</a></li><li><a href="global.html#isIndexed">isIndexed</a></li><li><a href="global.html#isMention">isMention</a></li><li><a href="global.html#isMyPost">isMyPost</a></li><li><a href="global.html#isReplyToFollowing">isReplyToFollowing</a></li><li><a href="global.html#isReplyToMyPost">isReplyToMyPost</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#readJSONDictionary">readJSONDictionary</a></li><li><a href="global.html#recordBoost">recordBoost</a></li><li><a href="global.html#recordLike">recordLike</a></li><li><a href="global.html#recordUndoLike">recordUndoLike</a></li><li><a href="global.html#removeFollower">removeFollower</a></li><li><a href="global.html#searchKnownUsers">searchKnownUsers</a></li><li><a href="global.html#sendCreateToFollowers">sendCreateToFollowers</a></li><li><a href="global.html#sendUpdateToFollowers">sendUpdateToFollowers</a></li><li><a href="global.html#sortByDate">sortByDate</a></li><li><a href="global.html#updatePrefs">updatePrefs</a></li><li><a href="global.html#writeBoosts">writeBoosts</a></li><li><a href="global.html#writeEnvToFile">writeEnvToFile</a></li><li><a href="global.html#writeFollowers">writeFollowers</a></li><li><a href="global.html#writeFollowing">writeFollowing</a></li><li><a href="global.html#writeInboxIndex">writeInboxIndex</a></li><li><a href="global.html#writeJSONDictionary">writeJSONDictionary</a></li><li><a href="global.html#writeLikes">writeLikes</a></li><li><a href="global.html#writeNotifications">writeNotifications</a></li><li><a href="global.html#zeroPad">zeroPad</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Dec 14 2023 18:11:22 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
