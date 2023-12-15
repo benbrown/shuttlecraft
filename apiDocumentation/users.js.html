@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: users.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: users.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import path from 'path';
+import fs from 'fs';
+import debug from 'debug';
+import { readJSONDictionary, writeJSONDictionary, pathToUsers } from './storage.js';
+import { ActivityPub } from './ActivityPub.js';
+
+const logger = debug('ono:users');
+
+/**
+ * The function `fetchUserFromSource` fetches user information from a given webId or username using the
+ * ActivityPub protocol.
+ * @param username - The `username` parameter is the username of the user you want to fetch from the
+ * source. It is used to identify the user and retrieve their information.
+ * @param webId - The `webId` parameter is a string that represents the unique identifier of a user on
+ * the web. It is used to fetch the actor information of the user from an ActivityPub server. If the
+ * `webId` parameter is not provided, the function will attempt to fetch the actor information using
+ * the
+ * @returns The function `fetchUserFromSource` returns an object with the properties `webfinger`,
+ * `actor`, and `lastFetched`.
+ */
+const fetchUserFromSource = async (username, webId) => {
+  let webfinger;
+
+  if (!webId) {
+    try {
+      webfinger = await ActivityPub.webfinger(username);
+    } catch (err) {
+      return {
+        actor: {
+          name: username,
+          preferredUsername: username
+        }
+      };
+    }
+  }
+
+  // now fetch actor info
+  const self = webId || webfinger.links.filter(l => l.rel === 'self')[0]?.href;
+  let actor;
+  if (self) {
+    logger(`fetch activitypub.actor ${self}`);
+    try {
+      actor = await ActivityPub.fetchActor(self);
+    } catch (err) {
+      return {
+        actor: {
+          name: username,
+          preferredUsername: username,
+          id: webId
+        }
+      };
+    }
+  } else {
+    throw new Error('could not find self link in webfinger');
+  }
+
+  const userFile = path.resolve(pathToUsers, `${username}.json`);
+  logger(`update ${userFile}`);
+  writeJSONDictionary(userFile, {
+    webfinger,
+    actor,
+    lastFetched: new Date().getTime()
+  });
+
+  return {
+    webfinger,
+    actor,
+    lastFetched: new Date().getTime()
+  };
+};
+
+/**
+ * The `fetchUser` function fetches user information either from a cache or from a source, with an
+ * option to skip fingerprinting if the user is already an ActivityPub URL.
+ * @returns The function `fetchUser` returns a Promise that resolves to the user account information.
+ */
+export const fetchUser = async user => {
+  let skipFinger = false;
+  const now = new Date().getTime();
+  const cacheMax = 1 * 60 * 60 * 1000; // cache user info for 1 hour
+
+  const username = ActivityPub.getUsername(user);
+  // if we start with an activitypub url, we don't need to finger to get it
+  if (user.startsWith('https://')) {
+    skipFinger = true;
+  }
+
+  const userFile = path.resolve(pathToUsers, `${username}.json`);
+  logger('load user', user, userFile);
+
+  if (fs.existsSync(userFile)) {
+    const account = readJSONDictionary(userFile);
+    // check date to see if we need to refetch...
+    if (account.lastFetched &amp;&amp; account.lastFetched > now - cacheMax) {
+      return account;
+    } else if (!account.actor || !account.actor.id) {
+      // do nothing and fall through to the live fetch
+      // since we don't have a full user account here
+    } else {
+      logger('fetch fresh user for', user, `${username}`);
+      // attempt to fetch a new one async
+      // TODO: needs to be debounced - could try to load same user many times quickly
+      fetchUserFromSource(username, account?.actor?.id).catch(err =>
+        console.error('Error updating user data for', username, err)
+      );
+      return account;
+    }
+  }
+
+  return await fetchUserFromSource(username, skipFinger ? user : null);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ActivityPubClient.html">ActivityPubClient</a></li></ul><h3>Global</h3><ul><li><a href="global.html#acceptDM">acceptDM</a></li><li><a href="global.html#addActivityToIndex">addActivityToIndex</a></li><li><a href="global.html#addFailureToIndex">addFailureToIndex</a></li><li><a href="global.html#addFollower">addFollower</a></li><li><a href="global.html#addNotification">addNotification</a></li><li><a href="global.html#addressedOnlyToMe">addressedOnlyToMe</a></li><li><a href="global.html#authenticateLogin">authenticateLogin</a></li><li><a href="global.html#buildIndex">buildIndex</a></li><li><a href="global.html#cacheExpire">cacheExpire</a></li><li><a href="global.html#createAccount">createAccount</a></li><li><a href="global.html#createActivity">createActivity</a></li><li><a href="global.html#createActor">createActor</a></li><li><a href="global.html#createFileName">createFileName</a></li><li><a href="global.html#createNote">createNote</a></li><li><a href="global.html#createWebfinger">createWebfinger</a></li><li><a href="global.html#deleteActivity">deleteActivity</a></li><li><a href="global.html#deleteActivityFromIndex">deleteActivityFromIndex</a></li><li><a href="global.html#deleteJSONDictionary">deleteJSONDictionary</a></li><li><a href="global.html#deleteObject">deleteObject</a></li><li><a href="global.html#ensureAccount">ensureAccount</a></li><li><a href="global.html#ensureDataFolder">ensureDataFolder</a></li><li><a href="global.html#fetchActivity">fetchActivity</a></li><li><a href="global.html#fetchUser">fetchUser</a></li><li><a href="global.html#fetchUserFromSource">fetchUserFromSource</a></li><li><a href="global.html#follow">follow</a></li><li><a href="global.html#fromIndex">fromIndex</a></li><li><a href="global.html#garbageCollector">garbageCollector</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getActivity">getActivity</a></li><li><a href="global.html#getActivitySince">getActivitySince</a></li><li><a href="global.html#getActivityStream">getActivityStream</a></li><li><a href="global.html#getBlocks">getBlocks</a></li><li><a href="global.html#getBoosts">getBoosts</a></li><li><a href="global.html#getFileName">getFileName</a></li><li><a href="global.html#getFollowers">getFollowers</a></li><li><a href="global.html#getFollowing">getFollowing</a></li><li><a href="global.html#getFullPostDetails">getFullPostDetails</a></li><li><a href="global.html#getInbox">getInbox</a></li><li><a href="global.html#getInboxIndex">getInboxIndex</a></li><li><a href="global.html#getLikes">getLikes</a></li><li><a href="global.html#getLikesFileName">getLikesFileName</a></li><li><a href="global.html#getLikesForNote">getLikesForNote</a></li><li><a href="global.html#getNote">getNote</a></li><li><a href="global.html#getNotifications">getNotifications</a></li><li><a href="global.html#getOutboxPosts">getOutboxPosts</a></li><li><a href="global.html#getPassword">getPassword</a></li><li><a href="global.html#getPrefs">getPrefs</a></li><li><a href="global.html#getReplyCountForNote">getReplyCountForNote</a></li><li><a href="global.html#getUsername">getUsername</a></li><li><a href="global.html#handleAuthenticatedUser">handleAuthenticatedUser</a></li><li><a href="global.html#ifAccount">ifAccount</a></li><li><a href="global.html#isBlocked">isBlocked</a></li><li><a href="global.html#isFollower">isFollower</a></li><li><a href="global.html#isFollowing">isFollowing</a></li><li><a href="global.html#isIndexed">isIndexed</a></li><li><a href="global.html#isMention">isMention</a></li><li><a href="global.html#isMyPost">isMyPost</a></li><li><a href="global.html#isReplyToFollowing">isReplyToFollowing</a></li><li><a href="global.html#isReplyToMyPost">isReplyToMyPost</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#readJSONDictionary">readJSONDictionary</a></li><li><a href="global.html#recordBoost">recordBoost</a></li><li><a href="global.html#recordLike">recordLike</a></li><li><a href="global.html#recordUndoLike">recordUndoLike</a></li><li><a href="global.html#removeFollower">removeFollower</a></li><li><a href="global.html#searchKnownUsers">searchKnownUsers</a></li><li><a href="global.html#sendCreateToFollowers">sendCreateToFollowers</a></li><li><a href="global.html#sendUpdateToFollowers">sendUpdateToFollowers</a></li><li><a href="global.html#sortByDate">sortByDate</a></li><li><a href="global.html#updatePrefs">updatePrefs</a></li><li><a href="global.html#writeBoosts">writeBoosts</a></li><li><a href="global.html#writeEnvToFile">writeEnvToFile</a></li><li><a href="global.html#writeFollowers">writeFollowers</a></li><li><a href="global.html#writeFollowing">writeFollowing</a></li><li><a href="global.html#writeInboxIndex">writeInboxIndex</a></li><li><a href="global.html#writeJSONDictionary">writeJSONDictionary</a></li><li><a href="global.html#writeLikes">writeLikes</a></li><li><a href="global.html#writeNotifications">writeNotifications</a></li><li><a href="global.html#zeroPad">zeroPad</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Dec 14 2023 18:11:22 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

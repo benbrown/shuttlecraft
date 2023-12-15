@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: storage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: storage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import fs from 'fs';
+import glob from 'glob';
+import path from 'path';
+import md5 from 'md5';
+import { DEFAULT_SETTINGS } from './prefs.js';
+
+import debug from 'debug';
+import dotenv from 'dotenv';
+
+const logger = debug('ono:storage');
+dotenv.config();
+
+export const dataDir = path.resolve('./', '.data/');
+export const pathToFiles = path.resolve(dataDir, 'activitystream/');
+export const pathToPosts = path.resolve(dataDir, 'posts/');
+export const pathToUsers = path.resolve(dataDir, 'users/');
+export const pathToDMs = path.resolve(dataDir, 'dms/');
+
+export const prefsFile = path.resolve(dataDir, 'prefs.json');
+export const followersFile = path.resolve(dataDir, 'followers.json');
+export const followingFile = path.resolve(dataDir, 'following.json');
+export const notificationsFile = path.resolve(dataDir, 'notifications.json');
+export const likesFile = path.resolve(dataDir, 'likes.json');
+export const boostsFile = path.resolve(dataDir, 'boosts.json');
+export const blocksFile = path.resolve(dataDir, 'blocks.json');
+export const accountFile = path.resolve(dataDir, 'account.json');
+
+const { DOMAIN } = process.env;
+
+export const INDEX = [];
+export const CACHE = {};
+
+const cacheMax = 60 * 5 * 1000; // 5 minutes
+const cacheMin = 30 * 1000; // 30 seconds
+
+/**
+ * Function to zero-pad a number.
+ * @param {number} num - The number to zero-pad.
+ * @returns {string} - The zero-padded number as a string.
+ */
+const zeroPad = num => {
+  if (num &lt; 10) {
+    return `0${num}`;
+  } else return num;
+};
+
+/**
+ * Checks if an activity belongs to the current user.
+ * @param {string} activityId - The ID of the activity.
+ * @returns {boolean} - True if the activity belongs to the current user, false otherwise.
+ */
+export const isMyPost = activityId => {
+  return activityId.startsWith(`https://${DOMAIN}/m/`);
+};
+
+/**
+ * Checks if an activity is in the INDEX array.
+ * @param {string} id - The ID of the activity.
+ * @returns {boolean} - True if the activity is indexed, false otherwise.
+ */
+export const isIndexed = id => {
+  return INDEX.some(p => id === p.id);
+};
+
+/**
+ * Retrieves activity info from the index based on the activity ID.
+ * @param {string} id - The ID of the activity.
+ * @returns {Object|boolean} - The activity information if found, otherwise false.
+ */
+export const fromIndex = id => {
+  return INDEX.find(p => id === p.id) || false;
+};
+
+/**
+ * Gets user preferences.
+ * @returns {Object} - User preferences.
+ */
+export const getPrefs = () => {
+  return readJSONDictionary(prefsFile, DEFAULT_SETTINGS);
+};
+
+/**
+ * Updates user preferences.
+ * @param {Object} prefs - The new user preferences.
+ * @returns {void}
+ */
+export const updatePrefs = prefs => {
+  return writeJSONDictionary(prefsFile, prefs);
+};
+
+/**
+ * Adds a failure entry to the index.
+ * @param {Object} note - The note object.
+ * @param {string} type - The type of failure (default is 'fail').
+ * @returns {void}
+ */
+export const addFailureToIndex = (note, type = 'fail') => {
+  INDEX.push({
+    type,
+    id: note.id,
+    published: note.time,
+    status: note.status
+  });
+};
+
+/**
+ * Adds an activity entry to the index.
+ * @param {Object} note - The note object.
+ * @param {string} type - The type of activity (default is 'activity').
+ * @returns {void}
+ */
+export const addActivityToIndex = (note, type = 'activity') => {
+  INDEX.push({
+    type,
+    id: note.id,
+    actor: note.attributedTo || note.actor,
+    published: new Date(note.published).getTime(),
+    inReplyTo: note.inReplyTo
+  });
+};
+
+/**
+ * Deletes an activity entry from the index.
+ * @param {string} id - The ID of the activity to be deleted.
+ * @returns {void}
+ */
+export const deleteActivityFromIndex = id => {
+  const n = INDEX.findIndex(idx => idx.id === id);
+  if (n >= 0) {
+    INDEX.splice(n, 1);
+  }
+};
+
+/**
+ * Gets the file name for a given activity ID.
+ * @param {string} activityId - The ID of the activity.
+ * @returns {string} - The file name.
+ */
+export const getFileName = activityId => {
+  // first check cache!
+  let meta;
+  if (CACHE[activityId]) {
+    meta = CACHE[activityId].contents;
+  } else {
+    meta = INDEX.find(m => m.id === activityId);
+    if (!meta) {
+      console.error('id not found in index!', activityId);
+      throw new Error('id not found in index');
+    }
+  }
+
+  const rootPath = isMyPost(activityId) ? pathToPosts : pathToFiles;
+
+  // create a dated subfolder
+  const datestamp = new Date(meta.published);
+  const folder = datestamp.getFullYear() + '/' + zeroPad(datestamp.getMonth() + 1) + '-' + zeroPad(datestamp.getDate());
+  return path.resolve(rootPath, folder, `${md5(meta.id)}.json`);
+};
+
+/**
+ * Gets the file name for the likes associated with a given activity ID.
+ * @param {string} activityId - The ID of the activity.
+ * @returns {string} - The file name for likes.
+ */
+export const getLikesFileName = activityId => {
+  // first check cache!
+  let meta;
+  if (CACHE[activityId]) {
+    meta = CACHE[activityId].contents;
+  } else {
+    meta = INDEX.find(m => m.id === activityId);
+    if (!meta) {
+      console.error('id not found in index!', activityId);
+      throw new Error('id not found in index');
+    }
+  }
+
+  const rootPath = pathToPosts;
+
+  // create a dated subfolder
+  const datestamp = new Date(meta.published);
+  const folder = datestamp.getFullYear() + '/' + zeroPad(datestamp.getMonth() + 1) + '-' + zeroPad(datestamp.getDate());
+  return path.resolve(rootPath, folder, `${md5(meta.id)}.likes.json`);
+};
+
+/**
+ * Creates a file name for a given activity.
+ * @param {Object} activity - The activity object.
+ * @returns {string} - The file name.
+ */
+export const createFileName = activity => {
+  // create a dated subfolder
+  const datestamp = new Date(activity.published);
+  const folder = datestamp.getFullYear() + '/' + zeroPad(datestamp.getMonth() + 1) + '-' + zeroPad(datestamp.getDate());
+
+  const rootPath = isMyPost(activity.id) ? pathToPosts : pathToFiles;
+  // ensure the subfolder is prsent
+  if (!fs.existsSync(path.resolve(rootPath, folder))) {
+    fs.mkdirSync(path.resolve(rootPath, folder), {
+      recursive: true
+    });
+  }
+  return path.resolve(rootPath, folder, `${md5(activity.id)}.json`);
+};
+
+/**
+ * Clears expired entries from the cache.
+ * @returns {void}
+ */
+const cacheExpire = () => {
+  const now = new Date().getTime();
+  for (const key in CACHE) {
+    if (CACHE[key].lastAccess &lt; now - cacheMin) {
+      logger('clearing cache for', key);
+      delete CACHE[key];
+    }
+  }
+};
+
+/**
+ * Interval function for the garbage collector to clear expired cache entries.
+ * @type {number}
+ */
+const garbageCollector = setInterval(() => {
+  cacheExpire();
+}, cacheMin);
+
+logger('Garbage collector interval', garbageCollector);
+
+/**
+ * Builds the initial index by reading data from files.
+ * @returns {Promise&lt;Array&lt;Object>>} - A promise that resolves with the built index.
+ */
+const buildIndex = () => {
+  return new Promise((resolve, reject) => {
+    glob(path.join(pathToFiles, '**/*.json'), async (err, files) => {
+      if (err) {
+        console.error(err);
+        reject(err);
+      }
+
+      for (const f of files) {
+        try {
+          const post = JSON.parse(fs.readFileSync(path.resolve(pathToFiles, f)));
+          addActivityToIndex(post);
+        } catch (err) {
+          console.error('failed to parse', f);
+          console.error(err);
+        }
+      }
+
+      glob(path.join(pathToPosts, '**/*.json'), async (err, files) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        }
+
+        for (const f of files) {
+          try {
+            if (!f.includes('likes')) {
+              const post = JSON.parse(fs.readFileSync(path.resolve(pathToFiles, f)));
+              addActivityToIndex(post, 'note');
+            }
+          } catch (err) {
+            console.error('failed to parse', f);
+            console.error(err);
+          }
+        }
+
+        resolve(INDEX);
+      });
+    });
+  });
+};
+
+/**
+ * Searches for known users based on a query string.
+ * @param {string} query - The search query.
+ * @returns {Promise&lt;Array&lt;Object>>} - A promise that resolves with the search results.
+ */
+export const searchKnownUsers = async query => {
+  return new Promise((resolve, reject) => {
+    glob(path.join(pathToUsers, '**/*.json'), async (err, files) => {
+      if (err) {
+        console.error(err);
+        reject(err);
+      }
+      const results = [];
+      for (const f of files) {
+        try {
+          const user = JSON.parse(fs.readFileSync(path.resolve(pathToUsers, f)));
+          if (
+            user.actor?.id?.toLowerCase().includes(query) ||
+            user.actor?.preferredUsername?.toLowerCase().includes(query) ||
+            user.actor?.name?.toLowerCase().includes(query) ||
+            user.actor?.url?.toLowerCase().includes(query)
+          ) {
+            results.push(user.actor);
+          }
+        } catch (err) {
+          console.error('failed to parse', f);
+          console.error(err);
+        }
+      }
+      resolve(results);
+    });
+  });
+};
+
+/**
+ * Ensures the existence of data folders and default settings.
+ * @returns {void}
+ */
+const ensureDataFolder = () => {
+  if (!fs.existsSync(path.resolve(pathToPosts))) {
+    logger('mkdir', pathToPosts);
+    fs.mkdirSync(path.resolve(pathToPosts), {
+      recursive: true
+    });
+  }
+  if (!fs.existsSync(path.resolve(pathToFiles))) {
+    logger('mkdir', pathToFiles);
+    fs.mkdirSync(path.resolve(pathToFiles), {
+      recursive: true
+    });
+  }
+  if (!fs.existsSync(path.resolve(pathToUsers))) {
+    logger('mkdir', pathToUsers);
+    fs.mkdirSync(path.resolve(pathToUsers), {
+      recursive: true
+    });
+  }
+  if (!fs.existsSync(path.resolve(pathToDMs))) {
+    logger('mkdir', pathToDMs);
+    fs.mkdirSync(path.resolve(pathToDMs), {
+      recursive: true
+    });
+  }
+  if (!fs.existsSync(path.resolve(prefsFile))) {
+    logger('create default settings', prefsFile);
+    writeJSONDictionary(prefsFile, DEFAULT_SETTINGS);
+  } else {
+    // todo: validate settings, add any missing keys with default values
+  }
+};
+
+/**
+ * Reads a JSON dictionary from a file path.
+ * @param {string} path - The path to the JSON file.
+ * @param {Array} defaultVal - The default value if the file doesn't exist.
+ * @returns {Array} - The contents of the JSON file.
+ */
+export const readJSONDictionary = (path, defaultVal = []) => {
+  const now = new Date().getTime();
+  if (CACHE[path] &amp;&amp; CACHE[path].time > now - cacheMax) {
+    logger('cache hit for', path);
+    CACHE[path].lastAccess = now;
+    return CACHE[path].contents;
+  } else {
+    logger('read from disk', path);
+    let jsonRaw = JSON.stringify(defaultVal);
+    if (fs.existsSync(path)) {
+      jsonRaw = fs.readFileSync(path);
+    }
+    const results = JSON.parse(jsonRaw) || defaultVal;
+    CACHE[path] = {
+      time: now,
+      lastAccess: now,
+      contents: results
+    };
+    return results;
+  }
+};
+
+/**
+ * Deletes a JSON dictionary file.
+ * @param {string} path - The path to the JSON file to be deleted.
+ * @returns {void}
+ */
+export const deleteJSONDictionary = path => {
+  fs.unlinkSync(path);
+  delete CACHE[path];
+};
+
+/**
+ * Writes a JSON dictionary to a file.
+ * @param {string} path - The path to the file.
+ * @param {Object} data - The data to be written.
+ * @returns {void}
+ */
+export const writeJSONDictionary = (path, data) => {
+  const now = new Date().getTime();
+  logger('write cache', path);
+  CACHE[path] = {
+    time: now,
+    lastAccess: now,
+    contents: data
+  };
+  fs.writeFileSync(path, JSON.stringify(data, null, 2));
+};
+
+logger('BUILDING INDEX');
+ensureDataFolder();
+buildIndex().then(() => {
+  logger('INDEX BUILT!');
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ActivityPubClient.html">ActivityPubClient</a></li></ul><h3>Global</h3><ul><li><a href="global.html#acceptDM">acceptDM</a></li><li><a href="global.html#addActivityToIndex">addActivityToIndex</a></li><li><a href="global.html#addFailureToIndex">addFailureToIndex</a></li><li><a href="global.html#addFollower">addFollower</a></li><li><a href="global.html#addNotification">addNotification</a></li><li><a href="global.html#addressedOnlyToMe">addressedOnlyToMe</a></li><li><a href="global.html#authenticateLogin">authenticateLogin</a></li><li><a href="global.html#buildIndex">buildIndex</a></li><li><a href="global.html#cacheExpire">cacheExpire</a></li><li><a href="global.html#createAccount">createAccount</a></li><li><a href="global.html#createActivity">createActivity</a></li><li><a href="global.html#createActor">createActor</a></li><li><a href="global.html#createFileName">createFileName</a></li><li><a href="global.html#createNote">createNote</a></li><li><a href="global.html#createWebfinger">createWebfinger</a></li><li><a href="global.html#deleteActivity">deleteActivity</a></li><li><a href="global.html#deleteActivityFromIndex">deleteActivityFromIndex</a></li><li><a href="global.html#deleteJSONDictionary">deleteJSONDictionary</a></li><li><a href="global.html#deleteObject">deleteObject</a></li><li><a href="global.html#ensureAccount">ensureAccount</a></li><li><a href="global.html#ensureDataFolder">ensureDataFolder</a></li><li><a href="global.html#fetchActivity">fetchActivity</a></li><li><a href="global.html#fetchUser">fetchUser</a></li><li><a href="global.html#fetchUserFromSource">fetchUserFromSource</a></li><li><a href="global.html#follow">follow</a></li><li><a href="global.html#fromIndex">fromIndex</a></li><li><a href="global.html#garbageCollector">garbageCollector</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getActivity">getActivity</a></li><li><a href="global.html#getActivitySince">getActivitySince</a></li><li><a href="global.html#getActivityStream">getActivityStream</a></li><li><a href="global.html#getBlocks">getBlocks</a></li><li><a href="global.html#getBoosts">getBoosts</a></li><li><a href="global.html#getFileName">getFileName</a></li><li><a href="global.html#getFollowers">getFollowers</a></li><li><a href="global.html#getFollowing">getFollowing</a></li><li><a href="global.html#getFullPostDetails">getFullPostDetails</a></li><li><a href="global.html#getInbox">getInbox</a></li><li><a href="global.html#getInboxIndex">getInboxIndex</a></li><li><a href="global.html#getLikes">getLikes</a></li><li><a href="global.html#getLikesFileName">getLikesFileName</a></li><li><a href="global.html#getLikesForNote">getLikesForNote</a></li><li><a href="global.html#getNote">getNote</a></li><li><a href="global.html#getNotifications">getNotifications</a></li><li><a href="global.html#getOutboxPosts">getOutboxPosts</a></li><li><a href="global.html#getPassword">getPassword</a></li><li><a href="global.html#getPrefs">getPrefs</a></li><li><a href="global.html#getReplyCountForNote">getReplyCountForNote</a></li><li><a href="global.html#getUsername">getUsername</a></li><li><a href="global.html#handleAuthenticatedUser">handleAuthenticatedUser</a></li><li><a href="global.html#ifAccount">ifAccount</a></li><li><a href="global.html#isBlocked">isBlocked</a></li><li><a href="global.html#isFollower">isFollower</a></li><li><a href="global.html#isFollowing">isFollowing</a></li><li><a href="global.html#isIndexed">isIndexed</a></li><li><a href="global.html#isMention">isMention</a></li><li><a href="global.html#isMyPost">isMyPost</a></li><li><a href="global.html#isReplyToFollowing">isReplyToFollowing</a></li><li><a href="global.html#isReplyToMyPost">isReplyToMyPost</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#readJSONDictionary">readJSONDictionary</a></li><li><a href="global.html#recordBoost">recordBoost</a></li><li><a href="global.html#recordLike">recordLike</a></li><li><a href="global.html#recordUndoLike">recordUndoLike</a></li><li><a href="global.html#removeFollower">removeFollower</a></li><li><a href="global.html#searchKnownUsers">searchKnownUsers</a></li><li><a href="global.html#sendCreateToFollowers">sendCreateToFollowers</a></li><li><a href="global.html#sendUpdateToFollowers">sendUpdateToFollowers</a></li><li><a href="global.html#sortByDate">sortByDate</a></li><li><a href="global.html#updatePrefs">updatePrefs</a></li><li><a href="global.html#writeBoosts">writeBoosts</a></li><li><a href="global.html#writeEnvToFile">writeEnvToFile</a></li><li><a href="global.html#writeFollowers">writeFollowers</a></li><li><a href="global.html#writeFollowing">writeFollowing</a></li><li><a href="global.html#writeInboxIndex">writeInboxIndex</a></li><li><a href="global.html#writeJSONDictionary">writeJSONDictionary</a></li><li><a href="global.html#writeLikes">writeLikes</a></li><li><a href="global.html#writeNotifications">writeNotifications</a></li><li><a href="global.html#zeroPad">zeroPad</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Dec 14 2023 18:11:22 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
